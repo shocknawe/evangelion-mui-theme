@@ -647,7 +647,9 @@ document.addEventListener("change",e=>{if(e.target.matches("[data-signal],input[
   const dd=$("dd"),btn=$("ddbtn"),list=$("ddlist"),val=$("ddvalue"),hidden=$("section");
   const items=[...list.querySelectorAll("li")];let idx=items.findIndex(li=>li.getAttribute("aria-selected")==="true");
   const open=()=>{dd.classList.add("open");btn.setAttribute("aria-expanded","true");paint();list.focus();};
-  const close=()=>{dd.classList.remove("open");btn.setAttribute("aria-expanded","false");btn.focus();};
+  /* refocus the trigger ONLY on keyboard close — never on outside-click/mouse,
+     or the global click listener steals focus and scrolls the page to the top. */
+  const close=(refocus)=>{dd.classList.remove("open");btn.setAttribute("aria-expanded","false");if(refocus)btn.focus();};
   const paint=()=>items.forEach((li,i)=>li.classList.toggle("active",i===idx));
   const choose=i=>{items.forEach(li=>li.setAttribute("aria-selected","false"));
     items[i].setAttribute("aria-selected","true");idx=i;
@@ -657,8 +659,8 @@ document.addEventListener("change",e=>{if(e.target.matches("[data-signal],input[
   list.addEventListener("keydown",e=>{
     if(e.key==="ArrowDown"){e.preventDefault();idx=(idx+1)%items.length;paint();}
     else if(e.key==="ArrowUp"){e.preventDefault();idx=(idx-1+items.length)%items.length;paint();}
-    else if(e.key==="Enter"||e.key===" "){e.preventDefault();choose(idx);close();}
-    else if(e.key==="Escape"){close();}
+    else if(e.key==="Enter"||e.key===" "){e.preventDefault();choose(idx);close(true);}
+    else if(e.key==="Escape"){close(true);}
   });
   document.addEventListener("click",e=>{if(!dd.contains(e.target))close();});
 })();
