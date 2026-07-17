@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPERIMENT-34 · COMMAND DECK OVERVIEW</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  --accent:var(--orange);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;background:var(--bg);}
+body{
+  font-family:var(--mono);color:var(--mint);text-transform:uppercase;
+  letter-spacing:.04em;overflow:hidden;
+}
+button{font-family:var(--mono);}
+
+/* ---- one large chamfered frame, everything else is an internal zone ---- */
+.frame{
+  position:relative;margin:18px;height:calc(100vh - 36px);
+  background:var(--bg);border:3px solid var(--accent);
+  display:flex;flex-direction:column;
+  clip-path:polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+  box-shadow:0 0 8px 0 color-mix(in srgb,var(--accent) 45%,transparent),
+             inset 0 0 10px 0 color-mix(in srgb,var(--accent) 18%,transparent);
+  transition:border-color .1s linear;
+}
+.frame::before{ /* inner rule = the "double border" reading */
+  content:"";position:absolute;inset:7px;border:1px solid var(--accent);opacity:.45;pointer-events:none;
+}
+.frame[data-mode="alert"]{border-color:var(--red-hi);}
+.frame[data-mode="alert"]::before{border-color:var(--red-hi);}
+.frame[data-mode="alert"]{animation:framePulse .5s steps(2,jump-none) infinite;}
+@keyframes framePulse{50%{box-shadow:0 0 16px 0 color-mix(in srgb,var(--red-hi) 60%,transparent),
+  inset 0 0 14px 0 color-mix(in srgb,var(--red-hi) 30%,transparent);}}
+
+/* header zone */
+.hdr{display:flex;align-items:flex-end;justify-content:space-between;padding:14px 22px 8px;gap:16px;}
+.hdr-id{display:flex;align-items:baseline;gap:10px;}
+.hdr-id .jp{font-family:var(--jp);font-weight:800;font-size:26px;color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 12px color-mix(in srgb,var(--orange) 40%,transparent);}
+.hdr-id .cap{font-size:10px;color:var(--green-map);letter-spacing:.12em;}
+.hdr-title{font-family:var(--cond);font-weight:700;font-size:19px;color:var(--paper);
+  text-shadow:0 0 4px currentColor,0 0 10px color-mix(in srgb,var(--mint) 30%,transparent);flex:1;text-align:center;}
+.hdr-title small{color:var(--green-map);font-family:var(--mono);font-size:11px;font-weight:400;}
+.clock{font-size:13px;color:var(--amber);letter-spacing:.08em;}
+
+.rule-teal{height:0;margin:0 22px 10px;border-top:2px solid var(--teal);position:relative;}
+.rule-teal::after{content:"";position:absolute;left:0;right:0;top:4px;border-top:2px solid var(--teal);opacity:.5;}
+
+/* stamp / chip convention: text boxed in its own color */
+.stamp{border:1px solid currentColor;padding:3px 8px;font-size:11px;letter-spacing:.1em;line-height:1;}
+.stamp--live{color:var(--mint);}
+.stamp--blink{animation:blink 1s steps(2,jump-none) infinite;}
+.stamp--fill{background:var(--red-hi);color:var(--bg);border-color:var(--red-hi);text-shadow:none;}
+@keyframes blink{50%{opacity:0;}}
+
+/* body: three internal zones inside the ONE frame, divided by rules not by separate panels */
+.body{display:grid;grid-template-columns:230px 1fr 250px;flex:1;min-height:0;}
+.zone{padding:12px 18px;min-height:0;overflow:hidden;}
+.zone-meta{border-right:1px solid var(--orange);display:flex;flex-direction:column;gap:16px;}
+.zone-side{border-left:1px solid var(--orange);display:flex;flex-direction:column;gap:14px;}
+.zone-chart{display:flex;flex-direction:column;gap:10px;min-width:0;}
+
+.zone-title{font-family:var(--cond);font-weight:700;font-size:12px;color:var(--orange);
+  border-bottom:1px solid var(--green-dim);padding-bottom:4px;letter-spacing:.1em;}
+
+/* metadata block: mono KEY:VALUE, corner-pinned, tight leading */
+.meta{font-size:11px;line-height:1.35;color:var(--orange);}
+.meta div{display:flex;justify-content:space-between;gap:8px;}
+.meta span{color:var(--green-map);}
+
+/* status zone: consensus cores, chamfer + inversion states */
+.cores{display:flex;flex-direction:column;gap:8px;}
+.core{
+  position:relative;border:1px solid var(--orange);padding:7px 10px;font-size:11px;
+  clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  display:flex;justify-content:space-between;align-items:center;
+}
+.core b{font-family:var(--cond);font-weight:700;letter-spacing:.06em;color:var(--paper);}
+.core em{font-style:normal;font-size:10px;border:1px solid currentColor;padding:1px 5px;}
+.core[data-state="nominal"]{background:var(--mint);border-color:var(--mint);}
+.core[data-state="nominal"] b,.core[data-state="nominal"] em{color:var(--bg);}
+.core[data-state="pending"]{background:var(--bg);border-color:var(--blue);}
+.core[data-state="pending"] em{color:var(--blue);animation:blink 1s steps(2,jump-none) infinite;}
+.core[data-state="fault"]{background:var(--red);border-color:var(--red);}
+.core[data-state="fault"] b,.core[data-state="fault"] em{color:var(--bg);}
+.core.flicker{outline:2px solid var(--paper);}
+
+/* chart zone: canvas waveform + threshold + segmented meter */
+.chart-hdr{display:flex;justify-content:space-between;font-size:11px;color:var(--green-map);}
+.wave-wrap{position:relative;flex:1;min-height:0;border:1px solid var(--green-dim);}
+canvas{display:block;width:100%;height:100%;}
+.threshold{position:absolute;left:0;right:0;top:34%;border-top:2px solid var(--amber);}
+.threshold span{position:absolute;right:6px;top:-9px;background:var(--bg);border:1px solid var(--amber);
+  color:var(--amber);font-size:9px;padding:1px 5px;}
+.meter{display:flex;gap:3px;height:34px;align-items:flex-end;}
+.seg{flex:1;height:15%;background:var(--green-dim);border-radius:2px 2px 0 0;transition:none;}
+.seg.lit{background:var(--mint);box-shadow:0 0 6px 0 color-mix(in srgb,var(--mint) 60%,transparent);}
+.frame[data-mode="alert"] .seg.lit{background:var(--red-hi);
+  box-shadow:0 0 6px 0 color-mix(in srgb,var(--red-hi) 70%,transparent);}
+
+/* side zone: countdown corner + unit lattice + mode rail */
+.countdown{text-align:right;}
+.countdown .lbl{font-size:10px;color:var(--green-map);}
+.countdown .digits{font-size:40px;font-weight:700;color:var(--orange);letter-spacing:.02em;
+  text-shadow:0 0 4px currentColor,0 0 14px color-mix(in srgb,var(--orange) 45%,transparent);}
+.countdown .digits .colon{animation:blink 1s steps(2,jump-none) infinite;}
+
+.units{font-size:11px;line-height:1.5;}
+.units div{display:flex;justify-content:space-between;border-bottom:1px dotted var(--green-dim);padding:2px 0;}
+.units em{font-style:normal;color:var(--green-map);}
+
+.rail{display:flex;flex-direction:column;gap:6px;}
+.rail button{
+  background:var(--bg);color:var(--orange);border:1px solid var(--orange);padding:6px 8px;
+  font-size:11px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;
+}
+.rail button[aria-pressed="true"]{background:var(--orange);color:var(--bg);}
+.rail button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px;}
+.rail button[data-m="alert"][aria-pressed="true"]{background:var(--red-hi);border-color:var(--red-hi);}
+
+/* footer zone: teletype log line, single row, mechanical replace not fade */
+.ftr{border-top:1px solid var(--orange);padding:8px 22px;font-size:11px;color:var(--amber);
+  display:flex;gap:10px;align-items:center;}
+.ftr .cursor{color:var(--amber);animation:blink .6s steps(2,jump-none) infinite;}
+
+/* CRT pass */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);}
+
+@media (prefers-reduced-motion:reduce){
+  .stamp--blink,.core em,.countdown .colon,.ftr .cursor,.frame[data-mode="alert"]{animation:none!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="frame" id="frame" data-mode="standby">
+
+  <div class="hdr">
+    <div class="hdr-id"><span class="jp">総覧</span><span class="cap">overview</span></div>
+    <div class="hdr-title">KESTREL·4 <small>// COMMAND DECK PRIMARY OVERVIEW</small></div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="clock" id="clock">00:00:00</span>
+      <span class="stamp stamp--live stamp--blink" id="liveStamp">LIVE</span>
+    </div>
+  </div>
+  <div class="rule-teal"></div>
+
+  <div class="body">
+
+    <aside class="zone zone-meta" aria-label="deck metadata and core status">
+      <div>
+        <div class="zone-title">DECK METADATA</div>
+        <div class="meta">
+          <div><span>CODE:</span>2214</div>
+          <div><span>GRID:</span>KESTREL_4</div>
+          <div><span>SECTOR:</span>AFT-07</div>
+          <div><span>SYNC:</span>3-CORE</div>
+          <div><span>PRIORITY:</span>AA-</div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="zone-title">CONSENSUS CORES</div>
+        <div class="cores" id="cores">
+          <div class="core" data-state="nominal"><b>VEGA·1</b><em>NOMINAL</em></div>
+          <div class="core" data-state="pending"><b>ALTAIR·2</b><em>SYNC</em></div>
+          <div class="core" data-state="nominal"><b>DENEB·3</b><em>NOMINAL</em></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="zone zone-chart" aria-label="telemetry chart">
+      <div class="chart-hdr"><span>OBJECT: DECK OUTPUT</span><span id="chartMode">MODE: STANDBY</span></div>
+      <div class="wave-wrap">
+        <canvas id="wave"></canvas>
+        <div class="threshold"><span>LOAD LIMIT</span></div>
+      </div>
+      <div class="zone-title">CORE LOAD</div>
+      <div class="meter" id="meter"></div>
+    </main>
+
+    <aside class="zone zone-side" aria-label="countdown and tactical units">
+      <div class="countdown">
+        <div class="lbl">NEXT SYNC WINDOW</div>
+        <div class="digits" id="countdown">07:12</div>
+      </div>
+      <div>
+        <div class="zone-title">TACTICAL UNITS</div>
+        <div class="units">
+          <div><span>UNIT-07</span><em id="u1">PATROL</em></div>
+          <div><span>LYRA·04</span><em id="u2">HOLD</em></div>
+          <div><span>CYGNUS·07</span><em id="u3">ACTIVE</em></div>
+          <div><span>AQUILA·11</span><em id="u4">HOLD</em></div>
+        </div>
+      </div>
+      <div role="group" aria-label="deck mode select" class="rail">
+        <div class="zone-title">DECK MODE</div>
+        <button type="button" data-m="standby" aria-pressed="true">STANDBY</button>
+        <button type="button" data-m="active" aria-pressed="false">ACTIVE</button>
+        <button type="button" data-m="alert" aria-pressed="false">ALERT</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="ftr" aria-label="deck log">
+    <span>LOG:</span><span id="logLine">DECK OVERVIEW ONLINE</span><span class="cursor">_</span>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* zero-size viewport guard: browser preview panes can open file:// at 0x0 */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pad2 = n => String(n).padStart(2,"0");
+const rnd  = (a,b) => a + Math.random()*(b-a);
+
+/* ---- state ---- */
+const frame     = document.getElementById("frame");
+const clockEl   = document.getElementById("clock");
+const cdEl      = document.getElementById("countdown");
+const logEl     = document.getElementById("logLine");
+const chartMode = document.getElementById("chartMode");
+const meterEl   = document.getElementById("meter");
+const coreEls   = [...document.querySelectorAll(".core")];
+const canvas    = document.getElementById("wave");
+const ctx       = canvas.getContext("2d");
+
+let mode = "standby";                 // standby | active | alert
+let cdSeconds = 7*60+12;
+let cdLock = false;                   // repeating-trigger guard on reset
+let samples = new Array(80).fill(50);
+const NSEG = 14;
+for(let i=0;i<NSEG;i++){const d=document.createElement("div");d.className="seg";meterEl.appendChild(d);}
+const segEls = [...meterEl.querySelectorAll(".seg")];
+let segLevel = 6;
+
+const logLines = [
+  "SECTOR SWEEP COMPLETE","CORE SYNC NOMINAL","TRACE UPDATED :: SECTOR AFT-07",
+  "UNIT-07 REPORTING PATROL","LATTICE CHECK OK","DECK OUTPUT WITHIN LIMIT",
+  "CYGNUS·07 ACTIVE ON STATION","AWAITING NEXT SYNC WINDOW"
+];
+let logIdx = 0;
+
+/* ---- wiring ---- */
+function resizeCanvas(){
+  const r = canvas.getBoundingClientRect();
+  canvas.width  = Math.max(1, Math.floor(r.width));
+  canvas.height = Math.max(1, Math.floor(r.height));
+}
+
+function drawWave(){
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const last = samples[samples.length-1];
+  const bias = mode==="alert" ? rnd(-10,14) : rnd(-6,6);
+  let next = last + bias;
+  next = Math.max(8, Math.min(92, next));
+  samples.push(next); samples.shift();
+  ctx.strokeStyle = mode==="alert" ? "#E2280F" : "#52F29A";
+  ctx.lineWidth = 2;
+  ctx.shadowColor = ctx.strokeStyle;
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  const stepX = w/(samples.length-1);
+  samples.forEach((v,i)=>{
+    const x = i*stepX, y = h - (v/100)*h;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+}
+
+function drawMeter(){
+  const target = mode==="alert" ? Math.min(NSEG, segLevel+2) : segLevel;
+  segEls.forEach((el,i)=>{
+    el.style.height = (14+i*5) + "%";
+    el.classList.toggle("lit", i < target);
+  });
+}
+
+function tickMeter(){
+  segLevel += mode==="active" ? rnd(-1,2) : rnd(-1,1);
+  segLevel = Math.max(2, Math.min(NSEG-1, segLevel));
+  drawMeter();
+}
+
+function setMode(next){
+  mode = next;
+  frame.setAttribute("data-mode", mode);
+  chartMode.textContent = "MODE: " + mode.toUpperCase();
+  document.querySelectorAll(".rail button").forEach(b=>{
+    b.setAttribute("aria-pressed", String(b.dataset.m===mode));
+  });
+  document.getElementById("liveStamp").textContent = mode==="alert" ? "ALERT" : "LIVE";
+  document.getElementById("liveStamp").classList.toggle("stamp--fill", mode==="alert");
+}
+
+function cascadeCoreFlicker(el, done){
+  if(REDUCED){ done(); return; }
+  el.classList.add("flicker");
+  setTimeout(()=>{ el.classList.remove("flicker"); done(); }, 90);
+}
+
+function cycleCore(){
+  const el = coreEls[Math.floor(rnd(0,coreEls.length))];
+  const order = ["nominal","pending","nominal","nominal","fault"]; // biased toward nominal
+  const nextState = order[Math.floor(rnd(0,order.length))];
+  cascadeCoreFlicker(el, ()=>{
+    el.dataset.state = nextState;
+    const em = el.querySelector("em");
+    em.textContent = nextState==="nominal" ? "NOMINAL" : nextState==="pending" ? "SYNC" : "FAULT";
+  });
+}
+
+function tickClock(){
+  const t = new Date();
+  clockEl.textContent = [t.getHours(),t.getMinutes(),t.getSeconds()].map(pad2).join(":");
+}
+
+function tickCountdown(){
+  if(cdLock) return;
+  cdSeconds--;
+  if(cdSeconds<=0){
+    cdLock = true; /* one-shot guard: only one reset per zero-crossing */
+    setTimeout(()=>{ cdSeconds = Math.floor(rnd(5*60,10*60)); cdLock=false; }, 900);
+    cdSeconds = 0;
+  }
+  const m = Math.floor(cdSeconds/60), s = cdSeconds%60;
+  cdEl.innerHTML = pad2(m) + '<span class="colon">:</span>' + pad2(s);
+}
+
+function tickLog(){
+  logIdx = (logIdx+1) % logLines.length;
+  logEl.textContent = logLines[logIdx];
+}
+
+function tickUnits(){
+  const states = ["PATROL","HOLD","ACTIVE","TRANSIT"];
+  const el = ["u1","u2","u3","u4"][Math.floor(rnd(0,4))];
+  document.getElementById(el).textContent = states[Math.floor(rnd(0,states.length))];
+}
+
+window.addEventListener("resize", resizeCanvas);
+document.querySelectorAll(".rail button").forEach(b=>{
+  b.addEventListener("click", ()=> setMode(b.dataset.m));
+});
+
+/* ---- START ---- */
+resizeCanvas();
+tickClock();
+drawMeter();
+setMode("standby");
+setInterval(tickClock, 1000);
+setInterval(tickCountdown, 1000);
+setInterval(drawWave, 83);           // ~12fps, hand-cranked feel
+setInterval(tickMeter, 700);
+setInterval(tickLog, 2600);
+setInterval(tickUnits, 4200);
+setInterval(cycleCore, 6000);
+</script>
+</body>
+</html>

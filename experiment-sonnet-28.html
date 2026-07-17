@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXPERIMENT-28 · EMERGENCY MARQUEE BANNER</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);overflow:hidden}
+body{
+  font-family:var(--mono);text-transform:uppercase;color:var(--paper);
+  letter-spacing:.03em;
+}
+/* CRT pass — scanlines + vignette on every dark screen */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+button:focus-visible{outline:2px solid var(--crimson);outline-offset:3px}
+
+/* ---------- quiet bridge backdrop (revealed after acknowledge) ---------- */
+#bridge{
+  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;background:var(--bg);
+}
+#bridge .word{
+  font-family:var(--cond);font-weight:700;font-size:clamp(40px,12vw,140px);color:var(--mint);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4);
+}
+#bridge .cap{font-size:12px;color:var(--green-map);letter-spacing:.12em}
+#bridge button{
+  background:transparent;border:1px solid var(--orange);color:var(--orange);padding:8px 16px;
+  border-radius:0;font-size:12px;
+}
+#bridge button:hover{background:var(--orange);color:var(--bg)}
+
+/* ---------- alert overlay: full-bleed hazard field ---------- */
+#overlay{
+  position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+}
+.stripe{
+  flex:0 0 27vh;position:relative;overflow:hidden;
+  background:repeating-linear-gradient(45deg,var(--crimson) 0 42px,#0A0A0A 42px 84px);
+}
+.stripe.dim{filter:brightness(.55)}
+.marquee-band{
+  flex:1 1 auto;position:relative;overflow:hidden;background:#000;
+  border-top:2px solid var(--orange);border-bottom:2px solid var(--orange);
+  display:flex;align-items:center;
+}
+.marquee-track{
+  position:absolute;left:0;top:50%;transform:translate(0,-50%);white-space:nowrap;will-change:transform;
+  font-family:var(--cond);font-weight:700;font-size:clamp(26px,8vw,108px);
+  color:var(--orange);letter-spacing:.02em;
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(242,100,0,.4);
+}
+
+/* boxed JP+EN stamp — diagonal-corner placement, EN caption pairs the kanji */
+.stamp{
+  position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;
+  border:1px solid var(--crimson);padding:5px 10px;background:rgba(10,10,10,.5);
+}
+.stamp .kj{font-family:var(--jp);font-weight:800;font-size:26px;line-height:1;color:var(--crimson);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(230,2,37,.4)}
+.stamp .en{font-size:9px;letter-spacing:.1em;color:var(--paper)}
+.stamp.dim{opacity:.25}
+
+.tl{top:14px;left:14px}
+.br{bottom:14px;right:14px}
+
+/* corner-pinned mono metadata block */
+.meta{
+  position:absolute;top:14px;right:14px;font-size:11px;line-height:1.25;color:var(--amber);
+  text-align:right;
+}
+.meta b{color:var(--paper)}
+
+/* acknowledge control — bottom stripe, boxed like every other status word */
+.ack-wrap{position:absolute;bottom:16px;left:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ack-wrap .hint{font-size:10px;color:var(--paper);opacity:.7;letter-spacing:.08em}
+#ackBtn{
+  background:transparent;border:1px solid var(--paper);color:var(--paper);padding:9px 18px;font-size:13px;
+}
+#ackBtn:hover{background:var(--paper);color:var(--bg);border-color:var(--paper)}
+
+@media (prefers-reduced-motion: reduce){
+  .stripe.dim{filter:none}
+  .stamp.dim{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<!-- quiet state, hidden until the alert is acknowledged -->
+<div id="bridge" hidden>
+  <div class="word">STANDBY</div>
+  <div class="cap">KESTREL·4 BRIDGE — ALL CORES NOMINAL</div>
+  <button id="rearmBtn" type="button">SIMULATE BREACH·09</button>
+</div>
+
+<div id="overlay" role="alertdialog" aria-modal="true"
+     aria-label="Emergency alert. Hull breach deck zero nine, sector G7."
+     tabindex="-1">
+
+  <div class="stripe" id="stripeTop">
+    <div class="stamp tl" id="stampAlert">
+      <span class="kj">警戒</span><span class="en">ALERT</span>
+    </div>
+    <div class="meta">
+      <div>CODE:<b>BREACH·09</b></div>
+      <div>CORE:<b>ALTAIR·2</b></div>
+      <div>SECTOR:<b>G-7</b></div>
+      <div>DECK:<b>09</b></div>
+      <div>CAUSE:<b>過負荷 OVERLOAD</b></div>
+    </div>
+  </div>
+
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track" id="track"></div>
+  </div>
+
+  <div class="stripe" id="stripeBottom">
+    <div class="stamp br" id="stampEvac">
+      <span class="kj">退避</span><span class="en">EVACUATE</span>
+    </div>
+    <div class="ack-wrap">
+      <button id="ackBtn" type="button">ACKNOWLEDGE · SILENCE ALARM</button>
+      <div class="hint">ESC ALSO SILENCES</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const MSG = "EMERGENCY — KESTREL·4 HULL BREACH DECK 09 — SECTOR G-7 DEPRESSURIZING — " +
+            "CONTAINMENT OVERLOAD AT CORE ALTAIR·2 — EVACUATE TO MUSTER DECK 04 — " +
+            "THIS IS NOT A DRILL — ";
+
+/* ---- state ---- */
+const overlayEl = document.getElementById("overlay");
+const bridgeEl  = document.getElementById("bridge");
+const trackEl   = document.getElementById("track");
+const stripeTop = document.getElementById("stripeTop");
+const stripeBot = document.getElementById("stripeBottom");
+const stampA    = document.getElementById("stampAlert");
+const stampB    = document.getElementById("stampEvac");
+const ackBtn    = document.getElementById("ackBtn");
+const rearmBtn  = document.getElementById("rearmBtn");
+
+let marqueeTimer = null;
+let pulseTimer   = null;
+let blinkTimer   = null;
+let x            = 0;   // marquee position, moved in discrete steps only
+let half         = 0;   // width of one copy of the looped text
+let armed        = false; // guard: only one live alert cycle at a time
+
+/* ---- wiring (functions only — nothing called yet) ---- */
+
+function layoutMarquee(){
+  // two back-to-back copies so the reset point is invisible (seamless loop)
+  trackEl.textContent = MSG + MSG;
+  half = trackEl.scrollWidth / 2;
+  x = 0;
+  trackEl.style.transform = "translate(0,-50%)";
+}
+
+function startMarquee(){
+  clearInterval(marqueeTimer);
+  if(REDUCED){
+    // static, readable, centered — no scroll under reduced motion
+    trackEl.textContent = MSG.trim();
+    trackEl.style.transform = "translate(0,-50%)";
+    return;
+  }
+  layoutMarquee();
+  marqueeTimer = setInterval(()=>{
+    x -= 6;                 // mechanical fixed-step scroll, never eased
+    if(x <= -half) x = 0;   // wrap at the seam between the two copies
+    trackEl.style.transform = "translate(" + x + "px,-50%)";
+  }, 40);
+}
+
+function startStripePulse(){
+  clearInterval(pulseTimer);
+  if(REDUCED) return;
+  let on = false;
+  pulseTimer = setInterval(()=>{
+    on = !on;
+    stripeTop.classList.toggle("dim", on);
+    stripeBot.classList.toggle("dim", !on);
+  }, 900);
+}
+
+function startStampBlink(){
+  clearInterval(blinkTimer);
+  if(REDUCED) return;
+  let on = false;
+  blinkTimer = setInterval(()=>{
+    on = !on;
+    stampA.classList.toggle("dim", on);
+    stampB.classList.toggle("dim", !on);
+  }, 1000);
+}
+
+function stopAll(){
+  clearInterval(marqueeTimer); marqueeTimer = null;
+  clearInterval(pulseTimer);   pulseTimer = null;
+  clearInterval(blinkTimer);   blinkTimer = null;
+}
+
+function acknowledge(){
+  if(!armed) return;         // repeating-trigger guard: one dismissal per cycle
+  armed = false;
+  stopAll();
+  overlayEl.style.display = "none";
+  bridgeEl.hidden = false;
+  rearmBtn.focus();
+}
+
+function trigger(){
+  if(armed) return;          // repeating-trigger guard: one active cycle only
+  armed = true;
+  bridgeEl.hidden = true;
+  overlayEl.style.display = "flex";
+  stripeTop.classList.remove("dim");
+  stripeBot.classList.remove("dim");
+  stampA.classList.remove("dim");
+  stampB.classList.remove("dim");
+  startMarquee();
+  startStripePulse();
+  startStampBlink();
+  overlayEl.focus();
+}
+
+ackBtn.addEventListener("click", acknowledge);
+rearmBtn.addEventListener("click", trigger);
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape") acknowledge();
+});
+
+/* ---- START ---- */
+trigger();
+
+</script>
+</body>
+</html>

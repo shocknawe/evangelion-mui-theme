@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-12 · SEGMENTED GAUGE WALL</title>
+<!-- exp-12 -->
+<style>
+:root{
+  --bg:#0A0A0A;--mint:#52F29A;--mint-hi:#7CF4AB;--gdim:#246C3C;
+  --amber:#F49F09;--amber-dim:#9C3C24;--red:#E2280F;--red-dark:#C20C0C;
+  --orange:#F26400;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--mint);font-family:var(--mono);text-transform:uppercase;
+  min-height:100vh;overflow-x:hidden;position:relative;
+  display:flex;flex-direction:column;align-items:center;padding:3vh 3vw 4vh;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* corner metadata block */
+.meta{position:fixed;top:14px;left:16px;font-size:11px;color:var(--orange);letter-spacing:.08em;
+  line-height:1.3;z-index:2;text-shadow:0 0 4px rgba(242,100,0,.4)}
+.meta div{white-space:nowrap}
+
+/* title */
+.titlebar{width:min(94vw,1040px);border-bottom:2px solid var(--orange);padding-bottom:10px;margin-bottom:3vh;margin-top:56px}
+.titlebar h1{font-family:var(--cond);font-weight:700;font-size:clamp(20px,3vw,32px);
+  letter-spacing:.04em;color:var(--mint-hi);text-shadow:0 0 5px rgba(82,242,154,.5)}
+.titlebar .sub{font-size:12px;color:var(--mint);opacity:.7;letter-spacing:.12em;margin-top:4px}
+
+/* wall: badge row / gauge columns / readout row all share widths+gaps */
+.wallouter{width:min(94vw,1040px);display:flex;flex-direction:column;gap:14px}
+.badgerow,.readoutrow,.gaugewrap{display:flex;gap:28px}
+.badgerow > *, .readoutrow > *, .gaugewrap > .col{flex:1 1 0;min-width:0}
+
+.badge{
+  border:2px solid var(--hue,var(--mint));border-radius:6px;padding:8px 6px;text-align:center;
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--hue,var(--mint));
+  background:var(--bg);box-shadow:0 0 6px color-mix(in srgb,var(--hue,var(--mint)) 40%,transparent);
+  transition:none;
+}
+.badge.crit{background:var(--hue,var(--red));color:var(--bg);box-shadow:0 0 10px var(--hue,var(--red)),0 0 24px color-mix(in srgb,var(--hue,var(--red)) 50%,transparent)}
+
+.gaugewrap{position:relative;height:52vh}
+.col{display:flex;flex-direction:column-reverse;gap:3px;height:100%}
+.seg{flex:1;border-radius:4px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+.seg.lit{border-color:transparent}
+.seg.z-mint{background:var(--mint);box-shadow:0 0 5px var(--mint),0 0 12px rgba(82,242,154,.4)}
+.seg.z-amber{background:var(--amber);box-shadow:0 0 5px var(--amber),0 0 12px rgba(244,159,9,.4)}
+.seg.z-red{background:var(--red);box-shadow:0 0 7px var(--red),0 0 20px rgba(226,40,15,.55)}
+
+/* threshold: full-width rule crossing every column, label rides on it */
+.threshold{position:absolute;left:-14px;right:-14px;height:2px;background:var(--orange);
+  box-shadow:0 0 6px rgba(242,100,0,.6);z-index:3}
+.threshold .thlabel{
+  position:absolute;right:8px;top:-11px;background:var(--bg);border:1px solid var(--orange);
+  color:var(--orange);font-size:10px;letter-spacing:.12em;padding:2px 6px;white-space:nowrap
+}
+/* axis ticks along the left edge of the wall */
+.axis{position:absolute;left:-14px;top:0;bottom:0;width:14px}
+.axis .tick{position:absolute;left:0;width:8px;height:1px;background:var(--gdim)}
+.axis .tick.lbl{color:var(--gdim);font-size:9px;left:-22px;width:auto}
+
+.readoutrow > div{text-align:center}
+.rv{font-family:var(--cond);font-weight:700;font-size:22px;color:var(--hue,var(--mint));
+  text-shadow:0 0 4px color-mix(in srgb,var(--hue,var(--mint)) 50%,transparent)}
+.rl{font-size:10px;letter-spacing:.1em;color:var(--mint);opacity:.6;margin-top:2px}
+.stamp{display:inline-block;margin-top:6px;border:1px solid var(--hue,var(--mint));color:var(--hue,var(--mint));
+  font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:2px}
+.stamp.crit{background:var(--hue,var(--red));color:var(--bg);border-color:var(--hue,var(--red))}
+
+/* control rail */
+.rail{display:flex;gap:12px;margin-top:4vh}
+.rail button{
+  border:2px solid var(--mint);background:transparent;color:var(--mint);cursor:pointer;
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.14em;
+  text-transform:uppercase;padding:10px 20px;
+}
+.rail button.active{background:var(--mint);color:var(--bg)}
+.rail button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.rail .hint{font-size:10px;color:var(--mint);opacity:.5;align-self:center;letter-spacing:.08em}
+
+/* global alert stamp: kanji + EN, boxed, blinking while any gauge is critical */
+.alertstamp{
+  position:fixed;top:16px;right:18px;z-index:4;border:2px solid var(--red);background:var(--bg);
+  color:var(--red);text-align:center;padding:8px 14px;box-shadow:0 0 12px rgba(226,40,15,.5);
+}
+.alertstamp .jp{font-family:var(--jp);font-weight:800;font-size:24px;letter-spacing:.2em;text-transform:none;line-height:1.1}
+.alertstamp .en{font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.22em;margin-top:2px}
+.alertstamp[data-blink="1"]{animation:blink 1s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.alertstamp[data-blink="1"]{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <div>CODE:2231</div>
+  <div>FILE:KESTREL_TELEM</div>
+  <div>EX_MODE:LIVE</div>
+  <div>PRIORITY:AAA</div>
+</div>
+
+<div class="titlebar">
+  <h1>KESTREL·4 — REACTOR TELEMETRY</h1>
+  <div class="sub">SEGMENTED GAUGE WALL / STRESS LOAD BY SUBSYSTEM</div>
+</div>
+
+<div class="wallouter">
+  <div class="badgerow" id="badgerow"></div>
+  <div class="gaugewrap" id="gaugewrap" role="group" aria-label="Subsystem load gauges">
+    <div class="axis" id="axis"></div>
+    <div class="threshold" id="threshold" style="bottom:70%">
+      <span class="thlabel">SAFETY LINE · 70</span>
+    </div>
+  </div>
+  <div class="readoutrow" id="readoutrow"></div>
+</div>
+
+<div class="rail" role="group" aria-label="Test controls">
+  <button data-action="nominal" class="active" id="btn-nominal">NOMINAL</button>
+  <button data-action="stress" id="btn-stress">STRESS TEST</button>
+  <button data-action="reset" id="btn-reset">RESET</button>
+  <span class="hint">[N] [S] [R]</span>
+</div>
+
+<div class="alertstamp" id="alertstamp" hidden>
+  <div class="jp" id="alertjp">過負荷</div>
+  <div class="en" id="alerten">OVERLOAD</div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+/* Segmented gauge wall — each column is discrete LED blocks (never a
+   continuous fill), colored per-segment by the load zone it represents.
+   One shared threshold rule crosses all four columns; the CORE gauge is
+   the signature drama: STRESS TEST steps it past the line and the whole
+   readout inverts to filled red, matching the bar-graph.gif "LIFE" motif. */
+
+const SEGS   = 22;      /* segments per column */
+const THRESH = 70;      /* safety line, percent */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const GAUGES = [
+  {key:"hull",  label:"HULL",     jp:"船体", value:34, base:34, jitter:4},
+  {key:"therm", label:"THERMAL",  jp:"熱量", value:52, base:52, jitter:6},
+  {key:"core",  label:"CORE",     jp:"炉心", value:61, base:61, jitter:5},
+  {key:"o2",    label:"O2 SCRUB", jp:"酸素", value:29, base:29, jitter:4},
+];
+
+function zoneColor(v){ return v>THRESH?"var(--red)":v>50?"var(--amber)":"var(--mint)"; }
+function zoneClass(v){ return v>THRESH?"z-red":v>50?"z-amber":"z-mint"; }
+function zoneWord(v){ return v>THRESH?"CRITICAL":v>50?"CAUTION":"NOMINAL"; }
+
+const badgerow  = document.getElementById("badgerow");
+const gaugewrap = document.getElementById("gaugewrap");
+const readoutrow= document.getElementById("readoutrow");
+const axis      = document.getElementById("axis");
+const alertstamp= document.getElementById("alertstamp");
+
+/* build one column + badge + readout per gauge */
+for(const g of GAUGES){
+  const badge=document.createElement("div");
+  badge.className="badge"; badge.id="badge-"+g.key; badge.textContent=g.label;
+  badgerow.appendChild(badge);
+
+  const col=document.createElement("div");
+  col.className="col"; col.id="col-"+g.key;
+  for(let i=0;i<SEGS;i++){
+    const s=document.createElement("div");
+    s.className="seg";
+    col.appendChild(s);
+  }
+  gaugewrap.appendChild(col);
+
+  const ro=document.createElement("div");
+  ro.innerHTML='<div class="rv" id="rv-'+g.key+'"></div>'+
+               '<div class="rl">'+g.jp+" / "+g.label+'</div>'+
+               '<span class="stamp" id="stamp-'+g.key+'"></span>';
+  readoutrow.appendChild(ro);
+}
+/* axis ticks: 0 / 50 / 100 marks up the left edge */
+for(const pct of [0,25,50,75,100]){
+  const t=document.createElement("div");
+  t.className="tick"; t.style.bottom=pct+"%"; axis.appendChild(t);
+  const l=document.createElement("div");
+  l.className="tick lbl"; l.style.bottom=(pct-2)+"%"; l.textContent=pct;
+  axis.appendChild(l);
+}
+
+function render(){
+  let anyCrit=null;
+  for(const g of GAUGES){
+    const lit=Math.round(g.value/100*SEGS);
+    const col=document.getElementById("col-"+g.key);
+    [...col.children].forEach((seg,i)=>{
+      seg.className="seg";
+      if(i<lit){
+        const segVal=((i+1)/SEGS)*100;
+        seg.classList.add("lit",zoneClass(segVal));
+      }
+    });
+    const hue=zoneColor(g.value);
+    const badge=document.getElementById("badge-"+g.key);
+    badge.style.setProperty("--hue",hue);
+    const crit=g.value>THRESH;
+    badge.classList.toggle("crit",crit);
+
+    const rv=document.getElementById("rv-"+g.key);
+    rv.style.setProperty("--hue",hue);
+    rv.textContent=Math.round(g.value)+"%";
+    const stamp=document.getElementById("stamp-"+g.key);
+    stamp.style.setProperty("--hue",hue);
+    stamp.textContent=zoneWord(g.value);
+    stamp.classList.toggle("crit",crit);
+
+    if(crit && (!anyCrit || g.value>anyCrit.value)) anyCrit=g;
+  }
+  if(anyCrit){
+    alertstamp.hidden=false;
+    document.getElementById("alertjp").textContent = anyCrit.key==="core" ? "過負荷" : "警戒";
+    document.getElementById("alerten").textContent = anyCrit.label+" OVERLOAD";
+    alertstamp.dataset.blink = REDUCED ? "0" : "1";
+  }else{
+    alertstamp.hidden=true;
+  }
+}
+
+/* ambient telemetry: small biased random walk, nominal dominates */
+let mode="nominal"; /* nominal | stress | resetting */
+function ambientTick(){
+  if(mode!=="nominal") return;
+  for(const g of GAUGES){
+    const pull=(g.base-g.value)*0.12;              /* drift back to baseline */
+    const noise=(Math.random()-0.5)*g.jitter;
+    g.value=Math.max(2,Math.min(96,g.value+pull+noise));
+  }
+  render();
+}
+
+/* STRESS TEST: step CORE upward through the safety line, stepped (not eased),
+   ~12 steps/sec, then hold, then let RESET/NOMINAL bring it back down. */
+let stressTimer=null;
+function runStress(){
+  mode="stress";
+  setActive("stress");
+  clearInterval(stressTimer);
+  const core=GAUGES.find(g=>g.key==="core");
+  const target=94;
+  stressTimer=setInterval(()=>{
+    const step=3;
+    if(core.value<target){
+      core.value=Math.min(target,core.value+step);
+      /* secondary systems creep up under load, biased but not guaranteed to cross */
+      for(const g of GAUGES){
+        if(g.key!=="core") g.value=Math.min(96,g.value+Math.random()*1.5);
+      }
+      render();
+    }else{
+      clearInterval(stressTimer);
+    }
+  },80);
+}
+
+function runReset(){
+  mode="resetting";
+  setActive("reset");
+  clearInterval(stressTimer);
+  stressTimer=setInterval(()=>{
+    let settled=true;
+    for(const g of GAUGES){
+      const diff=g.base-g.value;
+      if(Math.abs(diff)>1){ g.value+=diff*0.35; settled=false; }
+      else g.value=g.base;
+    }
+    render();
+    if(settled){
+      clearInterval(stressTimer);
+      mode="nominal";
+      setActive("nominal");
+    }
+  },80);
+}
+
+function setActive(which){
+  document.getElementById("btn-nominal").classList.toggle("active",which==="nominal");
+  document.getElementById("btn-stress").classList.toggle("active",which==="stress");
+  document.getElementById("btn-reset").classList.toggle("active",which==="reset");
+}
+
+document.getElementById("btn-nominal").addEventListener("click",()=>{clearInterval(stressTimer);mode="nominal";setActive("nominal");});
+document.getElementById("btn-stress").addEventListener("click",runStress);
+document.getElementById("btn-reset").addEventListener("click",runReset);
+addEventListener("keydown",(e)=>{
+  const k=e.key.toLowerCase();
+  if(k==="n"){clearInterval(stressTimer);mode="nominal";setActive("nominal");}
+  else if(k==="s") runStress();
+  else if(k==="r") runReset();
+});
+
+/* ---- START ---- */
+render();
+setInterval(ambientTick,900);
+</script>
+</body>
+</html>

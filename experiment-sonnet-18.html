@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-18 · SOLENOID DIVERGENCE CHART</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);overflow:hidden;font-family:var(--mono);text-transform:uppercase;color:var(--orange)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+.app{height:100%;display:flex;flex-direction:column}
+
+/* ---- title bar: chamfered hero plate ---- */
+header.titlebar{
+  position:relative;flex:0 0 74px;display:flex;align-items:center;gap:16px;
+  padding:8px 22px 8px 16px;border-bottom:2px solid var(--orange);
+  clip-path:polygon(0 0,100% 0,100% 100%,26px 100%,0 calc(100% - 26px));
+  box-shadow:inset 0 0 12px rgba(242,100,0,.12);
+}
+.mon-stamp{border:1px solid var(--orange);color:var(--orange);font-family:var(--jp);
+  font-size:24px;line-height:1;padding:4px 8px;text-align:center;text-shadow:0 0 4px currentColor}
+.mon-stamp small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.12em;margin-top:3px}
+.ttl h1{font-family:var(--cond);font-weight:700;font-size:25px;letter-spacing:.005em;color:var(--paper);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(82,242,154,.3)}
+.ttl .sub{font-size:10px;letter-spacing:.1em;color:var(--amber);margin-top:2px}
+.meta{margin-left:auto;text-align:right;font-size:10px;line-height:1.32;letter-spacing:.05em}
+.meta b{color:var(--mint);font-weight:700}
+
+/* ---- chart body: two panels + shared axis ---- */
+main.chart{flex:1;display:grid;grid-template-columns:1fr 92px 1fr;position:relative;min-height:0}
+.panel{position:relative;overflow:hidden}
+.panel svg.grid,.panel canvas{position:absolute;inset:0;width:100%;height:100%}
+.panel svg.grid{z-index:1}
+.panel canvas{z-index:2}
+.phead{position:absolute;top:10px;z-index:3;font-size:11px;line-height:1.35;letter-spacing:.06em}
+.phead.vega{left:14px}
+.phead.altair{right:14px;text-align:right}
+.phead .obj{font-size:13px;font-weight:700}
+.phead.vega .obj{color:var(--mint);text-shadow:0 0 4px currentColor,0 0 8px rgba(82,242,154,.35)}
+.phead.altair .obj{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 8px rgba(226,40,15,.4)}
+.pread{position:absolute;bottom:10px;z-index:3;font-size:11px;letter-spacing:.06em}
+.pread.vega{left:14px;color:var(--mint)}
+.pread.altair{right:14px;color:var(--red-hi);text-align:right}
+.pread b{font-family:var(--cond);font-size:26px;display:block;line-height:1.1}
+
+/* ---- axis column ---- */
+.axis{position:relative;border-left:1px solid var(--orange);border-right:1px solid var(--orange)}
+.axis .lbl{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.15em;
+  color:var(--amber);writing-mode:vertical-rl}
+.axis .lbl.pos{top:10px}
+.axis .lbl.neg{bottom:10px;transform:translateX(-50%) rotate(180deg)}
+.tick{position:absolute;left:6px;right:6px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--orange);gap:6px}
+.tick::before,.tick::after{content:"";flex:1;height:1px;background:rgba(242,100,0,.4)}
+.tick.zero span{color:var(--paper);font-weight:700}
+
+/* ---- divergence stamp: the signature moment ---- */
+.dstamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;
+  display:none;flex-direction:column;align-items:center;gap:3px;
+  border:3px solid var(--red-hi);background:var(--bg);padding:14px 30px;
+  box-shadow:0 0 16px rgba(226,40,15,.65),inset 0 0 14px rgba(226,40,15,.25)}
+.dstamp .kj{font-family:var(--jp);font-weight:800;font-size:52px;line-height:1;color:var(--red-hi);
+  text-shadow:0 0 6px currentColor,0 0 18px rgba(226,40,15,.55)}
+.dstamp .en{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.16em;color:var(--paper)}
+.dstamp .df{font-size:10px;letter-spacing:.1em;color:var(--amber)}
+.dstamp.active{display:flex;animation:blink 1s steps(1) infinite}
+
+/* ---- footer control rail ---- */
+footer.controls{flex:0 0 60px;display:flex;align-items:center;gap:14px;padding:0 18px;
+  border-top:2px solid var(--orange)}
+button.ctl{background:var(--bg);color:var(--orange);border:1px solid var(--orange);
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:8px 14px;cursor:pointer;
+  text-transform:uppercase}
+button.ctl:hover{background:var(--orange);color:var(--bg)}
+button.ctl:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+button.ctl.b-vega{border-color:var(--mint);color:var(--mint)}
+button.ctl.b-vega:hover{background:var(--mint);color:var(--bg)}
+button.ctl.b-altair{border-color:var(--red-hi);color:var(--red-hi)}
+button.ctl.b-altair:hover{background:var(--red-hi);color:var(--bg)}
+.dstat{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:11px;letter-spacing:.06em}
+.delta b{font-family:var(--cond);font-size:16px;color:var(--paper)}
+.chip{border:1px solid var(--green-map);color:var(--green-map);padding:4px 10px;font-weight:700}
+.chip.active{background:var(--red-hi);border-color:var(--red-hi);color:var(--bg);
+  animation:blink .5s steps(1) infinite}
+
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .dstamp.active,.chip.active{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+ <header class="titlebar" role="banner">
+   <div class="mon-stamp">照合中<small>MONITOR</small></div>
+   <div class="ttl">
+     <h1>SOLENOID DIVERGENCE CHART</h1>
+     <div class="sub">KESTREL·4 // COMPARATIVE WAVEFORM ANALYSIS</div>
+   </div>
+   <div class="meta">
+     CODE:<b>081</b> &nbsp;FILE:KESTREL_WAVE<br>
+     EX_MODE:CMP &nbsp;PRIORITY:B++<br>
+     DIV_EVENTS:<b id="evtCount">000</b>
+   </div>
+ </header>
+
+ <main class="chart" aria-label="Dual solenoid waveform comparison">
+
+   <section class="panel" id="panelVega" role="img" aria-label="Vega one field waveform">
+     <svg class="grid" id="gridVega"></svg>
+     <canvas id="cvVega"></canvas>
+     <div class="phead vega"><div class="obj">OBJECT: VEGA·1 CORE</div>SUBTYPE: PRIMARY CONSENSUS</div>
+     <div class="pread vega">FIELD<b id="valVega">+00</b></div>
+   </section>
+
+   <div class="axis" role="img" aria-label="Field scale from positive one hundred to negative one hundred">
+     <div class="lbl pos">FIELD POSITIVE</div>
+     <div class="tick" style="top:8%"><span>+100</span></div>
+     <div class="tick" style="top:29%"><span>+50</span></div>
+     <div class="tick zero" style="top:50%"><span>±0</span></div>
+     <div class="tick" style="top:71%"><span>-50</span></div>
+     <div class="tick" style="top:92%"><span>-100</span></div>
+     <div class="lbl neg">FIELD NEGATIVE</div>
+   </div>
+
+   <section class="panel" id="panelAltair" role="img" aria-label="Altair two field waveform">
+     <svg class="grid" id="gridAltair"></svg>
+     <canvas id="cvAltair"></canvas>
+     <div class="phead altair"><div class="obj">OBJECT: ALTAIR·2 CORE</div>SUBTYPE: SECONDARY CONSENSUS</div>
+     <div class="pread altair">FIELD<b id="valAltair">+00</b></div>
+   </section>
+
+   <div class="dstamp" id="dstamp">
+     <div class="kj">乖離検出</div>
+     <div class="en">DIVERGENCE DETECTED</div>
+     <div class="df">&Delta;FIELD:<span id="dfval">000</span></div>
+   </div>
+
+ </main>
+
+ <footer class="controls" role="group" aria-label="Perturbation controls">
+   <button class="ctl b-vega" id="btnVega">INJECT · VEGA·1</button>
+   <button class="ctl b-altair" id="btnAltair">INJECT · ALTAIR·2</button>
+   <button class="ctl" id="btnSync">RESYNC BASELINE</button>
+   <div class="dstat" aria-live="polite">
+     <span class="delta">&Delta;FIELD <b id="deltaLive">000</b></span>
+     <span class="chip" id="statusChip">NOMINAL</span>
+   </div>
+ </footer>
+
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* Mirrored A/B comparison chart: two consensus cores share a slow
+   common drift; noise and injected perturbation pull them apart.
+   The divergence stamp is the one bold moment in the piece — it
+   snaps in with a hard flicker exactly when |A-B| crosses the line,
+   and drops with the same instant snap when it settles back. */
+
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NS="http://www.w3.org/2000/svg";
+const elSvg=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+
+/* ---- DOM refs ---- */
+const panelVega=document.getElementById("panelVega");
+const panelAltair=document.getElementById("panelAltair");
+const gridVega=document.getElementById("gridVega");
+const gridAltair=document.getElementById("gridAltair");
+const cvVega=document.getElementById("cvVega");
+const cvAltair=document.getElementById("cvAltair");
+const valVegaEl=document.getElementById("valVega");
+const valAltairEl=document.getElementById("valAltair");
+const deltaLiveEl=document.getElementById("deltaLive");
+const dfvalEl=document.getElementById("dfval");
+const evtCountEl=document.getElementById("evtCount");
+const statusChip=document.getElementById("statusChip");
+const dstamp=document.getElementById("dstamp");
+const btnVega=document.getElementById("btnVega");
+const btnAltair=document.getElementById("btnAltair");
+const btnSync=document.getElementById("btnSync");
+
+/* ---- crosshair grid: orange "+" marks instead of gridlines ---- */
+function buildGrid(svg,w,h){
+  svg.setAttribute("viewBox",`0 0 ${w} ${h}`);
+  const step=58;
+  for(let y=step/2;y<h;y+=step){
+    for(let x=step/2;x<w;x+=step){
+      elSvg("line",{x1:x-5,y1:y,x2:x+5,y2:y,stroke:"#F26400","stroke-opacity":"0.35","stroke-width":"1"},svg);
+      elSvg("line",{x1:x,y1:y-5,x2:x,y2:y+5,stroke:"#F26400","stroke-opacity":"0.35","stroke-width":"1"},svg);
+    }
+  }
+}
+
+/* ---- data model ---- */
+const HIST=140;
+const vegaData=new Array(HIST).fill(0);
+const altairData=new Array(HIST).fill(0);
+let commonPhase=0;
+let vegaPerturb=0, altairPerturb=0;   /* decaying injected offsets */
+let divActive=false;
+let evtCount=0;
+let panelW=0, panelH=0;
+let ctxVega, ctxAltair;
+
+function fmt(v){
+  const r=Math.round(v);
+  return (r>=0?"+":"-")+String(Math.abs(r)).padStart(2,"0");
+}
+
+function stepValue(){
+  commonPhase+=0.09;
+  const common=Math.sin(commonPhase)*38+Math.sin(commonPhase*0.37)*14;
+  vegaPerturb*=0.88; altairPerturb*=0.88;
+  /* rare spontaneous jitter keeps the board alive without a click;
+     biased so the nominal, tracking state dominates */
+  if(Math.random()<0.007) vegaPerturb+=(Math.random()<0.5?1:-1)*(60+Math.random()*80);
+  if(Math.random()<0.004) altairPerturb+=(Math.random()<0.5?1:-1)*(60+Math.random()*80);
+  const noiseV=(Math.random()-0.5)*10;
+  const noiseA=(Math.random()-0.5)*10;
+  let vv=common*0.90+noiseV+vegaPerturb;
+  let av=common*0.85+noiseA+altairPerturb;
+  vv=Math.max(-100,Math.min(100,vv));
+  av=Math.max(-100,Math.min(100,av));
+  vegaData.shift(); vegaData.push(vv);
+  altairData.shift(); altairData.push(av);
+  return {vv,av};
+}
+
+function drawWave(ctx,data,w,h,color){
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=2;
+  ctx.shadowColor=color;
+  ctx.shadowBlur=6;
+  ctx.beginPath();
+  for(let i=0;i<data.length;i++){
+    const x=i/(data.length-1)*w;
+    const y=h/2-data[i]/100*(h/2-18);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+/* repeating-trigger guard: divActive is the lock, so this only
+   fires once per crossing, not every tick while above threshold */
+function triggerStampFlicker(){
+  dstamp.style.display="flex";
+  if(REDUCED){ dstamp.style.visibility="visible"; dstamp.classList.add("active"); return; }
+  let n=0;
+  const iv=setInterval(()=>{
+    dstamp.style.visibility=(n%2===0)?"hidden":"visible";
+    n++;
+    if(n>=5){ clearInterval(iv); dstamp.style.visibility="visible"; dstamp.classList.add("active"); }
+  },70);
+}
+
+function settleStamp(){
+  dstamp.classList.remove("active");
+  dstamp.style.display="none";
+  dstamp.style.visibility="visible";
+}
+
+function tick(){
+  const {vv,av}=stepValue();
+  drawWave(ctxVega,vegaData,panelW,panelH,"#52F29A");
+  drawWave(ctxAltair,altairData,panelW,panelH,"#E2280F");
+  valVegaEl.textContent=fmt(vv);
+  valAltairEl.textContent=fmt(av);
+
+  const diff=Math.abs(vv-av);
+  const diffTxt=String(Math.round(diff)).padStart(3,"0");
+  deltaLiveEl.textContent=diffTxt;
+  dfvalEl.textContent=diffTxt;
+
+  if(!divActive && diff>=48){
+    divActive=true;
+    evtCount++; evtCountEl.textContent=String(evtCount).padStart(3,"0");
+    statusChip.textContent="DIVERGENT";
+    statusChip.classList.add("active");
+    triggerStampFlicker();
+  }else if(divActive && diff<34){
+    divActive=false;
+    statusChip.textContent="NOMINAL";
+    statusChip.classList.remove("active");
+    settleStamp();
+  }
+}
+
+/* ---- controls: real interaction that changes visible state ---- */
+btnVega.addEventListener("click",()=>{
+  vegaPerturb+=(Math.random()<0.5?1:-1)*(75+Math.random()*55);
+});
+btnAltair.addEventListener("click",()=>{
+  altairPerturb+=(Math.random()<0.5?1:-1)*(75+Math.random()*55);
+});
+btnSync.addEventListener("click",()=>{
+  vegaPerturb=0; altairPerturb=0;
+});
+
+/* canvas pieces reload on resize rather than re-measuring live */
+addEventListener("resize",()=>location.reload());
+
+/* ---- START ---- */
+panelW=panelVega.clientWidth; panelH=panelVega.clientHeight;
+cvVega.width=panelW; cvVega.height=panelH;
+cvAltair.width=panelW; cvAltair.height=panelH;
+ctxVega=cvVega.getContext("2d");
+ctxAltair=cvAltair.getContext("2d");
+buildGrid(gridVega,panelW,panelH);
+buildGrid(gridAltair,panelW,panelH);
+for(let i=0;i<HIST;i++) stepValue();   /* seed history so traces aren't flat on load */
+setInterval(tick,120);
+</script>
+</body>
+</html>

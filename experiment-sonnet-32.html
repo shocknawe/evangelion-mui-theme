@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPERIMENT-32 · MULTI-GAUGE DASHBOARD</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box;}
+html,body{background:var(--bg);margin:0;height:100%;}
+body{
+  color:var(--mint);font-family:var(--mono);text-transform:uppercase;
+  min-height:100vh;overflow-x:hidden;letter-spacing:.03em;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+.stage{max-width:1180px;margin:0 auto;padding:18px 20px 28px;position:relative;}
+
+/* ---- header ---- */
+.topbar{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:end;
+  border-bottom:2px solid var(--orange);padding-bottom:10px;margin-bottom:6px;}
+.meta{font-size:11px;line-height:1.3;color:var(--orange);}
+.meta b{color:var(--amber);font-weight:400;}
+.title-block h1{font-family:var(--cond);font-weight:700;font-size:clamp(28px,4vw,44px);
+  margin:0;letter-spacing:.02em;color:var(--mint-hi);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4);}
+.title-block .sub{font-size:11px;color:var(--green-map);letter-spacing:.08em;}
+.sys-stamp{border:1px solid var(--mint);color:var(--mint);padding:4px 10px;border-radius:2px;
+  font-size:13px;height:fit-content;white-space:nowrap;
+  text-shadow:0 0 4px currentColor;}
+.sys-stamp.caution{border-color:var(--amber);color:var(--amber);}
+.sys-stamp.alert{border-color:var(--red-hi);color:var(--red-hi);
+  text-shadow:0 0 4px currentColor,0 0 14px rgba(226,40,15,.6);}
+.sys-stamp.blinking{animation:blink 1s steps(2,jump-none) infinite;}
+
+.hazard-strip{height:0;opacity:0;background:repeating-linear-gradient(45deg,var(--crimson) 0 10px,#000 10px 20px);
+  transition:none;margin-bottom:0;}
+.hazard-strip.show{height:6px;opacity:1;margin-bottom:8px;}
+
+/* ---- gauge grid ---- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;}
+.panel{background:var(--bg);border:1px solid var(--orange);padding:14px 14px 16px;position:relative;
+  box-shadow:0 0 6px rgba(242,100,0,.3),inset 0 0 8px rgba(242,100,0,.08);
+  display:flex;flex-direction:column;align-items:center;gap:10px;}
+.chamfer{clip-path:polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));}
+.panel-head{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.kanji{font-family:var(--jp);font-weight:800;font-size:26px;color:var(--paper);line-height:1;}
+.cap{font-size:10px;color:var(--green-map);letter-spacing:.12em;}
+
+/* stamps / badges */
+.stamp{border:1px solid currentColor;padding:2px 8px;border-radius:2px;font-size:12px;line-height:1.4;}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.stamp.metric{color:var(--mint);}
+.stamp.metric.caution{color:var(--amber);}
+.stamp.metric.alert{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.5);}
+.stamp.thresh{color:var(--amber);font-size:11px;background:var(--bg);}
+.blinking{animation:blink 1s steps(2,jump-none) infinite;}
+@keyframes blink{50%{opacity:.15;}}
+
+/* ---- radial arc gauge ---- */
+.radial-wrap{position:relative;width:180px;height:180px;}
+.radial-wrap svg{width:100%;height:100%;overflow:visible;}
+.radial-readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;pointer-events:none;}
+.rv{font-family:var(--cond);font-weight:700;font-size:40px;color:var(--mint-hi);line-height:1;
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4);}
+.rv.caution{color:var(--amber);}
+.rv.alert{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 14px rgba(226,40,15,.6);}
+.ru{font-size:11px;color:var(--green-map);letter-spacing:.1em;margin-top:2px;}
+.tmark-label{position:absolute;transform:translate(-50%,-50%);font-size:9px;padding:1px 5px;}
+
+/* ---- horizontal segmented bar ---- */
+.hbar-wrap{position:relative;width:100%;padding-top:14px;}
+.hbar{display:flex;gap:4px;height:52px;width:100%;}
+.hbar .seg{flex:1;border-radius:4px;background:var(--green-dim);opacity:.35;}
+.hbar .seg.on{opacity:1;}
+.hbar .seg.glow{box-shadow:0 0 8px currentColor;}
+.threshold-v{position:absolute;top:12px;bottom:0;width:2px;background:var(--amber);}
+.threshold-v .stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;}
+
+/* ---- vertical segmented column ---- */
+.vcol-wrap{position:relative;width:76px;height:220px;}
+.vcol{display:flex;flex-direction:column-reverse;gap:4px;width:100%;height:100%;}
+.vcol .seg{flex:1;border-radius:4px;background:var(--green-dim);opacity:.35;}
+.vcol .seg.on{opacity:1;}
+.vcol .seg.glow{box-shadow:0 0 8px currentColor;}
+.threshold-h{position:absolute;left:-10px;right:-10px;height:2px;background:var(--amber);}
+.threshold-h .stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;}
+
+/* ---- footer / controls ---- */
+.footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;
+  border-top:1px solid var(--green-map);padding-top:12px;flex-wrap:wrap;}
+.clock{font-size:13px;color:var(--amber);letter-spacing:.08em;}
+.rail{display:flex;gap:6px;}
+.rail button, .ack-btn{
+  font-family:var(--mono);text-transform:uppercase;background:var(--bg);color:var(--orange);
+  border:1px solid var(--orange);padding:6px 14px;border-radius:0;cursor:pointer;font-size:12px;
+  letter-spacing:.05em;}
+.rail button.active{background:var(--orange);color:var(--bg);}
+.ack-btn{color:var(--red-hi);border-color:var(--red-hi);}
+.ack-btn:disabled{color:var(--green-dim);border-color:var(--green-dim);cursor:default;}
+.rail button:focus-visible, .ack-btn:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px;}
+
+@media (prefers-reduced-motion:reduce){
+  .blinking,.sys-stamp.blinking{animation:none;}
+}
+@media (max-width:820px){
+  .grid{grid-template-columns:1fr;}
+  .topbar{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="hazard-strip" id="hazardStrip"></div>
+
+  <header class="topbar">
+    <div class="meta">
+      CODE:0417 <b>/</b> FILE:ENV_CTRL<br>
+      EX_MODE:<span id="metaMode">AUTO</span> <b>/</b> PRIORITY:B++
+    </div>
+    <div class="title-block">
+      <h1>KESTREL·4</h1>
+      <div class="sub">ENVIRONMENTAL CONTROL // DECK·7 SUPPORT ARRAY</div>
+    </div>
+    <div class="sys-stamp" id="sysStamp">SYS:NOMINAL</div>
+  </header>
+
+  <main class="grid" role="group" aria-label="ENVIRONMENTAL TELEMETRY PANELS">
+
+    <section class="panel chamfer" aria-label="CORE TEMPERATURE GAUGE">
+      <div class="panel-head"><span class="kanji">温度</span><span class="cap">CORE TEMPERATURE</span></div>
+      <div class="radial-wrap">
+        <svg id="radial-temp" viewBox="0 0 220 220"></svg>
+        <div class="radial-readout">
+          <div class="rv" id="rv-temp">050</div>
+          <div class="ru">DEG·C</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <div class="stamp metric" id="badge-temp">CORE TEMP:050</div>
+        <div class="stamp thresh">MAX:088</div>
+      </div>
+    </section>
+
+    <section class="panel chamfer" aria-label="COOLANT FLOW GAUGE">
+      <div class="panel-head"><span class="kanji">流量</span><span class="cap">COOLANT FLOW</span></div>
+      <div class="hbar-wrap">
+        <div class="hbar" id="hbar-flow"></div>
+        <div class="threshold-v" id="thresh-flow"><span class="stamp thresh">MIN:030</span></div>
+      </div>
+      <div class="badge-row">
+        <div class="stamp metric" id="badge-flow">COOLANT FLOW:065</div>
+      </div>
+    </section>
+
+    <section class="panel chamfer" aria-label="CHAMBER PRESSURE GAUGE">
+      <div class="panel-head"><span class="kanji">圧力</span><span class="cap">CHAMBER PRESSURE</span></div>
+      <div class="vcol-wrap">
+        <div class="vcol" id="vcol-pres"></div>
+        <div class="threshold-h" id="thresh-pres"><span class="stamp thresh">MAX:082</span></div>
+      </div>
+      <div class="badge-row">
+        <div class="stamp metric" id="badge-pres">CHAMBER PRESSURE:045</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="clock" id="clock">T+00:00:00</div>
+    <div class="rail" role="group" aria-label="TELEMETRY MODE">
+      <button type="button" class="mode-btn active" data-mode="AUTO">AUTO</button>
+      <button type="button" class="mode-btn" data-mode="STRESS">STRESS</button>
+    </div>
+    <button type="button" class="ack-btn" id="ackBtn" disabled>ACK ALERTS</button>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---------------- helpers ---------------- */
+const SVGNS="http://www.w3.org/2000/svg";
+const svgEl=(n,a,p)=>{const e=document.createElementNS(SVGNS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const $=(id)=>document.getElementById(id);
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const CAUTION_MARGIN=14;
+
+function polar(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}
+function annularSeg(cx,cy,rOut,rIn,a0,a1){
+  const p1=polar(cx,cy,rOut,a1),p2=polar(cx,cy,rOut,a0),p3=polar(cx,cy,rIn,a0),p4=polar(cx,cy,rIn,a1);
+  const big=(a1-a0)<=180?0:1;
+  return `M${p1.x} ${p1.y} A${rOut} ${rOut} 0 ${big} 0 ${p2.x} ${p2.y} L${p3.x} ${p3.y} A${rIn} ${rIn} 0 ${big} 1 ${p4.x} ${p4.y}Z`;
+}
+function pad3(n){return String(Math.round(n)).padStart(3,"0");}
+function rangeVal(range){return range[0]+Math.random()*(range[1]-range[0]);}
+
+/* ---------------- state ---------------- */
+/* three distinct gauge geometries reading one instrument panel:
+   radial arc (SVG sectors), horizontal segmented bar, vertical segmented column.
+   each gauge drives its own segment count independently at 8-15 steps/s. */
+const GAUGES={
+  temp:{name:"CORE TEMP",max:120,segN:24,threshold:88,dangerHigh:true,
+        nominal:[40,65],caution:[70,98],value:50,target:50,seg:0,alert:false,ackLock:false,
+        arcStart:-135,arcEnd:135},
+  flow:{name:"COOLANT FLOW",max:100,segN:20,threshold:30,dangerHigh:false,
+        nominal:[55,82],caution:[10,34],value:65,target:65,seg:0,alert:false,ackLock:false},
+  pres:{name:"CHAMBER PRESSURE",max:100,segN:20,threshold:82,dangerHigh:true,
+        nominal:[35,60],caution:[74,98],value:45,target:45,seg:0,alert:false,ackLock:false}
+};
+
+let mode="AUTO";
+
+/* ---------------- build: radial arc (SVG sectors) ---------------- */
+function buildRadial(g){
+  const svg=$("radial-temp");
+  const cx=110,cy=110,rOut=98,rIn=72,gap=1.6;
+  const span=(g.arcEnd-g.arcStart-gap*g.segN)/g.segN;
+  g.segs=[];
+  for(let i=0;i<g.segN;i++){
+    const a0=g.arcStart+i*(span+gap), a1=a0+span;
+    const p=svgEl("path",{d:annularSeg(cx,cy,rOut,rIn,a0,a1),fill:"var(--green-dim)",opacity:.35},svg);
+    g.segs.push(p);
+  }
+  /* threshold tick + boxed label riding the arc */
+  const tAngle=g.arcStart+(g.threshold/g.max)*(g.arcEnd-g.arcStart);
+  const t0=polar(cx,cy,rOut+2,tAngle), t1=polar(cx,cy,rOut+14,tAngle);
+  svgEl("line",{x1:t0.x,y1:t0.y,x2:t1.x,y2:t1.y,stroke:"var(--amber)","stroke-width":2},svg);
+  const lp=polar(cx,cy,rOut+26,tAngle);
+  const label=document.createElement("div");
+  label.className="stamp thresh tmark-label";
+  label.style.left=(lp.x/220*100)+"%";
+  label.style.top=(lp.y/220*100)+"%";
+  label.textContent="MAX:"+pad3(g.threshold);
+  $("radial-temp").parentElement.appendChild(label);
+}
+
+/* ---------------- build: horizontal / vertical segment banks ---------------- */
+function buildBar(container,n){
+  container.innerHTML="";
+  const segs=[];
+  for(let i=0;i<n;i++){const d=document.createElement("div");d.className="seg";container.appendChild(d);segs.push(d);}
+  return segs;
+}
+function placeThreshold(el,pct,axis){
+  if(axis==="x") el.style.left=pct+"%"; else el.style.bottom=pct+"%";
+}
+
+/* ---------------- zone / color logic ---------------- */
+function zoneOf(g){
+  if(g.dangerHigh){
+    if(g.value>=g.threshold) return "alert";
+    if(g.value>=g.threshold-CAUTION_MARGIN) return "caution";
+    return "nominal";
+  }
+  if(g.value<=g.threshold) return "alert";
+  if(g.value<=g.threshold+CAUTION_MARGIN) return "caution";
+  return "nominal";
+}
+function zoneColor(z){return z==="alert"?"var(--red-hi)":z==="caution"?"var(--amber)":"var(--mint)";}
+
+/* ---------------- paint (stepped, whole-segment redraw) ---------------- */
+function paint(key,g){
+  const z=zoneOf(g), col=zoneColor(z);
+  if(key==="temp"){
+    g.segs.forEach((p,i)=>{
+      if(i<g.seg){p.setAttribute("fill",col);p.setAttribute("opacity",1);
+        p.style.filter=z==="alert"?"drop-shadow(0 0 5px var(--red-hi))":"none";}
+      else{p.setAttribute("fill","var(--green-dim)");p.setAttribute("opacity",.35);p.style.filter="none";}
+    });
+  }else{
+    g.segs.forEach((d,i)=>{
+      if(i<g.seg){d.classList.add("on");d.style.background=col;d.style.color=col;
+        d.classList.toggle("glow",z==="alert");}
+      else{d.classList.remove("on","glow");d.style.background="var(--green-dim)";d.style.color="";}
+    });
+  }
+}
+
+/* ---------------- badges / status stamps ---------------- */
+function updateBadge(key,g){
+  const z=zoneOf(g);
+  const badge=$("badge-"+key);
+  const suffix=(g.alert&&g.ackLock)?" ACK":"";
+  badge.textContent=g.name+":"+pad3(g.value)+suffix;
+  badge.classList.remove("caution","alert");
+  if(z!=="nominal") badge.classList.add(z);
+  if(key==="temp"){
+    const rv=$("rv-temp");
+    rv.textContent=pad3(g.value);
+    rv.classList.remove("caution","alert");
+    if(z!=="nominal") rv.classList.add(z);
+  }
+  const shouldBlink=g.alert&&!g.ackLock&&!REDUCED;
+  badge.classList.toggle("blinking",shouldBlink);
+}
+
+function updateSysStamp(){
+  const list=Object.values(GAUGES);
+  const anyAlert=list.some(g=>g.alert);
+  const anyCaution=list.some(g=>zoneOf(g)==="caution");
+  const stamp=$("sysStamp");
+  stamp.classList.remove("caution","alert","blinking");
+  if(anyAlert){
+    stamp.textContent="SYS:ALERT";stamp.classList.add("alert");
+    const anyUnacked=list.some(g=>g.alert&&!g.ackLock);
+    if(anyUnacked&&!REDUCED) stamp.classList.add("blinking");
+  }else if(anyCaution){
+    stamp.textContent="SYS:CAUTION";stamp.classList.add("caution");
+  }else{
+    stamp.textContent="SYS:NOMINAL";
+  }
+  $("hazardStrip").classList.toggle("show",anyAlert);
+  const anyUnackedNow=list.some(g=>g.alert&&!g.ackLock);
+  $("ackBtn").disabled=!anyUnackedNow;
+}
+
+/* ---------------- alert edge detection (locked, one-shot per crossing) ---------------- */
+function evaluateAlert(g){
+  const inAlert=g.dangerHigh?g.value>=g.threshold:g.value<=g.threshold;
+  if(inAlert&&!g.alert){g.alert=true;g.ackLock=false;}       /* rising edge: arm blink once */
+  else if(!inAlert&&g.alert){g.alert=false;g.ackLock=false;} /* falling edge: reset lock */
+}
+
+/* ---------------- drift + render ticks ---------------- */
+function drift(){
+  const nominalProb=mode==="STRESS"?0.55:0.85; /* nominal stays dominant even under stress test */
+  Object.values(GAUGES).forEach(g=>{
+    g.target=Math.random()<nominalProb?rangeVal(g.nominal):rangeVal(g.caution);
+  });
+}
+function renderTick(){
+  Object.entries(GAUGES).forEach(([key,g])=>{
+    const diff=g.target-g.value;
+    const step=Math.sign(diff)*Math.min(Math.abs(diff),g.max*0.025);
+    g.value=Math.max(0,Math.min(g.max,g.value+step));
+    const newSeg=Math.max(0,Math.min(g.segN,Math.round(g.value/g.max*g.segN)));
+    if(newSeg!==g.seg){g.seg=newSeg;paint(key,g);}
+    evaluateAlert(g);
+    updateBadge(key,g);
+  });
+  updateSysStamp();
+}
+
+/* ---------------- clock (data keeps ticking even when idle) ---------------- */
+let missionSeconds=0;
+function tickClock(){
+  missionSeconds++;
+  const h=String(Math.floor(missionSeconds/3600)).padStart(2,"0");
+  const m=String(Math.floor(missionSeconds/60)%60).padStart(2,"0");
+  const s=String(missionSeconds%60).padStart(2,"0");
+  $("clock").textContent=`T+${h}:${m}:${s}`;
+}
+
+/* ---------------- wiring ---------------- */
+function wireControls(){
+  document.querySelectorAll(".mode-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      mode=btn.dataset.mode;
+      $("metaMode").textContent=mode;
+    });
+  });
+  $("ackBtn").addEventListener("click",()=>{
+    Object.values(GAUGES).forEach(g=>{if(g.alert)g.ackLock=true;});
+    Object.entries(GAUGES).forEach(([key,g])=>updateBadge(key,g));
+    updateSysStamp();
+  });
+}
+
+/* ---- START ---- */
+buildRadial(GAUGES.temp);
+GAUGES.flow.segs=buildBar($("hbar-flow"),GAUGES.flow.segN);
+GAUGES.pres.segs=buildBar($("vcol-pres"),GAUGES.pres.segN);
+placeThreshold($("thresh-flow"),(GAUGES.flow.threshold/GAUGES.flow.max)*100,"x");
+placeThreshold($("thresh-pres"),(GAUGES.pres.threshold/GAUGES.pres.max)*100,"y");
+wireControls();
+drift();
+Object.entries(GAUGES).forEach(([key,g])=>{paint(key,g);updateBadge(key,g);});
+updateSysStamp();
+setInterval(drift,1600);
+setInterval(renderTick,90);
+setInterval(tickClock,1000);
+</script>
+</body>
+</html>

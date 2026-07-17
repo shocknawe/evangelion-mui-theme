@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-38 · KANJI HEADLINE MODAL</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--bg)}
+body{
+  text-transform:uppercase;
+  font-family:var(--mono);
+  color:var(--mint);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+/* backdrop: dim procedural readout behind the modal, no blur, just black */
+.floor{
+  position:fixed;inset:0;z-index:0;
+  background:
+    repeating-linear-gradient(90deg, rgba(60,156,108,.05) 0 1px, transparent 1px 42px),
+    repeating-linear-gradient(0deg, rgba(60,156,108,.05) 0 1px, transparent 1px 42px);
+}
+.floor-tag{
+  position:fixed;top:14px;left:18px;z-index:1;
+  font-size:11px;letter-spacing:.06em;color:var(--green-map);
+  line-height:1.3;
+}
+.floor-tag b{color:var(--orange)}
+.launch{
+  position:fixed;bottom:16px;left:18px;z-index:1;
+}
+button.ghost{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  background:var(--bg);color:var(--orange);border:1px solid var(--orange);
+  padding:6px 12px;cursor:pointer;text-transform:uppercase;
+}
+button.ghost:hover{background:var(--orange);color:var(--bg)}
+button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+
+/* ===== MODAL ===== double frame: thin outer, thick inner, small gap ===== */
+.modal-wrap{
+  position:relative;z-index:2;
+  width:min(720px, 92vw);
+  padding:10px;
+  border:1px solid var(--orange);           /* thin outer */
+}
+.modal{
+  border:4px solid var(--orange);           /* thick inner */
+  background:var(--bg);
+  padding:26px 28px 22px;
+  position:relative;
+}
+.modal[hidden]{display:none}
+
+/* header block: THE signature element. dominant, oversized, unmissable */
+.kanji-head{
+  text-align:center;
+  margin-bottom:14px;
+}
+.kanji-head .glyph{
+  font-family:var(--jp);
+  font-weight:800;
+  font-size:clamp(64px, 13vw, 108px);
+  line-height:1;
+  color:var(--orange);
+  text-shadow:0 0 4px currentColor, 0 0 16px rgba(242,100,0,.45);
+  letter-spacing:.02em;
+}
+.bars{
+  width:min(420px,86%);
+  margin:10px auto 8px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.bars i{
+  display:block;height:6px;background:var(--teal);
+  box-shadow:0 0 6px rgba(12,108,128,.6);
+}
+.bars i.thin{height:3px;opacity:.85}
+.kanji-head .cap{
+  font-size:12px;letter-spacing:.24em;color:var(--teal);
+  text-shadow:0 0 4px rgba(12,108,128,.5);
+}
+
+/* metadata under header */
+.meta{
+  display:flex;flex-wrap:wrap;gap:4px 22px;
+  justify-content:center;
+  font-size:11px;color:var(--orange);letter-spacing:.05em;
+  line-height:1.35;border-top:1px solid var(--green-dim);border-bottom:1px solid var(--green-dim);
+  padding:8px 4px;margin-bottom:20px;
+}
+.meta span b{color:var(--amber);font-weight:400}
+
+/* corner stamps */
+.stamp-row{
+  position:absolute;top:12px;right:14px;
+}
+.stamp{
+  font-size:11px;letter-spacing:.1em;
+  border:1px solid var(--red-hi);color:var(--red-hi);
+  padding:3px 8px;
+  background:var(--bg);
+}
+.stamp.blinking{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.stamp.settled{opacity:1}
+
+/* central focal element: mint panel with giant numeral */
+.focal-wrap{display:flex;justify-content:center;margin:8px 0 22px}
+.focal{
+  background:var(--mint);
+  color:var(--bg);
+  width:180px;height:180px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  clip-path:polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  position:relative;
+}
+.focal .num{
+  font-family:var(--cond);font-weight:700;font-size:88px;line-height:1;
+}
+.focal .sub{
+  font-size:10px;letter-spacing:.12em;margin-top:4px;
+}
+.focal-label{
+  text-align:center;font-size:11px;color:var(--mint);letter-spacing:.14em;margin-top:-14px;margin-bottom:18px;
+}
+
+/* footer controls */
+.foot{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  border-top:1px solid var(--green-dim);padding-top:14px;
+}
+.foot .id{font-size:10px;color:var(--green-map);letter-spacing:.08em}
+.foot .btns{display:flex;gap:8px}
+button.act{
+  font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.06em;
+  background:var(--bg);color:var(--mint);border:1px solid var(--mint);
+  padding:8px 16px;cursor:pointer;text-transform:uppercase;
+}
+button.act:hover{background:var(--mint);color:var(--bg)}
+button.act.deny{color:var(--red-hi);border-color:var(--red-hi)}
+button.act.deny:hover{background:var(--red-hi);color:var(--bg)}
+
+/* verdict flash region — reuses focal slot after resolution */
+.verdict{
+  font-family:var(--cond);font-weight:700;font-size:22px;letter-spacing:.04em;
+  text-align:center;
+}
+.verdict.approve{color:var(--mint)}
+.verdict.deny{color:var(--red-hi)}
+
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+@media (max-width:520px){
+  .meta{font-size:10px;gap:3px 12px}
+  .focal{width:140px;height:140px}
+  .focal .num{font-size:64px}
+}
+</style>
+</head>
+<body>
+
+<div class="floor" aria-hidden="true"></div>
+<div class="floor-tag" aria-hidden="true">
+  KESTREL·4 ARBITRATION LAYER<br>
+  NODE: <b>VEGA·1</b> / <b>ALTAIR·2</b> / <b>DENEB·3</b><br>
+  QUORUM WATCH — STANDBY
+</div>
+<div class="launch">
+  <button class="ghost" id="reopenBtn" type="button">RECALL MODAL</button>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-wrap">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="mHead" aria-describedby="mMeta" id="modal">
+    <div class="stamp-row">
+      <span class="stamp blinking" id="stamp">審議中</span>
+    </div>
+
+    <!-- signature: kanji headline + teal double-bars + EN caption -->
+    <div class="kanji-head">
+      <div class="glyph">審議</div>
+      <div class="bars" aria-hidden="true"><i></i><i class="thin"></i></div>
+      <div class="cap">DELIBERATION IN PROGRESS</div>
+    </div>
+
+    <div class="meta" id="mMeta">
+      <span>CASE:<b>KL4-0091</b></span>
+      <span>UNIT:<b>UNIT-07</b></span>
+      <span>QUORUM:<b>3/3</b></span>
+      <span>PRIORITY:<b>AA-</b></span>
+    </div>
+
+    <div class="focal-wrap">
+      <div class="focal" id="focal">
+        <div class="num" id="focalNum">2</div>
+        <div class="sub" id="focalSub">OF 3 SEALED</div>
+      </div>
+    </div>
+    <div class="focal-label" id="focalLabel">CANDIDATE SLOT · UNIT-07 REROUTE</div>
+
+    <h2 id="mHead" style="position:absolute;left:-9999px">Arbitration deliberation modal</h2>
+
+    <div class="foot">
+      <span class="id">REF: ARB/KL4·0091 — KESTREL·4</span>
+      <div class="btns">
+        <button class="act deny" id="denyBtn" type="button">否決 DENY</button>
+        <button class="act" id="approveBtn" type="button">承認 APPROVE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* zero-size viewport guard — must run before anything reads geometry */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- state ---- */
+const modal      = document.getElementById("modal");
+const stampEl     = document.getElementById("stamp");
+const focalEl     = document.getElementById("focal");
+const focalNum    = document.getElementById("focalNum");
+const focalSub    = document.getElementById("focalSub");
+const focalLabel  = document.getElementById("focalLabel");
+const approveBtn  = document.getElementById("approveBtn");
+const denyBtn     = document.getElementById("denyBtn");
+const reopenBtn   = document.getElementById("reopenBtn");
+
+let sealed = 2;              // votes already in, out of 3 — ticks up mechanically
+let resolveLock = false;     // repeating-trigger guard: resolution is one-shot per open
+let tickTimer = null;
+
+/* ---- mechanical vote-tick: quorum count advances in hard steps, no easing ---- */
+function startTicking(){
+  stopTicking();
+  tickTimer = setInterval(()=>{
+    if(resolveLock) return;
+    if(sealed < 3){
+      sealed += 1;
+      focalNum.textContent = String(sealed);
+      focalSub.textContent = sealed>=3 ? "QUORUM REACHED" : (sealed)+" OF 3 SEALED";
+    }
+    if(sealed >= 3){
+      stopTicking();
+    }
+  }, 2200);
+}
+function stopTicking(){
+  if(tickTimer){ clearInterval(tickTimer); tickTimer=null; }
+}
+
+/* ---- resolve: single verdict swap, snap not fade ---- */
+function resolve(kind){
+  if(resolveLock) return;      /* guard against double-fire from rapid clicks */
+  resolveLock = true;
+  stopTicking();
+  if(kind === "approve"){
+    focalEl.style.background = "var(--mint)";
+    focalEl.innerHTML = '<div class="verdict approve">承認<br>APPROVED</div>';
+    stampEl.textContent = "確定";
+    stampEl.classList.remove("blinking");
+    stampEl.style.color = "var(--mint)";
+    stampEl.style.borderColor = "var(--mint)";
+  } else {
+    focalEl.style.background = "var(--red)";
+    focalEl.innerHTML = '<div class="verdict deny" style="color:#0A0A0A">否決<br>DENIED</div>';
+    stampEl.textContent = "却下";
+    stampEl.classList.remove("blinking");
+    stampEl.style.color = "var(--red-hi)";
+    stampEl.style.borderColor = "var(--red-hi)";
+  }
+  focalLabel.textContent = "RESULT LOGGED · KESTREL·4 ARCHIVE";
+}
+
+function resetModal(){
+  resolveLock = false;
+  sealed = 2;
+  focalEl.style.background = "var(--mint)";
+  focalEl.innerHTML = '<div class="num" id="focalNum">2</div><div class="sub" id="focalSub">2 OF 3 SEALED</div>';
+  focalLabel.textContent = "CANDIDATE SLOT · UNIT-07 REROUTE";
+  stampEl.textContent = "審議中";
+  stampEl.style.color = "";
+  stampEl.style.borderColor = "";
+  if(!REDUCED) stampEl.classList.add("blinking");
+  else stampEl.classList.add("settled");
+  modal.hidden = false;
+  startTicking();
+}
+
+/* ---- wiring ---- */
+approveBtn.addEventListener("click", ()=>resolve("approve"));
+denyBtn.addEventListener("click", ()=>resolve("deny"));
+reopenBtn.addEventListener("click", resetModal);
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape" && !modal.hidden) modal.hidden = true;
+});
+
+/* ---- START ---- */
+if(REDUCED){
+  stampEl.classList.remove("blinking");
+  stampEl.classList.add("settled");
+} else {
+  startTicking();
+}
+</script>
+</body>
+</html>

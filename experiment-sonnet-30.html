@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-30 · DANGER SPLASH OVERLAY</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--mint);font-family:var(--mono);
+  text-transform:uppercase;letter-spacing:.03em;overflow-x:hidden}
+/* CRT pass — phosphor scan + vignette, present on every dark screen */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---------- quiet backdrop: idle station console, revealed once ack'd ---------- */
+.deck{padding:24px;max-width:760px}
+.topbar{display:flex;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.tag{border:1px solid var(--orange);color:var(--orange);padding:4px 10px;font-size:12px}
+.panel{border:1px solid var(--orange);padding:16px 20px;
+  box-shadow:0 0 6px rgba(242,100,0,.35),inset 0 0 6px rgba(242,100,0,.12)}
+.panel p{margin:4px 0;font-size:13px;letter-spacing:.05em;color:var(--orange)}
+.panel p#clock{color:var(--mint);font-size:20px;margin-top:10px}
+.ctrl{margin-top:22px;background:var(--bg);color:var(--mint);border:1px solid var(--mint);
+  padding:10px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;cursor:pointer}
+.ctrl:hover{background:var(--mint);color:var(--bg)}
+.ctrl:focus-visible{outline:2px dashed var(--amber);outline-offset:3px}
+
+/* ---------- alert overlay: full-bleed danger splash ---------- */
+.overlay{position:fixed;inset:0;z-index:200;background:var(--red-hi);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.overlay[hidden]{display:none}
+.overlay.phase-b{background:#1a0000} /* hard strobe: field flips, never a fade */
+
+.stripe{position:absolute;left:0;right:0;height:10px;
+  background:repeating-linear-gradient(-45deg,#000 0 10px,var(--crimson) 10px 20px)}
+.stripe.top{top:0} .stripe.bottom{bottom:0}
+
+.chip{position:absolute;background:#fff;color:#000;border:1px solid #000;
+  padding:4px 12px;font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.06em}
+.overlay.phase-b .chip{background:#000;color:#fff;border-color:#fff}
+.chip.tl{top:22px;left:22px} .chip.br{bottom:22px;right:22px}
+
+.kanji{border:2px solid #fff;background:#000;padding:6px 22px;margin:14px 0;
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.kanji .jp{font-family:var(--jp);font-weight:800;font-size:2.4rem;line-height:1;color:var(--red-hi);
+  text-shadow:0 0 4px currentColor,0 0 14px rgba(226,40,15,.55)}
+.kanji .cap{font-family:var(--mono);font-size:11px;color:#fff;letter-spacing:.1em}
+
+.band{width:100%;background:#000;padding:.35em 0;margin:10px 0}
+.word{font-family:var(--cond);font-weight:800;font-size:clamp(3rem,17vw,11rem);
+  letter-spacing:-.02em;line-height:.92;color:var(--red-hi);
+  text-shadow:0 0 6px currentColor,0 0 28px rgba(226,40,15,.65)}
+
+.meta{border:1px solid #000;background:#fff;color:#000;display:inline-block;
+  padding:5px 14px;font-size:12px;letter-spacing:.06em;margin-top:8px}
+.overlay.phase-b .meta{background:#000;color:#fff;border-color:#fff}
+
+.ack{margin-top:26px;background:#000;color:#fff;border:2px solid #fff;
+  padding:12px 26px;font-family:var(--cond);font-weight:800;font-size:16px;
+  letter-spacing:.06em;cursor:pointer}
+.ack:hover{background:#fff;color:#000}
+.ack:focus-visible{outline:3px dashed var(--mint);outline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+  .overlay.phase-b{background:var(--red-hi)}
+  .overlay.phase-b .chip,.overlay.phase-b .meta{background:#fff;color:#000;border-color:#000}
+}
+</style>
+</head>
+<body>
+
+<main class="deck">
+  <div class="topbar">
+    <span class="tag">KESTREL·4 // STATION STATUS</span>
+    <span class="tag">CORE:ALTAIR·2</span>
+  </div>
+  <div class="panel">
+    <p>SECTOR:07-C</p>
+    <p>UNIT:07 · STANDBY</p>
+    <p>HULL:INTEGRITY-NOMINAL</p>
+    <p id="clock">T+00:00:00</p>
+  </div>
+  <button id="retrigger" class="ctrl">RE-ARM CRITICAL ALERT</button>
+</main>
+
+<div id="overlay" class="overlay" role="alertdialog" aria-modal="true"
+     aria-label="KESTREL·4 CRITICAL ALERT — HULL BREACH" aria-describedby="ov-desc" tabindex="-1">
+  <span class="stripe top"></span>
+  <span class="stripe bottom"></span>
+  <span class="chip tl">ALERT</span>
+  <span class="chip br">ALERT</span>
+
+  <span class="kanji"><span class="jp">警戒</span><span class="cap">VIGILANCE</span></span>
+  <div class="band"><span class="word">BREACH</span></div>
+  <span class="kanji"><span class="jp">退避</span><span class="cap">EVACUATE</span></span>
+
+  <p id="ov-desc" class="meta">SOURCE:KESTREL·4 / CORE:ALTAIR·2 / SECTOR:07-C / CODE:889</p>
+  <button id="ack" class="ack">ACKNOWLEDGE // ESC</button>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+function pad(n){return String(n).padStart(2,"0");}
+
+/* ---- state ---- */
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const overlay=document.getElementById("overlay");
+const ackBtn=document.getElementById("ack");
+const retriggerBtn=document.getElementById("retrigger");
+const clockEl=document.getElementById("clock");
+let alertActive=false;      /* repeating-trigger guard */
+let strobeTimer=null;
+let strobeOn=false;
+let elapsed=0;
+
+/* ---- alert overlay control (state snap, not eased) ---- */
+function startStrobe(){
+  if(REDUCED||strobeTimer)return;               /* reduced-motion: no strobe, static readable state */
+  strobeTimer=setInterval(()=>{
+    strobeOn=!strobeOn;
+    overlay.classList.toggle("phase-b",strobeOn);
+  },600);                                        /* ~1.6Hz hard blink, mechanical */
+}
+function stopStrobe(){
+  if(strobeTimer){clearInterval(strobeTimer);strobeTimer=null;}
+  overlay.classList.remove("phase-b");
+  strobeOn=false;
+}
+function showAlert(){
+  if(alertActive)return;                          /* guard: no overlapping timers */
+  alertActive=true;
+  overlay.hidden=false;
+  retriggerBtn.disabled=true;
+  startStrobe();
+  ackBtn.focus();
+}
+function hideAlert(){
+  if(!alertActive)return;
+  alertActive=false;
+  overlay.hidden=true;
+  retriggerBtn.disabled=false;
+  stopStrobe();
+  retriggerBtn.focus();
+}
+
+/* ---- wiring ---- */
+ackBtn.addEventListener("click",hideAlert);
+retriggerBtn.addEventListener("click",showAlert);
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape")hideAlert();
+});
+setInterval(()=>{                                 /* keep the backdrop alive even while idle */
+  elapsed++;
+  const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
+  clockEl.textContent="T+"+pad(h)+":"+pad(m)+":"+pad(s);
+},1000);
+
+/* ---- START ---- */
+showAlert();
+</script>
+</body>
+</html>

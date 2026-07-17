@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXPERIMENT-27 · FAN-OUT DISTRIBUTION PRINT</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--blueprint);}
+/* light/blueprint theme: dark ink on pale paper — no CRT pass, no glow, per spec */
+body{
+  color:var(--bg);font-family:var(--mono);text-transform:uppercase;
+  overflow:hidden;position:relative;letter-spacing:.04em;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---- corner-pinned metadata, mono KEY:VALUE ---- */
+.meta{position:fixed;top:14px;left:16px;font-size:11px;line-height:1.3;color:var(--bg);z-index:5;}
+.meta b{color:var(--red);}
+.clock{position:fixed;bottom:14px;left:16px;font-size:11px;color:var(--bg);z-index:5;}
+.clock span{color:var(--red);}
+
+header.hdr{position:fixed;top:12px;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:5;}
+.hdr-jp{font-family:var(--jp);font-weight:800;font-size:32px;color:var(--bg);line-height:1;}
+.hdr-rule{width:170px;height:2px;background:var(--bg);margin-top:6px;}
+.hdr-en{font-size:11px;letter-spacing:.2em;color:var(--bg);margin-top:6px;}
+
+/* boxed status stamp — outline idle, solid inversion when active/complete */
+.stamp{position:fixed;top:14px;right:16px;z-index:5;border:1px solid var(--bg);color:var(--bg);
+  padding:4px 10px;font-size:11px;line-height:1.3;text-align:right;}
+.stamp b{display:block;font-size:13px;}
+.stamp.active{border-color:var(--red-hi);color:var(--red-hi);animation:blink 1s steps(1) infinite;}
+.stamp.done{background:var(--red);border-color:var(--red);color:var(--paper);}
+@keyframes blink{50%{opacity:0;}}
+
+/* ---- stage: source chip + densifying columns, tree fan-out ---- */
+.stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.diagram{position:relative;width:min(94vw,1180px);height:min(64vh,600px);
+  display:grid;grid-template-columns:minmax(140px,190px) repeat(3,1fr);grid-template-rows:1fr auto;}
+
+.source{grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;z-index:2;align-self:center;}
+.source .lbl{background:var(--bg);color:var(--paper);font-family:var(--cond);font-weight:700;
+  font-size:clamp(20px,2.6vw,28px);padding:10px 16px;letter-spacing:.03em;}
+.source .cap{font-size:9px;color:var(--bg);text-align:center;max-width:150px;}
+
+.col{grid-row:1;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:2;}
+#col1{grid-column:2;} #col2{grid-column:3;} #col3{grid-column:4;}
+
+.cell{border:1.5px solid var(--bg);border-radius:2px;background:transparent;transition:none;}
+#col1 .cell{width:52px;height:28px;}
+#col2 .cell{width:40px;height:20px;}
+#col3 .cell{width:28px;height:13px;}
+.cell.charged{background:var(--red);border-color:var(--red);}
+
+.caption{grid-row:2;font-size:9px;text-align:center;padding-top:12px;color:var(--bg);}
+.cap-source{grid-column:1;}
+#capcol1{grid-column:2;} #capcol2{grid-column:3;} #capcol3{grid-column:4;}
+
+svg.wires{position:absolute;left:0;top:0;width:100%;height:100%;grid-column:1/5;grid-row:1/3;
+  pointer-events:none;z-index:1;}
+
+/* ---- controls ---- */
+.controls{position:fixed;bottom:20px;right:16px;display:flex;align-items:center;gap:14px;z-index:5;}
+.readout{border:1px solid var(--bg);color:var(--bg);padding:5px 12px;font-size:12px;min-width:150px;text-align:center;}
+button{
+  font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  background:var(--blueprint);color:var(--bg);border:2px solid var(--bg);
+  padding:10px 20px;font-size:13px;cursor:pointer;
+}
+button:hover{background:var(--bg);color:var(--paper);}
+button:disabled{color:var(--green-dim);border-color:var(--green-dim);cursor:default;background:var(--blueprint);}
+button:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+@media (prefers-reduced-motion:reduce){
+  .stamp.active{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="meta" aria-hidden="true">
+  <div><b>CODE:</b>052</div>
+  <div><b>FILE:</b>CRYO_FANOUT</div>
+  <div><b>EX_MODE:</b>PRINT</div>
+  <div><b>PRIORITY:</b>B+</div>
+  <div><b>SUBJECT:</b>UNIT-07</div>
+</div>
+<div class="clock" aria-hidden="true">T+<span id="clk">00:00</span> · KESTREL·4</div>
+
+<header class="hdr">
+  <div class="hdr-jp">分配</div>
+  <div class="hdr-rule"></div>
+  <div class="hdr-en">DISTRIBUTION · FAN-OUT ALLOCATION PRINT</div>
+</header>
+
+<div class="stamp" id="stamp" role="status" aria-live="polite">
+  <b id="stampJp">待機</b><span id="stampEn">STANDBY</span>
+</div>
+
+<main class="stage">
+  <div class="diagram" id="diagram" role="group" aria-label="cryogen reserve fan-out distribution">
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="source" id="source">
+      <div class="lbl">VEGA·1</div>
+      <div class="cap">CRYOGEN RESERVE ALLOCATOR</div>
+    </div>
+    <div class="col" id="col1"></div>
+    <div class="col" id="col2"></div>
+    <div class="col" id="col3"></div>
+    <div class="caption cap-source">SOURCE</div>
+    <div class="caption" id="capcol1">STAGE 1 · 2 CELLS</div>
+    <div class="caption" id="capcol2">STAGE 2 · 4 CELLS</div>
+    <div class="caption" id="capcol3">STAGE 3 · 8 CELLS</div>
+  </div>
+</main>
+
+<div class="controls">
+  <div class="readout" id="readout">CHARGED: 0/14</div>
+  <button id="xferBtn">COMMIT TRANSFER</button>
+</div>
+
+<script>
+"use strict";
+
+/* zero-size viewport guard — background 0x0 tabs otherwise render broken SVG */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---------- helpers ---------- */
+const el=(n,a,p)=>{
+  const s=document.createElementNS("http://www.w3.org/2000/svg",n);
+  for(const k in a)s.setAttribute(k,a[k]);
+  if(p)p.appendChild(s);
+  return s;
+};
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- state ---------- */
+const COUNTS=[2,4,8]; /* densifying fan-out: 1(source) -> 2 -> 4 -> 8 */
+const colEls=[document.getElementById("col1"),document.getElementById("col2"),document.getElementById("col3")];
+const cellsByCol=[[],[],[]];
+const sourceEl=document.getElementById("source");
+const diagramEl=document.getElementById("diagram");
+const wiresSvg=document.getElementById("wires");
+const stampEl=document.getElementById("stamp");
+const stampJp=document.getElementById("stampJp");
+const stampEn=document.getElementById("stampEn");
+const readoutEl=document.getElementById("readout");
+const xferBtn=document.getElementById("xferBtn");
+const clk=document.getElementById("clk");
+
+let running=false;          /* repeating-trigger guard: blocks overlapping cycles */
+let chargeQueue=[];
+let wireForCell=new Map();
+let chargeIndex=0,teardownIndex=0;
+let chargeTimer=null,teardownTimer=null;
+let elapsed=0;
+
+/* ---------- build the cell columns ---------- */
+function buildColumns(){
+  colEls.forEach((colEl,ci)=>{
+    for(let i=0;i<COUNTS[ci];i++){
+      const cell=document.createElement("div");
+      cell.className="cell";
+      colEl.appendChild(cell);
+      cellsByCol[ci].push(cell);
+    }
+  });
+  chargeQueue=[...cellsByCol[0],...cellsByCol[1],...cellsByCol[2]];
+}
+
+/* ---------- draw hairline traces: source->stage1->stage2->stage3 ---------- */
+function drawWires(){
+  wiresSvg.innerHTML="";
+  wireForCell=new Map();
+  const box=diagramEl.getBoundingClientRect();
+  const centerOf=(e)=>{const b=e.getBoundingClientRect();
+    return [b.left+b.width/2-box.left,b.top+b.height/2-box.top];};
+  const link=(fromEl,toCell)=>{
+    const [x1,y1]=centerOf(fromEl),[x2,y2]=centerOf(toCell);
+    const line=el("line",{x1,y1,x2,y2,stroke:"#5C2020","stroke-width":1,opacity:.55},wiresSvg);
+    wireForCell.set(toCell,line);
+  };
+  cellsByCol[0].forEach(cell=>link(sourceEl,cell));
+  for(let ci=0;ci<2;ci++){
+    cellsByCol[ci].forEach((parentCell,i)=>{
+      link(parentCell,cellsByCol[ci+1][2*i]);
+      link(parentCell,cellsByCol[ci+1][2*i+1]);
+    });
+  }
+}
+
+/* ---------- boxed stamp ---------- */
+function setStamp(mode,jp,en){
+  stampEl.className="stamp "+mode;
+  stampJp.textContent=jp;
+  stampEn.textContent=en;
+}
+
+function setReadout(n){
+  readoutEl.textContent="CHARGED: "+n+"/"+chargeQueue.length;
+}
+
+/* ---------- stepped charge cascade (never eased — steps() grammar) ---------- */
+function chargeStep(){
+  if(chargeIndex>=chargeQueue.length){
+    clearInterval(chargeTimer);
+    setStamp("done","完了","COMPLETE");
+    setTimeout(beginTeardown,1600);
+    return;
+  }
+  const cell=chargeQueue[chargeIndex];
+  cell.classList.add("charged");
+  const wire=wireForCell.get(cell);
+  if(wire)wire.setAttribute("stroke","var(--red)"),wire.setAttribute("opacity",".9");
+  chargeIndex++;
+  setReadout(chargeIndex);
+}
+
+function beginTeardown(){
+  teardownIndex=chargeQueue.length-1;
+  teardownTimer=setInterval(teardownStep,100);
+}
+
+/* reverse cascade to black — loaders end by teardown, not fade */
+function teardownStep(){
+  if(teardownIndex<0){
+    clearInterval(teardownTimer);
+    finishCycle();
+    return;
+  }
+  const cell=chargeQueue[teardownIndex];
+  cell.classList.remove("charged");
+  const wire=wireForCell.get(cell);
+  if(wire)wire.setAttribute("stroke","#5C2020"),wire.setAttribute("opacity",".55");
+  teardownIndex--;
+  setReadout(teardownIndex+1);
+}
+
+function finishCycle(){
+  setStamp("","待機","STANDBY");
+  running=false;
+  xferBtn.disabled=false;
+}
+
+function initiateTransfer(){
+  if(running)return;                 /* guard against re-firing mid-cycle */
+  running=true;
+  xferBtn.disabled=true;
+  setStamp("active","送信中","TRANSFERRING");
+  chargeIndex=0;
+  setReadout(0);
+  if(REDUCED){
+    chargeQueue.forEach(cell=>{
+      cell.classList.add("charged");
+      const wire=wireForCell.get(cell);
+      if(wire)wire.setAttribute("stroke","var(--red)"),wire.setAttribute("opacity",".9");
+    });
+    setReadout(chargeQueue.length);
+    setStamp("done","完了","COMPLETE");
+    setTimeout(()=>{
+      chargeQueue.forEach(cell=>{
+        cell.classList.remove("charged");
+        const wire=wireForCell.get(cell);
+        if(wire)wire.setAttribute("stroke","#5C2020"),wire.setAttribute("opacity",".55");
+      });
+      setReadout(0);
+      finishCycle();
+    },1400);
+    return;
+  }
+  chargeTimer=setInterval(chargeStep,100); /* 10 steps/sec, mechanical stepped fill */
+}
+
+/* ---------- clock — screen stays alive even at idle ---------- */
+function tickClock(){
+  elapsed++;
+  const m=String(Math.floor(elapsed/60)).padStart(2,"0");
+  const s=String(elapsed%60).padStart(2,"0");
+  clk.textContent=m+":"+s;
+}
+
+xferBtn.addEventListener("click",initiateTransfer);
+window.addEventListener("resize",drawWires);
+
+/* ---- START ---- */
+buildColumns();
+
+drawWires();
+setReadout(0);
+setInterval(tickClock,1000);/* alive */
+</script>
+</body>
+</html>

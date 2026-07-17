@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-35 · ARCHIVE RETRIEVAL TERMINAL</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{
+  font-family:var(--mono);color:var(--amber);text-transform:uppercase;
+  position:relative;overflow:hidden;height:100vh;
+}
+/* CRT pass — scanlines + vignette, every dark experiment gets one */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+.frame{
+  position:relative;height:100%;display:flex;flex-direction:column;
+  padding:20px 26px;gap:8px;
+  clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%);
+  border:1px solid var(--amber-dim);
+}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+  border-bottom:2px solid var(--orange);padding-bottom:10px}
+.jp-block{display:flex;flex-direction:column;align-items:flex-start;flex:0 0 auto}
+.jp-block .kanji{font-family:var(--jp);font-weight:800;font-size:40px;line-height:1;color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(242,100,0,.4)}
+.jp-block .cap{font-size:10px;letter-spacing:.12em;color:var(--green-map);margin-top:2px}
+
+.title-block{flex:1;min-width:0;padding-top:2px}
+.title-block h1{margin:0;font-family:var(--cond);font-weight:700;font-size:22px;letter-spacing:.01em;
+  color:var(--orange);text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.35)}
+.title-block .sub{font-size:11px;color:var(--green-map);letter-spacing:.08em;margin-top:4px}
+
+.meta{flex:0 0 auto;text-align:left;font-size:11px;line-height:1.28;color:var(--orange);white-space:nowrap}
+.meta .row-kv b{color:var(--amber-dim);font-weight:400}
+.chip-time{
+  margin-top:8px;display:inline-block;background:var(--mint);color:var(--bg);
+  font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:2px;
+  transform:rotate(-2deg);
+}
+
+/* ---------- section rule ---------- */
+.section-head{display:flex;align-items:center;gap:10px;color:var(--amber-dim);
+  font-size:11px;letter-spacing:.1em;margin:2px 0}
+.section-head::before,.section-head::after{content:"";flex:1;border-top:1px dashed var(--amber-dim)}
+
+/* ---------- log buffer ---------- */
+.log{flex:1;overflow-y:auto;font-size:13px;padding-right:4px}
+.row{display:flex;align-items:baseline;gap:8px;padding:3px 0;opacity:0;transform:translateY(-2px)}
+.row.show{opacity:1;transform:none}
+.row .id{color:var(--amber);white-space:nowrap;flex:0 0 auto}
+.row .desc{color:var(--amber-dim);white-space:nowrap;flex:0 0 auto}
+.row .filler{flex:1 1 auto;overflow:hidden;white-space:nowrap;color:var(--amber-dim);letter-spacing:2px}
+.row .filler::after{content:"........................................................................."}
+.row .stat{flex:0 0 auto;min-width:96px;text-align:right;color:var(--amber-dim)}
+.row .stat.stamp{
+  border:1px solid var(--mint);color:var(--mint);padding:1px 7px;border-radius:2px;
+  font-size:11px;letter-spacing:.06em;
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4);
+}
+.row .stat.stamp.fill{
+  background:var(--mint);color:var(--bg);text-shadow:none;
+  box-shadow:0 0 6px rgba(82,242,154,.55),inset 0 0 4px rgba(82,242,154,.3);
+}
+.row.dim{opacity:.28;filter:grayscale(.5)}
+
+.promptline{color:var(--amber);font-size:13px;padding:6px 0 0}
+.cursor{display:inline-block;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){ .cursor{animation:none} }
+
+/* ---------- footer / controls ---------- */
+footer{border-top:2px solid var(--orange);padding-top:10px;display:flex;
+  align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.status{font-size:11px;color:var(--green-map);letter-spacing:.06em}
+
+[role="group"]{display:flex;gap:6px}
+button{
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-size:11px;
+  background:var(--bg);border:1px solid var(--orange);color:var(--orange);
+  padding:7px 13px;cursor:pointer;
+}
+button.active{background:var(--orange);color:var(--bg);box-shadow:0 0 6px rgba(242,100,0,.5)}
+button.replay{border-color:var(--mint);color:var(--mint)}
+button.replay.active,button.replay:active{background:var(--mint);color:var(--bg)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header>
+    <div class="jp-block"><span class="kanji">回収</span><span class="cap">RETRIEVAL</span></div>
+    <div class="title-block">
+      <h1>KESTREL·4 ARCHIVE ACCESS</h1>
+      <div class="sub" id="scopeLabel">TERMINAL·07 — RETRIEVAL BUFFER · SCOPE: ALL CORES</div>
+    </div>
+    <div class="meta">
+      <div class="row-kv"><b>CODE:</b>0417</div>
+      <div class="row-kv"><b>FILE:</b>ARC_KESTREL4</div>
+      <div class="row-kv"><b>EXTENTION:</b>2261</div>
+      <div class="row-kv"><b>EX_MODE:</b>RETRIEVE</div>
+      <div class="row-kv"><b>PRIORITY:</b>B++</div>
+      <div class="chip-time" id="clock">00:00:00</div>
+    </div>
+  </header>
+
+  <div class="section-head">ARCHIVE INDEX — SECTOR 4</div>
+
+  <div class="log" id="log" aria-live="polite"></div>
+
+  <div class="promptline">ARCHIVE&gt; <span class="cursor">&#9608;</span></div>
+
+  <footer>
+    <div class="status" id="status">BUFFER STATUS: STANDBY</div>
+    <div role="group" aria-label="Query scope">
+      <button type="button" class="scope active" data-core="ALL">ALL</button>
+      <button type="button" class="scope" data-core="VEGA·1">VEGA·1</button>
+      <button type="button" class="scope" data-core="ALTAIR·2">ALTAIR·2</button>
+      <button type="button" class="scope" data-core="DENEB·3">DENEB·3</button>
+    </div>
+    <button type="button" class="replay" id="replayBtn">REINITIATE RETRIEVAL</button>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* -------- helpers -------- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function pad2(n){ return n<10 ? "0"+n : ""+n; }
+
+/* -------- state / fiction data --------
+   record  -> LOCATED stamp (single file recovered)
+   archive -> RETRIEVED stamp (bundled block recovered)              */
+const ROWS = [
+  {id:"REC·1138", desc:"VEGA·1 TELEMETRY BLOCK 04",      core:"VEGA·1",   kind:"record"},
+  {id:"REC·0092", desc:"ALTAIR·2 UNIT-07 STATUS LOG",    core:"ALTAIR·2", kind:"record"},
+  {id:"ARC·0227", desc:"DENEB·3 SECTOR SCAN ARCHIVE",    core:"DENEB·3",  kind:"archive"},
+  {id:"REC·0451", desc:"VEGA·1 CYGNUS RELAY TRANSCRIPT", core:"VEGA·1",   kind:"record"},
+  {id:"ARC·0039", desc:"ALTAIR·2 LYRA ENV. BLOCK",       core:"ALTAIR·2", kind:"archive"},
+  {id:"REC·0880", desc:"DENEB·3 AQUILA MAINT. ENTRY",    core:"DENEB·3",  kind:"record"},
+  {id:"REC·2264", desc:"VEGA·1 CONSENSUS SNAPSHOT",      core:"VEGA·1",   kind:"record"},
+  {id:"ARC·0115", desc:"ALTAIR·2 NAVIGATION ARCHIVE",    core:"ALTAIR·2", kind:"archive"},
+  {id:"REC·0673", desc:"DENEB·3 UNIT-07 DIAGNOSTIC",     core:"DENEB·3",  kind:"record"},
+  {id:"ARC·0004", desc:"VEGA·1 POWER DIST. LOG",         core:"VEGA·1",   kind:"archive"},
+  {id:"REC·0921", desc:"ALTAIR·2 HULL INTEGRITY CHECK",  core:"ALTAIR·2", kind:"record"},
+  {id:"REC·0057", desc:"DENEB·3 CREW ROSTER FRAGMENT",   core:"DENEB·3",  kind:"record"},
+  {id:"ARC·3007", desc:"VEGA·1 FULL SYSTEM BACKUP",      core:"VEGA·1",   kind:"archive"},
+  {id:"REC·0408", desc:"ALTAIR·2 RETRIEVAL QUEUE TAIL",  core:"ALTAIR·2", kind:"record"}
+];
+
+const logEl = document.getElementById("log");
+const statusEl = document.getElementById("status");
+const scopeLabelEl = document.getElementById("scopeLabel");
+const clockEl = document.getElementById("clock");
+const replayBtn = document.getElementById("replayBtn");
+const scopeButtons = Array.prototype.slice.call(document.querySelectorAll(".scope"));
+
+let rowEls = [];
+let activeCore = "ALL";
+let teletypeTimer = null;
+let cascadeTimer = null;
+let running = false; /* repeating-trigger guard: blocks overlapping sequences */
+
+/* -------- building the buffer -------- */
+function buildRows(){
+  logEl.textContent = "";
+  rowEls = ROWS.map(function(r){
+    const el = document.createElement("div");
+    el.className = "row";
+    el.dataset.core = r.core;
+    el.innerHTML =
+      '<span class="id">'+r.id+'</span>'+
+      '<span class="desc">'+r.desc+'</span>'+
+      '<span class="filler"></span>'+
+      '<span class="stat"></span>';
+    logEl.appendChild(el);
+    return { el:el, stat:el.querySelector(".stat"), core:r.core, kind:r.kind };
+  });
+}
+
+function setStamp(r){
+  const label = r.kind === "archive" ? "RETRIEVED" : "LOCATED";
+  r.stat.textContent = label;
+  r.stat.className = "stat stamp fill";
+}
+
+/* -------- scope filter (real interaction, no animation) -------- */
+function applyScopeFilter(core){
+  activeCore = core;
+  scopeButtons.forEach(function(b){ b.classList.toggle("active", b.dataset.core === core); });
+  rowEls.forEach(function(r){ r.el.classList.toggle("dim", core !== "ALL" && r.core !== core); });
+  scopeLabelEl.textContent = "TERMINAL·07 — RETRIEVAL BUFFER · SCOPE: " +
+    (core === "ALL" ? "ALL CORES" : core);
+}
+
+/* -------- the retrieval sequence: teletype, then the mint cascade -------- */
+function runSequence(){
+  if(running) return;
+  running = true;
+  replayBtn.disabled = true;
+  if(teletypeTimer){ clearInterval(teletypeTimer); teletypeTimer = null; }
+  if(cascadeTimer){ clearInterval(cascadeTimer); cascadeTimer = null; }
+
+  rowEls.forEach(function(r){ r.el.classList.remove("show"); r.stat.textContent = ""; r.stat.className = "stat"; });
+  statusEl.textContent = "BUFFER STATUS: QUERYING…";
+
+  if(REDUCED){
+    rowEls.forEach(function(r){ r.el.classList.add("show"); r.stat.textContent = "OK"; setStamp(r); });
+    finishSequence();
+    return;
+  }
+
+  let i = 0;
+  teletypeTimer = setInterval(function(){
+    if(i >= rowEls.length){
+      clearInterval(teletypeTimer); teletypeTimer = null;
+      setTimeout(startCascade, 400);
+      return;
+    }
+    rowEls[i].el.classList.add("show");
+    rowEls[i].stat.textContent = "OK";
+    i++;
+  }, 130); /* teletype row cadence */
+}
+
+function startCascade(){
+  let j = 0;
+  cascadeTimer = setInterval(function(){
+    if(j >= rowEls.length){
+      clearInterval(cascadeTimer); cascadeTimer = null;
+      finishSequence();
+      return;
+    }
+    setStamp(rowEls[j]); /* mint LOCATED/RETRIEVED sweeps down the buffer */
+    j++;
+  }, 55); /* cascade stagger */
+}
+
+function finishSequence(){
+  statusEl.textContent = "BUFFER: " + rowEls.length + "/" + rowEls.length + " · CASCADE COMPLETE";
+  running = false;
+  replayBtn.disabled = false;
+}
+
+/* -------- clock: keeps ticking regardless of sequence state -------- */
+function tickClock(){
+  const d = new Date();
+  clockEl.textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+
+/* -------- wiring -------- */
+scopeButtons.forEach(function(b){
+  b.addEventListener("click", function(){ applyScopeFilter(b.dataset.core); });
+});
+replayBtn.addEventListener("click", runSequence);
+
+/* ---- START ---- */
+buildRows();
+applyScopeFilter("ALL");
+tickClock();
+setInterval(tickClock, 1000);
+runSequence();
+</script>
+</body>
+</html>

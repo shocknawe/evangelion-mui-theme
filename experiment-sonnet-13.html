@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-13 · DATA-WALL HERO BACKDROP</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--mint);font-family:var(--mono);text-transform:uppercase;
+  overflow:hidden;position:relative}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* the signature: full-bleed mutating data texture sits behind everything */
+#wall{position:fixed;inset:0;z-index:0;display:block}
+
+/* corner metadata — small, quiet, never competes with the wall */
+.meta{position:fixed;top:14px;left:16px;z-index:2;font-size:11px;color:var(--orange);
+  letter-spacing:.08em;line-height:1.32;text-shadow:0 0 4px rgba(242,100,0,.4)}
+.wallstat{position:fixed;top:14px;right:16px;z-index:2;font-size:11px;color:var(--green-map);
+  letter-spacing:.08em;line-height:1.32;text-align:right}
+.station{position:fixed;bottom:14px;left:16px;z-index:2;font-size:11px;color:var(--mint);
+  opacity:.65;letter-spacing:.1em;line-height:1.3}
+.station span{display:block;font-size:10px;opacity:.8}
+
+/* foreground console — deliberately small against the overwhelming backdrop */
+.stage{position:fixed;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none}
+.console{
+  pointer-events:auto;width:min(84vw,340px);padding:18px 22px 20px;
+  background:rgba(10,10,10,.94);border:2px solid var(--orange);color:var(--mint);
+  clip-path:polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  box-shadow:0 0 8px rgba(242,100,0,.35),inset 0 0 10px rgba(242,100,0,.15);
+}
+.console.linked{background:var(--mint);border-color:var(--mint);color:var(--bg);box-shadow:none}
+.c-desig{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.06em;
+  text-shadow:0 0 4px currentColor}
+.console.linked .c-desig{text-shadow:none}
+.c-sub{font-size:10px;letter-spacing:.14em;opacity:.7;margin-top:2px}
+.c-rows{margin-top:12px;display:flex;flex-direction:column;gap:5px;font-size:11px;letter-spacing:.05em}
+.c-rows div{display:flex;justify-content:space-between;border-bottom:1px solid rgba(82,242,154,.18);padding-bottom:4px}
+.console.linked .c-rows div{border-bottom-color:rgba(10,10,10,.3)}
+
+.stamp{margin-top:14px;display:inline-flex;flex-direction:column;align-items:center;
+  border:1px solid var(--amber);color:var(--amber);padding:5px 12px}
+.stamp .jp{font-family:var(--jp);font-weight:800;font-size:20px;line-height:1.05;
+  text-transform:none;text-shadow:0 0 4px currentColor}
+.stamp .en{font-size:10px;letter-spacing:.16em;margin-top:2px}
+.stamp[data-blink="1"]{animation:blink 1s steps(1) infinite}
+.stamp.active{background:var(--mint);border:2px solid var(--bg);color:var(--bg)}
+.stamp.active .jp,.stamp.active .en{text-shadow:none}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}}
+
+.rail{margin-top:14px;display:flex;gap:8px;align-items:center}
+.rail button{
+  flex:1;border:2px solid var(--mint);background:transparent;color:var(--mint);cursor:pointer;
+  font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;padding:7px 4px;
+}
+.console.linked .rail button{border-color:var(--bg);color:var(--bg)}
+.rail button.active{background:var(--mint);color:var(--bg)}
+.console.linked .rail button.active{background:var(--bg);color:var(--mint)}
+.rail button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.rail .hint{font-size:9px;opacity:.55;letter-spacing:.06em;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<canvas id="wall" aria-hidden="true"></canvas>
+
+<div class="meta">
+  <div>CODE:KEEL-13</div>
+  <div>FILE:WALLFEED_9</div>
+  <div>EX_MODE:AMBIENT</div>
+  <div>PRIORITY:BBB</div>
+</div>
+<div class="wallstat" id="wallstat"></div>
+<div class="station">KESTREL·4<span>KEEL DATA WALL</span></div>
+
+<div class="stage">
+  <div class="console" id="console" role="group" aria-label="Keel access console">
+    <div class="c-desig">ACCESS·KEEL</div>
+    <div class="c-sub">FOREGROUND NODE / READ ONLY</div>
+    <div class="c-rows">
+      <div><span>LINK</span><span id="linkval">STANDBY</span></div>
+      <div><span>DEPTH</span><span id="depthval">—</span></div>
+      <div><span>SYNC</span><span id="syncval">00:00:00</span></div>
+    </div>
+    <div class="stamp" id="stamp">
+      <div class="jp" id="stampjp">審査中</div>
+      <div class="en" id="stampen">STANDBY</div>
+    </div>
+    <div class="rail" role="group" aria-label="Link controls">
+      <button id="btn-standby" class="active">STANDBY</button>
+      <button id="btn-link">LINK</button>
+      <span class="hint">[S][L]</span>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+/* DATA-WALL: the backdrop *is* the content — a dense grid of mutating
+   glyph-cells threaded by faint connectors and two diagonal seam lines
+   with pulsing junction nodes. The console floating on top is intentionally
+   sparse; it never competes with the wall for attention. */
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const GLYPHS = ["0","1","+","·","×","÷","◇","◆","╱","╲","┼","∴","※","△","▽","○","●","∷","≡"];
+const CELL = 40;
+
+/* ---- helpers ---- */
+function randomLevel(){
+  const r=Math.random();
+  if(r<0.50)return 0; if(r<0.82)return 1; if(r<0.96)return 2; return 3;
+}
+function randomGlyph(){ return GLYPHS[Math.floor(Math.random()*GLYPHS.length)]; }
+function levelPaint(lvl){
+  if(lvl===0)return {c:"#246C3C",a:.35,blur:0};
+  if(lvl===1)return {c:"#3C9C6C",a:.55,blur:0};
+  if(lvl===2)return {c:"#52F29A",a:.85,blur:4};
+  return {c:"#EDF8D6",a:1,blur:9};
+}
+function fmtTime(s){
+  const h=String(Math.floor(s/3600)).padStart(2,"0");
+  const m=String(Math.floor(s/60)%60).padStart(2,"0");
+  const ss=String(s%60).padStart(2,"0");
+  return h+":"+m+":"+ss;
+}
+
+/* ---- state ---- */
+const canvas = document.getElementById("wall");
+const ctx = canvas.getContext("2d");
+const W = innerWidth, H = innerHeight;
+canvas.width = W; canvas.height = H;
+
+const cols = Math.ceil(W/CELL)+1;
+const rows = Math.ceil(H/CELL)+1;
+const cells = [];
+for(let r=0;r<rows;r++){
+  const row=[];
+  for(let c=0;c<cols;c++) row.push({lvl:randomLevel(),ch:randomGlyph()});
+  cells.push(row);
+}
+const connectors = [];
+for(let r=0;r<rows;r++){
+  for(let c=0;c<cols;c++){
+    if(c<cols-1 && Math.random()<0.11) connectors.push({r1:r,c1:c,r2:r,c2:c+1});
+    if(r<rows-1 && Math.random()<0.11) connectors.push({r1:r,c1:c,r2:r+1,c2:c});
+  }
+}
+const seamDefs = [
+  {x1:0,y1:H*0.16,x2:W,y2:H*0.60},
+  {x1:0,y1:H*0.78,x2:W,y2:H*0.20},
+];
+const seams = seamDefs.map(s=>{
+  const n=7, pts=[];
+  for(let i=0;i<n;i++){
+    const t=i/(n-1);
+    pts.push({x:s.x1+(s.x2-s.x1)*t, y:s.y1+(s.y2-s.y1)*t});
+  }
+  return {...s,pts};
+});
+
+let tick=0, linked=false, targetNode=null;
+let wallTimer=null;
+
+const stampEl=document.getElementById("stamp");
+const stampJp=document.getElementById("stampjp");
+const stampEn=document.getElementById("stampen");
+const consoleEl=document.getElementById("console");
+const linkval=document.getElementById("linkval");
+const depthval=document.getElementById("depthval");
+const syncval=document.getElementById("syncval");
+const btnStandby=document.getElementById("btn-standby");
+const btnLink=document.getElementById("btn-link");
+document.getElementById("wallstat").innerHTML =
+  "NODES:"+(cols*rows)+"<br>SEAMS:"+seams.length+" ACTIVE";
+
+/* ---- drawing ---- */
+function drawWall(){
+  ctx.fillStyle="#0A0A0A";
+  ctx.fillRect(0,0,W,H);
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font="13px ui-monospace,'SF Mono',Menlo,Consolas,monospace";
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cell=cells[r][c];
+      const paint=levelPaint(cell.lvl);
+      ctx.globalAlpha=paint.a; ctx.fillStyle=paint.c;
+      ctx.shadowColor=paint.c; ctx.shadowBlur=paint.blur;
+      ctx.fillText(cell.ch, c*CELL+CELL/2, r*CELL+CELL/2);
+    }
+  }
+  ctx.shadowBlur=0; ctx.globalAlpha=.28;
+  ctx.strokeStyle="#3C9C6C"; ctx.lineWidth=1;
+  for(const k of connectors){
+    ctx.beginPath();
+    ctx.moveTo(k.c1*CELL+CELL/2,k.r1*CELL+CELL/2);
+    ctx.lineTo(k.c2*CELL+CELL/2,k.r2*CELL+CELL/2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha=.5; ctx.strokeStyle="#F26400";
+  for(const s of seams){
+    ctx.beginPath(); ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2); ctx.stroke();
+    s.pts.forEach((p,i)=>{
+      const hot=(tick+i*3)%24<3;
+      ctx.beginPath();
+      ctx.fillStyle=hot?"#EDF8D6":"#52F29A";
+      ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=hot?10:2;
+      ctx.globalAlpha=1;
+      ctx.arc(p.x,p.y,hot?4:2,0,Math.PI*2); ctx.fill();
+    });
+  }
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
+  if(linked && targetNode){
+    const tx=targetNode.c*CELL+CELL/2, ty=targetNode.r*CELL+CELL/2;
+    ctx.strokeStyle="#F26400"; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(W/2,H/2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#EDF8D6"; ctx.shadowColor="#EDF8D6"; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(tx,ty,4,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle="#F26400"; ctx.font="11px ui-monospace,monospace";
+    ctx.textAlign = tx<W/2 ? "left":"right";
+    ctx.fillText("NODE·"+targetNode.id+" LOCKED", tx+(tx<W/2?10:-10), ty-12);
+  }
+}
+
+/* mutate a small biased fraction of cells — the wall never stops shifting */
+function mutateWall(){
+  const n=Math.floor(rows*cols*0.05);
+  for(let i=0;i<n;i++){
+    const r=Math.floor(Math.random()*rows), c=Math.floor(Math.random()*cols);
+    cells[r][c]={lvl:randomLevel(),ch:randomGlyph()};
+  }
+}
+
+function pickTarget(){
+  targetNode={
+    c:Math.floor(Math.random()*cols), r:Math.floor(Math.random()*rows),
+    id:String(Math.floor(1000+Math.random()*9000))
+  };
+}
+
+/* ---- wiring: the one bold interaction — LINK inverts panel + stamp
+   and drops a locked node + leader line onto the wall itself ---- */
+function setLink(state){
+  linked=state;
+  consoleEl.classList.toggle("linked",state);
+  stampEl.classList.toggle("active",state);
+  btnStandby.classList.toggle("active",!state);
+  btnLink.classList.toggle("active",state);
+  linkval.textContent = state?"LINKED":"STANDBY";
+  stampJp.textContent = state?"承認":"審査中";
+  stampEn.textContent = state?"LINKED":"STANDBY";
+  stampEl.dataset.blink = (!state && !REDUCED) ? "1":"0";
+  if(state) pickTarget(); else targetNode=null;
+  drawWall();
+}
+btnStandby.addEventListener("click",()=>setLink(false));
+btnLink.addEventListener("click",()=>setLink(true));
+addEventListener("keydown",(e)=>{
+  const k=e.key.toLowerCase();
+  if(k==="s") setLink(false);
+  else if(k==="l") setLink(true);
+  else if(e.key==="Escape") setLink(false);
+});
+
+/* ambient telemetry ticks regardless of link/reduced-motion state */
+let depth=3120;
+function depthTick(){
+  depth += Math.round((Math.random()-0.5)*16);
+  depthval.textContent = "-"+depth.toLocaleString()+" M";
+}
+let secs=0;
+function syncTick(){ secs++; syncval.textContent=fmtTime(secs); }
+
+/* ---- START ---- */
+drawWall();
+setLink(false);
+depthTick(); syncTick();
+if(!REDUCED){
+  wallTimer=setInterval(()=>{ tick++; mutateWall(); drawWall(); },160);
+}
+setInterval(depthTick,900);
+setInterval(syncTick,1000);
+addEventListener("resize",()=>location.reload());
+</script>
+</body>
+</html>

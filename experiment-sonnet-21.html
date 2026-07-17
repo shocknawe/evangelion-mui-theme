@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-21 · NAVAL TARGETING SCHEMATIC</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);overflow:hidden;font-family:var(--mono);text-transform:uppercase;color:var(--green-map)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+
+/* corner metadata block: mono KEY:VALUE, pinned, tight leading */
+.meta{position:absolute;top:16px;left:16px;z-index:10;font-size:12px;line-height:1.3;
+  letter-spacing:.06em;color:var(--orange)}
+.meta b{color:var(--mint);font-weight:400}
+.meta .hd{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.1em;
+  color:var(--orange);margin-bottom:6px;text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.4)}
+
+/* corner title plate: boxed kanji + EN caption */
+.plate{position:absolute;right:16px;bottom:16px;z-index:10;display:flex;align-items:stretch;
+  border:2px solid var(--orange);background:var(--bg)}
+.plate .kj{font-family:var(--jp);font-weight:800;font-size:34px;line-height:1;color:var(--orange);
+  padding:8px 12px;border-right:1px solid var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.4)}
+.plate .cap{padding:8px 12px;display:flex;flex-direction:column;justify-content:center;
+  font-size:10px;letter-spacing:.1em;line-height:1.35;color:var(--amber)}
+
+/* signature: red-boxed callout w/ leader line to highlighted entity */
+.callout{position:absolute;left:3%;bottom:96px;width:238px;z-index:11;
+  border:1px solid var(--red-hi);background:var(--bg);padding:8px 10px;
+  box-shadow:0 0 6px rgba(226,40,15,.5),inset 0 0 6px rgba(226,40,15,.2)}
+.callout .id{font-family:var(--cond);font-weight:700;font-size:20px;letter-spacing:.04em;
+  color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 12px rgba(226,40,15,.4)}
+.callout .nm{font-size:12px;letter-spacing:.08em;color:var(--paper);margin:2px 0 6px}
+.callout .kv{font-size:11px;line-height:1.32;letter-spacing:.05em;color:var(--red)}
+.callout .kv b{color:var(--red-hi);font-weight:400}
+.stamp{display:inline-block;margin-top:6px;border:1px solid;padding:2px 6px;font-size:10px;
+  letter-spacing:.1em}
+.stamp.pending{color:var(--red-hi);border-color:var(--red-hi);animation:blink 1s steps(1) infinite}
+.stamp.resolved{color:var(--mint);border-color:var(--mint)}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* control rail: cycle tracked contacts */
+.rail{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;
+  display:flex;gap:2px}
+.rail button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--orange);
+  background:var(--bg);border:1px solid var(--orange);padding:7px 12px;cursor:pointer}
+.rail button.active{background:var(--orange);color:var(--bg);text-shadow:none}
+.rail button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+
+.pulse{animation:ringpulse 1.6s steps(4) infinite}
+@keyframes ringpulse{0%,100%{opacity:.5}50%{opacity:1}}
+.selring{animation:blink .6s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){
+  .stamp.pending{animation:none;opacity:1}
+  .pulse{animation:none;opacity:.75}
+  .selring{animation:none;opacity:1}
+}
+</style>
+</head>
+<body>
+
+<svg id="map" aria-label="Sensor grid schematic"></svg>
+
+<div class="meta" aria-label="sweep metadata">
+  <div class="hd">SENSOR·PLOT 7G</div>
+  ORIGIN:<b>KESTREL·4</b><br>
+  SECTOR:<b>7G·114</b><br>
+  SWEEP:<b>PASSIVE</b><br>
+  MODE:<b>SLOW·SCAN</b><br>
+  CONTACTS:<b id="cCount">04</b><br>
+  CLOCK:<b id="clock">00:00:00</b>
+</div>
+
+<div class="callout" id="callout" role="group" aria-live="polite" aria-label="tracked contact detail">
+  <div class="id" id="coId">ISV·441</div>
+  <div class="nm" id="coName">GYRFALCON</div>
+  <div class="kv">
+    CLASS:<b id="coClass">INTERDICTION SLOOP</b><br>
+    BEARING:<b id="coBearing">000°</b><br>
+    RANGE:<b id="coRange">00000 KM</b>
+  </div>
+  <span class="stamp" id="coStamp">審査中</span>
+</div>
+
+<div class="rail" role="group" aria-label="tracked contact select">
+  <button data-i="0" id="btn0">GYRFALCON</button>
+  <button data-i="1" id="btn1">TERN</button>
+  <button data-i="2" id="btn2">SHRIKE</button>
+  <button data-i="3" id="btn3">CORMORANT</button>
+</div>
+
+<div class="plate">
+  <div class="kj">警戒</div>
+  <div class="cap">SECTOR SWEEP<br>SCHEMATIC</div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+/* Static plot, not a search sweep: contacts hold fixed positions on a
+   passive sensor grid (range rings + bearing spokes standing in for the
+   orbital-lane analog). Only the selection state, stamp blink and clock
+   move — nothing creeps or pans. All state changes are hard snaps. */
+
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("map");
+const W=innerWidth,H=innerHeight;
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+const el=(n,a,p=svg)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- state: origin + tracked contacts (fixed schematic coordinates) ---- */
+const origin={xf:.12,yf:.56};
+const contacts=[
+  {desig:"ISV·441",name:"GYRFALCON",cls:"INTERDICTION SLOOP",xf:.74,yf:.22,heading:200,status:"UNKNOWN",word:"審査中",pending:true},
+  {desig:"PSC·219",name:"TERN",cls:"PICKET SCOUT",xf:.58,yf:.50,heading:110,status:"FRIEND",word:"承認",pending:false},
+  {desig:"OSV·087",name:"SHRIKE",cls:"OUTRIDER SURVEY",xf:.70,yf:.76,heading:340,status:"FRIEND",word:"承認",pending:false},
+  {desig:"AUX·356",name:"CORMORAN",cls:"TENDER AUXILIARY",xf:.40,yf:.16,heading:70,status:"NEUTRAL",word:"注意",pending:false},
+];
+const diag=Math.hypot(W,H);
+const ox=origin.xf*W, oy=origin.yf*H;
+
+/* ---- build grid: range rings + bearing spokes + block/mark texture ---- */
+const ringR=[.15,.28,.42,.58].map(f=>f*diag);
+const ringKM=[8500,17000,25500,34000];
+for(let i=0;i<ringR.length;i++){
+  el("circle",{cx:ox,cy:oy,r:ringR[i],fill:"none",stroke:"var(--green-dim)","stroke-width":1,
+    class:i===ringR.length-1?"pulse":"" ,opacity:.6});
+  el("text",{x:ox+4,y:oy-ringR[i]-4,fill:"var(--green-map)","font-size":"9",
+    "font-family":"ui-monospace,Menlo,monospace"}).textContent=ringKM[i]+" KM";
+}
+for(let a=0;a<360;a+=30){
+  const rad=a*Math.PI/180;
+  el("line",{x1:ox,y1:oy,x2:ox+Math.sin(rad)*ringR[3],y2:oy-Math.cos(rad)*ringR[3],
+    stroke:"var(--green-dim)","stroke-width":1,opacity:.35});
+}
+/* sparse rotated-diamond block texture (orbital installation analog) */
+for(let i=0;i<16;i++){
+  const bx=Math.random()*W, by=Math.random()*H, s=10+Math.random()*14;
+  el("rect",{x:bx,y:by,width:s,height:s,fill:"none",stroke:"var(--green-map)","stroke-width":1,
+    opacity:.25,transform:`rotate(45 ${bx+s/2} ${by+s/2})`});
+}
+/* scattered registration marks */
+for(let i=0;i<10;i++){
+  const mx=Math.random()*W, my=Math.random()*H;
+  el("line",{x1:mx-4,y1:my-4,x2:mx+4,y2:my+4,stroke:"var(--green-dim)","stroke-width":1});
+  el("line",{x1:mx-4,y1:my+4,x2:mx+4,y2:my-4,stroke:"var(--green-dim)","stroke-width":1});
+}
+/* origin marker */
+el("circle",{cx:ox,cy:oy,r:5,fill:"none",stroke:"var(--orange)","stroke-width":2});
+el("text",{x:ox+9,y:oy-8,fill:"var(--orange)","font-size":"10","font-family":"ui-monospace,Menlo,monospace"}).textContent="KESTREL·4";
+
+/* ---- transit lane: amber route line + riding label ---- */
+const shrike=contacts[2];
+const lx2=shrike.xf*W, ly2=shrike.yf*H;
+el("line",{x1:ox,y1:oy,x2:lx2,y2:ly2,stroke:"var(--amber)","stroke-width":1.5,
+  "stroke-dasharray":"6 5",class:"pulse"});
+const midx=(ox+lx2)/2, midy=(oy+ly2)/2;
+el("rect",{x:midx-46,y:midy-9,width:92,height:16,fill:"var(--bg)",stroke:"var(--amber)","stroke-width":1});
+el("text",{x:midx,y:midy+3,fill:"var(--amber)","font-size":"9","text-anchor":"middle",
+  "font-family":"ui-monospace,Menlo,monospace"}).textContent="TRANSIT·LANE 7";
+
+/* ---- entities: crosshair + heading tick, orange (asset color reserved) ---- */
+for(const c of contacts){
+  const x=c.xf*W, y=c.yf*H;
+  const g=el("g",{});
+  el("line",{x1:x-11,y1:y,x2:x+11,y2:y,stroke:"var(--orange)","stroke-width":1.5},g);
+  el("line",{x1:x,y1:y-11,x2:x,y2:y+11,stroke:"var(--orange)","stroke-width":1.5},g);
+  el("circle",{cx:x,cy:y,r:4,fill:"none",stroke:"var(--orange)","stroke-width":1.5},g);
+  const hr=c.heading*Math.PI/180;
+  const tx=x+Math.sin(hr)*15, ty=y-Math.cos(hr)*15;
+  el("polygon",{points:`${tx},${ty} ${tx-4},${ty+7} ${tx+4},${ty+7}`,fill:"var(--orange)",
+    transform:`rotate(${c.heading} ${tx} ${ty})`},g);
+  const ring=el("circle",{cx:x,cy:y,r:19,fill:"none",stroke:"var(--orange)","stroke-width":1,
+    "stroke-dasharray":"3 3",opacity:0},g);
+  c._x=x;c._y=y;c._ring=ring;
+}
+
+/* ---- leader line: single reusable red line, callout -> selected entity ---- */
+const leader=el("line",{x1:0,y1:0,x2:0,y2:0,stroke:"var(--red-hi)","stroke-width":1.5});
+
+/* ---- DOM refs (declared before use in select/tick below) ---- */
+const callout=document.getElementById("callout");
+const coId=document.getElementById("coId"), coName=document.getElementById("coName");
+const coClass=document.getElementById("coClass"), coBearing=document.getElementById("coBearing");
+const coRange=document.getElementById("coRange"), coStamp=document.getElementById("coStamp");
+const clockEl=document.getElementById("clock");
+const buttons=[0,1,2,3].map(i=>document.getElementById("btn"+i));
+
+function bearingRange(c){
+  const dx=c._x-ox, dy=c._y-oy;
+  const brg=Math.round((Math.atan2(dx,-dy)*180/Math.PI+360)%360);
+  const rng=Math.round(Math.hypot(dx,dy)*46.3);
+  return {brg,rng};
+}
+
+let sel=0;
+function select(i){
+  sel=i;
+  const c=contacts[i];
+  for(const cc of contacts) cc._ring.setAttribute("opacity",0);
+  c._ring.setAttribute("opacity",1);
+  c._ring.setAttribute("class",REDUCED?"":"selring");
+  const {brg,rng}=bearingRange(c);
+  coId.textContent=c.desig;
+  coName.textContent=c.name;
+  coClass.textContent=c.cls;
+  coBearing.textContent=String(brg).padStart(3,"0")+"°";
+  coRange.textContent=String(rng).padStart(5,"0")+" KM";
+  coStamp.textContent=c.word;
+  coStamp.className="stamp "+(c.pending?"pending":"resolved");
+  const r=callout.getBoundingClientRect();
+  leader.setAttribute("x1",r.right);
+  leader.setAttribute("y1",r.top+8);
+  leader.setAttribute("x2",c._x);
+  leader.setAttribute("y2",c._y);
+  buttons.forEach((b,bi)=>{b.classList.toggle("active",bi===i);b.setAttribute("aria-pressed",bi===i);});
+}
+buttons.forEach((b,i)=>b.addEventListener("click",()=>select(i)));
+
+/* ---- ticking clock; data stays alive even when idle ---- */
+let secs=0;
+function tickClock(){
+  secs++;
+  const h=String(Math.floor(secs/3600)%24).padStart(2,"0");
+  const m=String(Math.floor(secs/60)%60).padStart(2,"0");
+  const s=String(secs%60).padStart(2,"0");
+  clockEl.textContent=`${h}:${m}:${s}`;
+}
+window.addEventListener("resize",()=>location.reload());
+
+/* ---- START ---- */
+select(0);
+setInterval(tickClock,1000);
+</script>
+</body>
+</html>

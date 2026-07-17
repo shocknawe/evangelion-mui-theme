@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-17 · PRINTABLE BLUEPRINT REPORT</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  --ink:#141414; --hair:#8A3A3A;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--blueprint);color:var(--ink);font-family:var(--mono);
+  text-transform:uppercase;line-height:1.3;padding:36px 16px 64px}
+/* no CRT pass on blueprint per spec; hairline ink linework carries structure instead */
+.page{position:relative;max-width:800px;margin:0 auto;background:var(--blueprint);
+  border:2px solid var(--ink);padding:28px 30px 20px}
+
+/* ---- masthead: bimodal scale — giant kanji + tiny mono, EN+JP paired ---- */
+.masthead{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;
+  border-bottom:3px double var(--ink);padding-bottom:14px;margin-bottom:16px}
+.kanji-block{line-height:.9}
+.kanji{font-family:var(--jp);font-weight:800;font-size:clamp(56px,11vw,84px);color:var(--ink)}
+.kanji-cap{font-size:11px;letter-spacing:.14em;margin-top:2px}
+.meta{font-size:11px;line-height:1.35;text-align:right;min-width:180px}
+.meta div{white-space:nowrap}
+.meta b{color:var(--red);font-weight:700}
+
+.title-main{font-family:var(--cond);font-weight:700;font-size:clamp(22px,4vw,32px);
+  letter-spacing:.02em;margin:6px 0 2px}
+.subtitle{font-size:12px;letter-spacing:.08em;color:var(--ink);margin-bottom:14px;
+  border-bottom:2px solid var(--ink);display:inline-block;padding-bottom:3px}
+
+/* rubber-stamp diagonal plate — diagonal energy on light theme */
+.doc-stamp{position:absolute;top:-16px;right:26px;transform:rotate(-7deg);z-index:2;
+  border:2px solid var(--red);color:var(--red);font-family:var(--cond);font-weight:700;
+  font-size:12px;letter-spacing:.06em;padding:4px 10px;background:var(--blueprint)}
+
+.section-label{font-size:11px;letter-spacing:.12em;margin:20px 0 6px;
+  border-bottom:1px solid var(--ink);padding-bottom:3px}
+
+/* ---- boxed stamps: text in 1px box of its own color ---- */
+.stamp{display:inline-block;border:1px solid currentColor;border-radius:2px;
+  padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.05em}
+.stamp.red{color:var(--red)}
+.stamp.green{color:var(--green-dim)}
+.stamp.amber{color:var(--amber-dim)}
+.stamp.fill{color:var(--blueprint);background:currentColor}
+.stamp.fill.red{background:var(--red)}
+.stamp.fill.green{background:var(--green-dim)}
+
+/* ---- data tables: mono KEY:VALUE grammar in tabular form ---- */
+table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:6px}
+caption{text-align:left;font-size:10px;letter-spacing:.1em;color:var(--ink);margin-bottom:4px}
+th,td{border:1px solid var(--ink);padding:5px 8px;text-align:left}
+th{background:var(--ink);color:var(--blueprint);font-weight:700;letter-spacing:.06em}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- fan-out diagram: black chip, hairline red connectors, columns of cells ---- */
+.fanout-wrap{border:1px solid var(--ink);padding:10px 12px 14px;margin:8px 0 4px}
+.fanout-wrap svg{display:block;width:100%;height:230px}
+.readout{display:flex;gap:22px;font-size:11px;margin-top:6px}
+.readout b{color:var(--red)}
+.controls{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;
+  background:var(--blueprint);color:var(--ink);border:1px solid var(--ink);
+  padding:7px 12px;cursor:pointer}
+button:hover{background:var(--ink);color:var(--blueprint)}
+button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* ---- approval / signature block ---- */
+.approval-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+.sig-cell{font-size:11px}
+.sig-line{border-bottom:1px solid var(--ink);height:34px;margin-bottom:4px}
+.sig-role{letter-spacing:.08em}
+
+.page-footer{display:flex;justify-content:space-between;align-items:center;
+  border-top:2px solid var(--ink);margin-top:20px;padding-top:8px;font-size:10px}
+
+@media print{
+  body{background:#fff;padding:0}
+  .page{border:none;max-width:100%;padding:14px 18px}
+  .doc-stamp{background:none}
+  .no-print{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-stamp">PRELIMINARY<br>SUBJECT TO REVISION</div>
+
+  <div class="masthead">
+    <div class="kanji-block">
+      <div class="kanji">点検</div>
+      <div class="kanji-cap">MAINTENANCE CYCLE</div>
+    </div>
+    <div class="meta">
+      DOC:<b>KT4-DSY-0417</b><br>
+      FILE:<b>UNIT_DIST</b><br>
+      ORIGIN:<b>KESTREL·4 / DECK-3</b><br>
+      EX_MODE:<b>READ-ONLY</b><br>
+      PRIORITY:<b>B--</b>
+    </div>
+  </div>
+
+  <h1 class="title-main">KESTREL·4 MAINTENANCE DOSSIER</h1>
+  <div class="subtitle">UNIT DISTRIBUTION REPORT · 定期点検記録</div>
+
+  <div class="section-label">01 — CORE ALLOCATION</div>
+  <table>
+    <caption>PROCESSING CORE LOAD SUMMARY</caption>
+    <thead><tr><th>CORE</th><th>SECTOR</th><th>LOAD</th><th>STATUS</th></tr></thead>
+    <tbody>
+      <tr><td>VEGA·1</td><td>SECTOR-A</td><td class="num">72%</td>
+        <td><span class="stamp green">NOMINAL</span></td></tr>
+      <tr><td>ALTAIR·2</td><td>SECTOR-B</td><td class="num">58%</td>
+        <td><span class="stamp green">NOMINAL</span></td></tr>
+      <tr><td>DENEB·3</td><td>SECTOR-C</td><td class="num">91%</td>
+        <td><span class="stamp red">警戒 CAUTION</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-label">02 — UNIT DISTRIBUTION</div>
+  <table>
+    <caption>ASSIGNED TACTICAL / RELAY UNITS</caption>
+    <thead><tr><th>UNIT</th><th>ASSIGNMENT</th><th>CYCLES</th><th>STATUS</th></tr></thead>
+    <tbody>
+      <tr><td>UNIT-07</td><td>LYRA RELAY</td><td class="num">1,204</td>
+        <td><span class="stamp green">OK</span></td></tr>
+      <tr><td>UNIT-12</td><td>CYGNUS BUS</td><td class="num">866</td>
+        <td><span class="stamp green">OK</span></td></tr>
+      <tr><td>UNIT-19</td><td>AQUILA FEED</td><td class="num">302</td>
+        <td><span class="stamp amber">点検中 INSPECTING</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-label">03 — BUS FAN-OUT DIAGRAM</div>
+  <div class="fanout-wrap">
+    <svg id="fanout" aria-label="Main bus fan-out distribution diagram" role="img"></svg>
+    <div class="readout">
+      <span>STAGE:<b id="stageOut">0/3</b></span>
+      <span>LOAD:<b id="loadOut">0%</b></span>
+      <span>STATUS:<b id="runOut">STANDBY</b></span>
+    </div>
+    <div class="controls" role="group" aria-label="Report actions">
+      <button id="runBtn" type="button">RUN DISTRIBUTION CHECK</button>
+      <button id="stampBtn" type="button">CYCLE REVIEW STATUS</button>
+      <button id="printBtn" type="button" class="no-print">PRINT DOCUMENT</button>
+    </div>
+  </div>
+
+  <div class="section-label">04 — APPROVAL</div>
+  <div id="mainStamp" class="stamp amber" style="font-size:13px;margin-bottom:10px">審査中 UNDER REVIEW</div>
+  <div class="approval-grid">
+    <div class="sig-cell"><div class="sig-line"></div><div class="sig-role">PREPARED BY</div></div>
+    <div class="sig-cell"><div class="sig-line"></div><div class="sig-role">REVIEWED BY</div></div>
+    <div class="sig-cell"><div class="sig-line"></div><div class="sig-role">AUTHORIZED BY</div></div>
+  </div>
+
+  <div class="page-footer">
+    <span>KT4-DSY-0417 · REV.A</span>
+    <span>PAGE 1 OF 1</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const NS="http://www.w3.org/2000/svg";
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- state ---- */
+const svg=document.getElementById("fanout");
+const stageOut=document.getElementById("stageOut");
+const loadOut=document.getElementById("loadOut");
+const runOut=document.getElementById("runOut");
+const mainStamp=document.getElementById("mainStamp");
+const runBtn=document.getElementById("runBtn");
+const stampBtn=document.getElementById("stampBtn");
+const printBtn=document.getElementById("printBtn");
+
+const CORES=["VEGA·1","ALTAIR·2","DENEB·3"];
+let cells=[];        /* every charge-able cell across the tree, in stage order */
+let stageBounds=[];  /* index ranges per stage, for stepped propagation */
+let running=false;   /* lock: prevents overlapping timers on repeat clicks */
+
+/* Builds the fan-out tree: root chip -> 3 core cells -> 6 relay cells -> 9 unit cells.
+   Hairline red connectors are drawn first so cells sit on top, matching the
+   reference's traces-under-fills layering. */
+function buildDiagram(){
+  svg.innerHTML="";
+  cells=[];stageBounds=[];
+  const W=svg.clientWidth||700, H=svg.clientHeight||230;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+
+  const rootX=14,rootY=H/2,rootW=118,rootH=30;
+  el("rect",{x:rootX,y:rootY-rootH/2,width:rootW,height:rootH,fill:"var(--ink)"},svg);
+  const rt=el("text",{x:rootX+rootW/2,y:rootY+4,fill:"var(--blueprint)","text-anchor":"middle",
+    "font-family":"var(--mono)","font-size":"11","letter-spacing":"1"},svg);
+  rt.textContent="KESTREL·4 / MAIN BUS";
+
+  const counts=[3,6,9];
+  const colX=s=>rootX+rootW+40+s*((W-rootX-rootW-90)/2);
+  let parents=[{x:rootX+rootW,y:rootY,w:0}];
+  counts.forEach((n,s)=>{
+    const cw=s===0?70:38, ch=14, gap=8, x=colX(s);
+    const totalH=n*(ch+gap)-gap;
+    const stageCells=[];
+    for(let i=0;i<n;i++){
+      const y=H/2-totalH/2+i*(ch+gap);
+      const parent=parents[Math.floor(i*parents.length/n)];
+      el("path",{d:`M${parent.x} ${parent.y} L${x-22} ${y+ch/2} L${x} ${y+ch/2}`,
+        fill:"none",stroke:"var(--hair)","stroke-width":"1"},svg);
+      const rect=el("rect",{x,y,width:cw,height:ch,fill:"var(--ink)"},svg);
+      if(s===0){
+        const lbl=el("text",{x:x+cw/2,y:y+ch-3,fill:"var(--blueprint)","text-anchor":"middle",
+          "font-family":"var(--mono)","font-size":"9"},svg);
+        lbl.textContent=CORES[i];
+      }
+      stageCells.push({rect,x:x+cw,y:y+ch/2,charged:false});
+    }
+    cells.push(...stageCells);
+    stageBounds.push(stageCells.length);
+    parents=stageCells;
+  });
+}
+
+/* Stepped, mechanical propagation — one stage lights per tick, never a tween.
+   REDUCED users jump straight to the final charged state. */
+function runCheck(){
+  if(running) return;
+  running=true;
+  runOut.textContent="RUNNING";
+  cells.forEach(c=>{c.charged=false;c.rect.setAttribute("fill","var(--ink)");});
+
+  if(REDUCED){
+    cells.forEach(c=>{c.charged=true;c.rect.setAttribute("fill","var(--red)");});
+    stageOut.textContent="3/3";loadOut.textContent="100%";
+    runOut.textContent="COMPLETE";running=false;
+    return;
+  }
+  let idx=0, stage=0, seenInStage=0;
+  const timer=setInterval(()=>{
+    const c=cells[idx];
+    c.charged=true;
+    c.rect.setAttribute("fill","var(--red)");
+    idx++;seenInStage++;
+    if(seenInStage>=stageBounds[stage]){stage++;seenInStage=0;}
+    const pct=Math.round(idx/cells.length*100);
+    loadOut.textContent=pct+"%";
+    stageOut.textContent=Math.min(3,stage+1)+"/3";
+    if(idx>=cells.length){
+      clearInterval(timer);
+      runOut.textContent="COMPLETE";
+      running=false;
+    }
+  },90);
+}
+
+/* Review-status stamp cycle: one boxed word/color per state, hard snap,
+   no easing — the single required visible-state interaction. */
+const STATES=[
+  {jp:"審査中 UNDER REVIEW",cls:"amber"},
+  {jp:"承認 APPROVED",cls:"green"},
+  {jp:"否定 DENIED",cls:"red"}
+];
+let stateIdx=0;
+function cycleStamp(){
+  stateIdx=(stateIdx+1)%STATES.length;
+  const s=STATES[stateIdx];
+  mainStamp.textContent=s.jp;
+  mainStamp.className="stamp "+s.cls;
+}
+
+runBtn.addEventListener("click",runCheck);
+stampBtn.addEventListener("click",cycleStamp);
+printBtn.addEventListener("click",()=>window.print());
+
+/* ---- START ---- */
+buildDiagram();
+addEventListener("resize",()=>{if(!running) buildDiagram();});
+</script>
+</body>
+</html>

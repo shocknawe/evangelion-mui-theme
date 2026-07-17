@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPERIMENT-15 · BRIDGE COMPOSITE SCENE</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--mint);font-family:var(--mono);
+  text-transform:uppercase;letter-spacing:.03em;overflow:hidden;
+}
+/* CRT pass */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* connector spine sits under the panels; panel bg hides the segment beneath it */
+#linkLayer{position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none}
+#linkLayer line{stroke:var(--orange);stroke-width:1.5}
+#linkLayer line.focus{stroke:var(--amber)}
+#linkLayer circle{fill:var(--bg);stroke:var(--orange);stroke-width:1.5}
+#linkLayer circle.focus{stroke:var(--amber)}
+#linkLayer text{fill:var(--orange);font:8px var(--mono)}
+#linkLayer text.focus{fill:var(--amber)}
+
+.deck{
+  position:relative;z-index:2;height:100vh;padding:14px;display:grid;gap:14px;
+  grid-template-columns:230px 1fr 250px;
+  grid-template-rows:56px 1fr 1fr 118px;
+  grid-template-areas:
+    "hdr    hdr   hdr"
+    "status focal map"
+    "meter  focal log"
+    "meter  focal count";
+}
+.panel{
+  position:relative;background:var(--bg);border:1px solid var(--orange);
+  box-shadow:0 0 6px rgba(242,100,0,.35),inset 0 0 6px rgba(242,100,0,.12);
+  padding:9px 11px;overflow:hidden;transition:none;
+}
+.panel.focus{border-color:var(--amber);box-shadow:0 0 10px rgba(244,159,9,.55),inset 0 0 8px rgba(244,159,9,.2)}
+
+.hdr{grid-area:hdr;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.status{grid-area:status;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:6px}
+.meter{grid-area:meter;display:flex;flex-direction:column}
+.focal{grid-area:focal;border-width:2px;padding:16px 20px;
+  clip-path:polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+  display:flex;flex-direction:column;justify-content:space-between;}
+.map{grid-area:map;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.log{grid-area:log;display:flex;flex-direction:column}
+.count{grid-area:count;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:4px}
+
+.tiny{font-size:10px;letter-spacing:.08em;color:var(--orange);line-height:1.3}
+.tiny.dim{color:var(--green-dim)}
+
+/* header */
+.desig{font-family:var(--cond);font-weight:700;font-size:20px;color:var(--mint-hi);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(82,242,154,.4)}
+.sub{font-size:10px;color:var(--orange);margin-left:8px}
+.rail{display:flex;gap:6px}
+.modeBtn{
+  background:var(--bg);color:var(--orange);border:1px solid var(--orange);
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 10px;cursor:pointer;
+}
+.modeBtn.active{background:var(--orange);color:var(--bg)}
+.modeBtn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.hdr-right{display:flex;gap:14px;font-size:12px;color:var(--amber)}
+
+/* status: giant kanji + EN caption pairing */
+.giant-jp{font-family:var(--jp);font-weight:800;font-size:clamp(40px,7vw,80px);line-height:1;color:var(--mint)}
+.giant-jp.alert{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 14px rgba(226,40,15,.5)}
+.cap{font-size:11px;letter-spacing:.1em}
+
+/* meter */
+.meter-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.badge{border:1px solid var(--red-hi);color:var(--red-hi);padding:2px 8px;border-radius:3px;
+  font-size:11px;text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.4)}
+.track{flex:1;display:flex;flex-direction:column-reverse;gap:3px;padding:2px 0}
+.seg{flex:1;border-radius:3px;background:var(--green-dim);min-height:4px}
+.seg.on{background:var(--mint);box-shadow:0 0 5px rgba(82,242,154,.5)}
+.seg.hot{background:var(--red-hi);box-shadow:0 0 8px rgba(226,40,15,.6)}
+.thresh{margin-top:6px;border-top:2px solid var(--amber);position:relative;padding-top:5px;display:flex;justify-content:flex-end}
+.thresh span{border:1px solid var(--amber);color:var(--amber);font-size:9px;padding:1px 5px;border-radius:2px}
+
+/* focal */
+.focal-hd{display:flex;justify-content:space-between;align-items:flex-start}
+.jp-h{font-family:var(--jp);font-weight:800;font-size:30px;color:var(--orange)}
+.en-cap{display:block;font-size:10px;color:var(--orange);letter-spacing:.1em}
+.meta{font-family:var(--mono);font-size:11px;line-height:1.3;color:var(--orange)}
+.stamp{border:1px solid var(--red-hi);color:var(--red-hi);padding:3px 9px;font-size:11px;border-radius:2px;
+  text-shadow:0 0 4px currentColor}
+.stamp.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.triad{display:flex;gap:14px;justify-content:center;margin:10px 0}
+.node{border:1px solid var(--orange);padding:8px 14px;font-size:11px;letter-spacing:.05em;text-align:center;min-width:96px;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.node.idle{color:var(--mint);background:transparent}
+.node.pending{background:var(--blue);color:var(--bg);border-color:var(--blue)}
+.node.approved{background:var(--mint);color:var(--bg);border-color:var(--mint)}
+.node.denied{background:var(--red);color:var(--bg);border-color:var(--red)}
+.focal-val{display:flex;align-items:baseline;justify-content:center;gap:14px}
+.giant-num{font-family:var(--cond);font-weight:700;font-size:clamp(56px,10vw,120px);color:var(--mint-hi);
+  text-shadow:0 0 4px currentColor,0 0 16px rgba(124,244,171,.4)}
+.focal-cap{font-size:11px;color:var(--orange);letter-spacing:.1em}
+
+/* map / radar */
+canvas{display:block}
+.map .cap-row{margin-top:6px;display:flex;gap:6px;align-items:baseline}
+
+/* log */
+.log-body{flex:1;font-size:11px;color:var(--amber);line-height:1.55;overflow:hidden}
+.log-body div{white-space:nowrap}
+.log-body div.adv{color:var(--red-hi)}
+
+/* countdown */
+.giant-count{font-family:var(--cond);font-weight:700;font-size:clamp(34px,6vw,54px);color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.4)}
+.giant-count.flick{animation:flick .12s steps(1) 3}
+@keyframes flick{50%{opacity:.15}}
+
+@media (prefers-reduced-motion: reduce){
+  .stamp.blink{animation:none}
+  .giant-count.flick{animation:none}
+}
+</style>
+</head>
+<body>
+
+<svg id="linkLayer" aria-hidden="true"></svg>
+
+<div class="deck">
+  <header class="panel hdr" role="group" aria-label="bridge deck header">
+    <div><span class="desig">KESTREL·4</span><span class="sub">BRIDGE COMPOSITE · SECTOR 7</span></div>
+    <div class="rail" id="viewRail" role="group" aria-label="view mode select">
+      <button class="modeBtn active" data-mode="tactical">TACTICAL</button>
+      <button class="modeBtn" data-mode="systems">SYSTEMS</button>
+      <button class="modeBtn" data-mode="comms">COMMS</button>
+    </div>
+    <div class="hdr-right">
+      <span id="clock">00:00:00</span>
+      <span id="cycleTag">CYCLE 0847</span>
+    </div>
+  </header>
+
+  <section class="panel status" aria-label="hull integrity readout">
+    <div class="tiny">HULL INTEGRITY</div>
+    <div class="giant-jp" id="hullWord">密閉</div>
+    <div class="cap" id="hullCap">SEALED</div>
+  </section>
+
+  <section class="panel meter" aria-label="reactor load meter">
+    <div class="meter-hd"><span class="tiny">REACTOR LOAD</span><span class="badge">LOAD</span></div>
+    <div class="track" id="track"></div>
+    <div class="thresh"><span>SAFE LINE</span></div>
+  </section>
+
+  <section class="panel focal" aria-label="core consensus panel">
+    <div class="focal-hd">
+      <div><span class="jp-h">決議</span><span class="en-cap">RESOLUTION</span></div>
+      <div class="meta">CODE:0847<br>FILE:BRIDGE_SYS<br>EX_MODE:AUTO<br>PRIORITY:B++</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end"><span class="stamp blink" id="focalStamp">審査中</span></div>
+    <div class="triad" id="triad" role="group" aria-label="core alignment nodes">
+      <div class="node idle" data-core="VEGA·1">VEGA·1</div>
+      <div class="node idle" data-core="ALTAIR·2">ALTAIR·2</div>
+      <div class="node idle" data-core="DENEB·3">DENEB·3</div>
+    </div>
+    <div class="focal-val">
+      <span class="giant-num" id="coreCount">0</span>
+      <span class="focal-cap">/3 CORES ALIGNED</span>
+    </div>
+  </section>
+
+  <section class="panel map" aria-label="perimeter radar corner">
+    <canvas id="radar"></canvas>
+    <div class="cap-row"><span class="tiny">警戒</span><span class="tiny dim">WATCH</span></div>
+  </section>
+
+  <section class="panel log" aria-label="system log excerpt">
+    <div class="tiny">SYS·LOG</div>
+    <div class="log-body" id="logBody"></div>
+  </section>
+
+  <section class="panel count" aria-label="next sync countdown">
+    <div class="tiny">NEXT SYNC</div>
+    <div class="giant-count" id="countVal">05:00</div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const svgns="http://www.w3.org/2000/svg";
+const el=(n,a,p)=>{const e=document.createElementNS(svgns,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const q=id=>document.getElementById(id);
+const pad2=n=>String(n).padStart(2,"0");
+
+/* ---- state ---- */
+let mode="tactical";
+let hullBreach=false;
+let meterLevel=5;               // 0..9
+const SEG_N=9, THRESH=7;        // segments; index>=THRESH glows red
+let radarAngle=0;
+const radarBlips=[[40,60],[-70,20],[10,-80],[-30,-40],[75,-10]];
+let coreState=["idle","idle","idle"]; // per VEGA·1 / ALTAIR·2 / DENEB·3
+let coreCycleLock=false;
+let syncSeconds=300;
+let syncLock=false;
+const LOG_NOMINAL=[
+  "SYS·CHECK.......OK","LINK·CYGNUS·····OK","LINK·LYRA·······OK","TELEMETRY·······OK",
+  "UNIT-07·PING····OK","BUFFER·SYNC·····OK","THERMAL·SCAN····OK","ADVISORY·NONE···OK"
+];
+const LOG_ADVISORY="ADVISORY·MINOR··CHK";
+let logLines=[];
+
+/* ---- svg link layer ---- */
+const linkSvg=q("linkLayer");
+const FOCUS_MAP={
+  tactical:["map","log"],
+  systems:["status","meter"],
+  comms:["count","focal"]
+};
+function drawLinks(){
+  linkSvg.innerHTML="";
+  const focal=document.querySelector(".focal").getBoundingClientRect();
+  const targets=[["status","left"],["meter","left"],["map","right"],["log","right"],["count","right"]];
+  const focused=FOCUS_MAP[mode];
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("focus",focused.includes(p.className.split(" ")[1])));
+  targets.forEach(([cls,side],i)=>{
+    const r=document.querySelector("."+cls).getBoundingClientRect();
+    const isFocus=focused.includes(cls);
+    const y=Math.max(focal.top+14,Math.min(focal.bottom-14,r.top+r.height/2));
+    const fx=side==="left"?focal.left:focal.right;
+    const tx=side==="left"?r.right:r.left;
+    const ty=r.top+r.height/2;
+    const line=el("line",{x1:fx,y1:y,x2:tx,y2:ty},linkSvg);
+    const dot=el("circle",{cx:tx,cy:ty,r:3.5},linkSvg);
+    const lbl=el("text",{x:(fx+tx)/2,y:(y+ty)/2-6,"text-anchor":"middle"},linkSvg);
+    lbl.textContent=String(i+1).padStart(2,"0");
+    if(isFocus){line.classList.add("focus");dot.classList.add("focus");lbl.classList.add("focus");}
+  });
+}
+
+/* ---- mode rail wiring ---- */
+q("viewRail").addEventListener("click",e=>{
+  const b=e.target.closest(".modeBtn");
+  if(!b)return;
+  document.querySelectorAll(".modeBtn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  mode=b.dataset.mode;
+  drawLinks();
+});
+document.addEventListener("keydown",e=>{
+  const map={"1":"tactical","2":"systems","3":"comms"};
+  if(map[e.key]){
+    mode=map[e.key];
+    document.querySelectorAll(".modeBtn").forEach(x=>x.classList.toggle("active",x.dataset.mode===mode));
+    drawLinks();
+  }
+});
+addEventListener("resize",drawLinks);
+
+/* ---- clock ---- */
+function tickClock(){
+  const d=new Date();
+  q("clock").textContent=pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());
+}
+
+/* ---- hull status (giant kanji + EN caption) ---- */
+function tickHull(){
+  const roll=Math.random();
+  hullBreach = roll>0.92 ? !hullBreach && roll>0.96 : hullBreach; // rare, sticky
+  const word=q("hullWord"), cap=q("hullCap");
+  if(hullBreach){ word.textContent="警戒"; word.classList.add("alert"); cap.textContent="BREACH"; }
+  else{ word.textContent="密閉"; word.classList.remove("alert"); cap.textContent="SEALED"; }
+}
+
+/* ---- meter ---- */
+function renderMeter(){
+  const track=q("track");
+  track.innerHTML="";
+  for(let i=0;i<SEG_N;i++){
+    const s=document.createElement("div");
+    s.className="seg"+(i<meterLevel?(i>=THRESH?" hot":" on"):"");
+    track.appendChild(s);
+  }
+}
+function tickMeter(){
+  const drift = Math.random()<0.82 ? (Math.random()<0.5?-1:1) : (Math.random()<0.5?-2:2);
+  meterLevel = Math.max(1,Math.min(SEG_N,meterLevel+drift));
+  if(Math.random()<0.06) meterLevel = Math.min(SEG_N,meterLevel+3); // rare overload spike
+  renderMeter();
+}
+
+/* ---- core triad ---- */
+function renderTriad(){
+  document.querySelectorAll(".node").forEach((n,i)=>{n.className="node "+coreState[i];});
+  q("coreCount").textContent=coreState.filter(s=>s==="approved").length;
+  q("focalStamp").textContent=coreState.includes("pending")?"審査中":"承認";
+}
+function tickCore(){
+  if(coreCycleLock)return;
+  coreCycleLock=true;
+  const i=Math.floor(Math.random()*3);
+  const r=Math.random();
+  coreState[i] = r<0.78 ? "approved" : r<0.92 ? "pending" : r<0.98 ? "idle" : "denied";
+  renderTriad();
+  setTimeout(()=>{coreCycleLock=false;},400);
+}
+
+/* ---- radar ---- */
+function drawRadar(){
+  const cv=q("radar");
+  const size=Math.max(120,Math.min(cv.parentElement.clientWidth,cv.parentElement.clientHeight)-4);
+  if(cv.width!==size){cv.width=size;cv.height=size;}
+  const ctx=cv.getContext("2d");
+  const cx=size/2, cy=size/2, R=size/2-4;
+  ctx.clearRect(0,0,size,size);
+  ctx.strokeStyle="#246C3C";ctx.lineWidth=1;
+  [0.33,0.66,1].forEach(f=>{ctx.beginPath();ctx.arc(cx,cy,R*f,0,7);ctx.stroke();});
+  ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
+  ctx.strokeStyle="#F26400";
+  radarBlips.forEach(([dx,dy])=>{
+    const bx=cx+dx*(R/90), by=cy+dy*(R/90);
+    ctx.fillStyle="#52F29A";ctx.beginPath();ctx.arc(bx,by,3,0,7);ctx.fill();
+  });
+  if(!REDUCED){
+    const rad=radarAngle*Math.PI/180;
+    ctx.strokeStyle="#F49F09";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(rad),cy+R*Math.sin(rad));ctx.stroke();
+    radarAngle=(radarAngle+9)%360;
+  }
+}
+
+/* ---- log ---- */
+function tickLog(){
+  const line = Math.random()<0.9 ? LOG_NOMINAL[Math.floor(Math.random()*LOG_NOMINAL.length)] : LOG_ADVISORY;
+  logLines.push(line);
+  if(logLines.length>7) logLines.shift();
+  q("logBody").innerHTML=logLines.map(l=>`<div class="${l===LOG_ADVISORY?"adv":""}">${l}</div>`).join("");
+}
+
+/* ---- countdown ---- */
+function tickSync(){
+  if(syncSeconds<=0){
+    if(syncLock)return;
+    syncLock=true;
+    const el2=q("countVal");
+    if(!REDUCED) el2.classList.add("flick");
+    setTimeout(()=>{syncSeconds=300;el2.classList.remove("flick");syncLock=false;},360);
+    return;
+  }
+  syncSeconds--;
+  q("countVal").textContent=pad2(Math.floor(syncSeconds/60))+":"+pad2(syncSeconds%60);
+}
+
+/* ---- START ---- */
+renderMeter();
+renderTriad();
+tickClock();tickHull();tickMeter();tickLog();
+drawRadar();
+drawLinks();
+setInterval(tickClock,1000);
+setInterval(tickSync,1000);
+setInterval(tickMeter,900);
+setInterval(tickLog,1300);
+setInterval(tickCore,2600);
+setInterval(tickHull,4000);
+setInterval(drawRadar,90);
+</script>
+</body>
+</html>

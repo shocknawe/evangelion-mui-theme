@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-40 · FULL TACTICAL OVERVIEW</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);overflow:hidden}
+body{
+  font-family:var(--mono);color:var(--orange);text-transform:uppercase;
+  letter-spacing:.05em;position:relative;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---- corner metadata: mono KEY:VALUE, pinned, quiet ---- */
+.meta{position:fixed;top:14px;left:16px;font-size:11px;line-height:1.32;z-index:5;max-width:38vw}
+.meta div{white-space:nowrap}
+.meta span{color:var(--mint)}
+.meta .rule{border-top:1px solid var(--green-dim);margin:5px 0;width:70%}
+
+/* ---- status stamp: boxed, blink = in progress ---- */
+.stamp{position:fixed;top:14px;right:16px;text-align:right;z-index:5}
+.stamp .box{display:inline-block;border:1px solid var(--red-hi);color:var(--red-hi);
+  padding:4px 9px;font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.06em;
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(226,40,15,.4)}
+.stamp small{display:block;margin-top:4px;font-size:10px;color:var(--orange)}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:.12}}
+.blink{animation:blink 1s steps(1,end) infinite}
+@media (prefers-reduced-motion:reduce){.blink{animation:none;opacity:1}}
+
+/* ---- segmented gauge: discrete blocks + threshold plate ---- */
+.gauge{position:fixed;left:16px;bottom:16px;width:78px;font-size:9px;z-index:5}
+.g-label{margin-bottom:6px;line-height:1.3}
+.g-label span{display:block;color:var(--green-map)}
+.g-body{position:relative;height:150px;width:34px}
+.g-segs{position:absolute;inset:0;display:flex;flex-direction:column-reverse;gap:3px}
+.g-segs .seg{flex:1;border:1px solid var(--green-dim);background:transparent}
+.g-segs .seg.on{background:var(--red-hi);border-color:var(--red-hi);
+  box-shadow:0 0 6px rgba(226,40,15,.55),inset 0 0 4px rgba(226,40,15,.3)}
+.g-limit{position:absolute;left:-4px;right:-4px;top:30%;border-top:2px solid var(--amber);z-index:2}
+.g-limit span{position:absolute;left:100%;top:-7px;margin-left:4px;white-space:nowrap;
+  border:1px solid var(--amber);color:var(--amber);background:var(--bg);padding:1px 4px;font-size:8px}
+
+/* ---- radar/map corner: quiet, sweep ticks via JS, no easing ---- */
+.radar{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;z-index:5}
+.radar .plate{text-align:right;font-size:9px;color:var(--green-map)}
+.radar .plate b{display:block;font-family:var(--jp);font-weight:800;font-size:15px;color:var(--orange)}
+
+/* ---- hero: the ONE dominant signature element ---- */
+.hero{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center;
+  padding:26px 44px;border:2px solid var(--orange);background:rgba(10,10,10,.35);
+  box-shadow:0 0 8px rgba(242,100,0,.4),inset 0 0 12px rgba(242,100,0,.15);
+  clip-path:polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+  transition:none}
+.hero .plate-label{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.09em;color:var(--orange)}
+.hero .plate-sub{font-family:var(--mono);font-size:10px;color:var(--green-map);margin:2px 0 14px}
+.hero svg.digits{display:block;margin:0 auto}
+.seg{fill:#1a1206}
+.seg.on{fill:var(--orange);filter:drop-shadow(0 0 6px var(--orange)) drop-shadow(0 0 16px rgba(242,100,0,.5))}
+.dot{fill:#1a1206}
+.dot.on{fill:var(--orange);filter:drop-shadow(0 0 6px var(--orange))}
+.hero .caption{margin-top:16px;font-family:var(--jp);font-weight:800;font-size:22px;color:var(--mint)}
+.hero .caption span{display:block;font-family:var(--mono);font-weight:400;font-size:11px;
+  letter-spacing:.08em;color:var(--green-map);margin-top:5px}
+/* figure/ground inversion: the one bold moment when the window elapses */
+.hero.complete{background:var(--mint);border-color:var(--mint);
+  box-shadow:0 0 22px rgba(82,242,154,.6),inset 0 0 22px rgba(82,242,154,.35)}
+.hero.complete .plate-label,.hero.complete .plate-sub,.hero.complete .caption,.hero.complete .caption span{
+  color:var(--bg);text-shadow:none}
+.hero.complete .seg.on,.hero.complete .dot.on{fill:var(--bg);filter:none}
+.hero.complete .seg,.hero.complete .dot{fill:rgba(10,10,10,.3)}
+
+/* ---- focus rail: interactive control, quiet ---- */
+.rail{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
+.rail button{font-family:var(--mono);font-size:10px;letter-spacing:.05em;background:transparent;
+  border:1px solid var(--green-map);color:var(--green-map);padding:5px 11px;cursor:pointer;
+  text-transform:uppercase}
+.rail button.active{background:var(--mint);border-color:var(--mint);color:var(--bg)}
+.rail button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="meta" role="group" aria-label="station telemetry block">
+  <div>CODE:<span>KX4-0740</span></div>
+  <div>FILE:<span>TAC_OVERVIEW</span></div>
+  <div>EX_MODE:<span>LIVE</span></div>
+  <div>PRIORITY:<span>AA-</span></div>
+  <div class="rule"></div>
+  <div>HULL:<span id="mHull">98.2%</span></div>
+  <div>THERMAL:<span id="mTherm">+11C</span></div>
+  <div>CORE:<span id="mCore">VEGA·1 NOM</span></div>
+  <div>O2:<span id="mO2">99.6%</span></div>
+  <div>FOCUS:<span id="mFocus">VEGA·1</span></div>
+</div>
+
+<div class="stamp" role="status" aria-label="status stamp">
+  <span class="box" id="stampBox">警戒</span>
+  <small>VIGILANT WATCH</small>
+</div>
+
+<div class="gauge" role="group" aria-label="vega core load meter">
+  <div class="g-label">CORE LOAD<span>VEGA·1</span></div>
+  <div class="g-body">
+    <div class="g-limit"><span>LIMIT</span></div>
+    <div class="g-segs" id="gaugeSegs"></div>
+  </div>
+</div>
+
+<div class="radar" role="group" aria-label="sector radar, focus target follows focus rail">
+  <svg id="radarSvg" viewBox="0 0 120 120" width="120" height="120"></svg>
+  <div class="plate"><b>哨戒域</b><span>SECTOR PLOT</span></div>
+</div>
+
+<main class="hero" aria-label="perigee burn window countdown, the primary readout">
+  <div class="plate-label" id="heroLabel">PERIGEE BURN WINDOW</div>
+  <div class="plate-sub" id="heroSub">KESTREL·4 ORBITAL REALIGNMENT</div>
+  <svg id="digitsSvg" class="digits" width="1" height="1"></svg>
+  <div class="caption" id="heroCaption">残り時間<span>TIME REMAINING</span></div>
+</main>
+
+<div class="rail" role="group" aria-label="focus select">
+  <button data-id="VEGA" class="active">VEGA·1</button>
+  <button data-id="ALTAIR">ALTAIR·2</button>
+  <button data-id="UNIT07">UNIT-07</button>
+</div>
+
+<script>
+"use strict";
+/* zero-size viewport guard: Claude browser panes open 0x0 hidden tabs first */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---------------- helpers ---------------- */
+const el=(n,a,p)=>{
+  const e=document.createElementNS("http://www.w3.org/2000/svg",n);
+  for(const k in a)e.setAttribute(k,a[k]);
+  if(p)p.appendChild(e);
+  return e;
+};
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+/* bias helper: mostly returns the nominal value, rarely a spike */
+const biased=(nominal,spike,p)=>Math.random()<p?spike():nominal();
+
+/* seven-segment: original polygon geometry, not copied from other files.
+   segment key order: a=top b=top-right c=bottom-right d=bottom e=bottom-left f=top-left g=middle */
+const SEGMAP={0:"abcdef",1:"bc",2:"abged",3:"abgcd",4:"fgbc",5:"afgcd",6:"afgedc",7:"abc",8:"abcdefg",9:"abcdfg","-":"g"};
+function segPoly(kind,x,y,size,t){
+  if(kind==="h"){
+    const x1=x-size/2,x2=x+size/2;
+    return `${x1+t/2},${y} ${x1+t},${y-t/2} ${x2-t},${y-t/2} ${x2-t/2},${y} ${x2-t},${y+t/2} ${x1+t},${y+t/2}`;
+  }
+  const y1=y-size/2,y2=y+size/2;
+  return `${x},${y1+t/2} ${x+t/2},${y1+t} ${x+t/2},${y2-t} ${x},${y2-t/2} ${x-t/2},${y2-t} ${x-t/2},${y1+t}`;
+}
+function makeDigit(svg,x,y,val){
+  const t=9;
+  const defs={
+    a:["h",x+22,y+6,34], b:["v",x+37,y+25,31], c:["v",x+37,y+60,31],
+    d:["h",x+22,y+78,34], e:["v",x+7,y+60,31],  f:["v",x+7,y+25,31], g:["h",x+22,y+42,34]
+  };
+  const map={};
+  for(const k in defs){
+    const[kind,cx,cy,size]=defs[k];
+    map[k]=el("polygon",{points:segPoly(kind,cx,cy,size,t),class:"seg"},svg);
+  }
+  setDigit(map,val);
+  return map;
+}
+function setDigit(map,val){
+  const lit=(SEGMAP[val]!==undefined?SEGMAP[val]:"")+"";
+  for(const k in map)map[k].setAttribute("class","seg"+(lit.indexOf(k)>-1?" on":""));
+}
+
+/* ---------------- state ---------------- */
+const digitsSvg=document.getElementById("digitsSvg");
+const heroEl=document.querySelector(".hero");
+const heroLabel=document.getElementById("heroLabel");
+const heroSub=document.getElementById("heroSub");
+const heroCaption=document.getElementById("heroCaption");
+const stampBox=document.getElementById("stampBox");
+const gaugeSegsEl=document.getElementById("gaugeSegs");
+const radarSvg=document.getElementById("radarSvg");
+const railBtns=document.querySelectorAll(".rail button");
+
+const CELL=58, COLON=26, MARGIN=14, CELLH=104;
+const TOKENS=["d","d",":","d","d",":","d","d"]; /* HH:MM:SS */
+const digitMaps=[];
+const colonDots=[];
+let cursor=MARGIN;
+for(const tk of TOKENS){
+  if(tk==="d"){
+    digitMaps.push(makeDigit(digitsSvg,cursor,10,0));
+    cursor+=CELL;
+  }else{
+    const cx=cursor+COLON/2;
+    const top=el("circle",{cx,cy:10+35,r:6,class:"dot on"},digitsSvg);
+    const bot=el("circle",{cx,cy:10+59,r:6,class:"dot on"},digitsSvg);
+    colonDots.push(top,bot);
+    cursor+=COLON;
+  }
+}
+digitsSvg.setAttribute("viewBox",`0 0 ${cursor+MARGIN} ${CELLH}`);
+digitsSvg.setAttribute("width",cursor+MARGIN);
+digitsSvg.setAttribute("height",CELLH);
+
+let remaining=767; /* seconds: initial burn window, ~12m47s */
+let complete=false;
+
+function renderCountdown(sec){
+  const hh=Math.floor(sec/3600)%100, mm=Math.floor(sec/60)%60, ss=sec%60;
+  const chars=(String(hh).padStart(2,"0")+String(mm).padStart(2,"0")+String(ss).padStart(2,"0")).split("");
+  chars.forEach((c,i)=>setDigit(digitMaps[i],Number(c)));
+}
+function toggleColon(on){
+  colonDots.forEach(d=>d.setAttribute("class","dot"+(on?" on":"")));
+}
+function showComplete(){
+  complete=true;
+  heroEl.classList.add("complete");
+  heroLabel.textContent="WINDOW ELAPSED";
+  heroSub.textContent="AWAITING NEXT UPLINK";
+  heroCaption.innerHTML="待機<span>STANDBY</span>";
+}
+function showRunning(){
+  complete=false;
+  heroEl.classList.remove("complete");
+  heroLabel.textContent="PERIGEE BURN WINDOW";
+  heroSub.textContent="KESTREL·4 ORBITAL REALIGNMENT";
+  heroCaption.innerHTML="残り時間<span>TIME REMAINING</span>";
+}
+let locked=false; /* repeating-trigger guard: zero-crossing fires the finale exactly once */
+function tickCountdown(){
+  if(locked)return;
+  if(remaining>0)remaining--;
+  if(remaining<=0&&!complete){
+    locked=true;
+    showComplete();
+    setTimeout(()=>{
+      remaining=180+Math.floor(rnd(0,300));
+      locked=false;
+      showRunning();
+    },6000);
+  }
+  renderCountdown(remaining);
+}
+
+/* ---------------- radar ---------------- */
+const TARGETS={
+  VEGA:{x:60,y:38},ALTAIR:{x:86,y:78},UNIT07:{x:34,y:82}
+};
+const blipEls={};
+function buildRadar(){
+  el("circle",{cx:60,cy:60,r:56,class:"ring",fill:"none",stroke:"var(--green-dim)","stroke-width":"1"},radarSvg);
+  el("circle",{cx:60,cy:60,r:38,fill:"none",stroke:"var(--green-dim)","stroke-width":"1"},radarSvg);
+  el("circle",{cx:60,cy:60,r:20,fill:"none",stroke:"var(--green-map)","stroke-width":"1"},radarSvg);
+  el("line",{x1:2,y1:60,x2:118,y2:60,stroke:"var(--orange)","stroke-width":"1",opacity:"0.5"},radarSvg);
+  el("line",{x1:60,y1:2,x2:60,y2:118,stroke:"var(--orange)","stroke-width":"1",opacity:"0.5"},radarSvg);
+  const sweep=el("line",{x1:60,y1:60,x2:60,y2:4,stroke:"var(--mint)","stroke-width":"2",opacity:"0.85",id:"sweepLine"},radarSvg);
+  for(const id in TARGETS){
+    const t=TARGETS[id];
+    blipEls[id]=el("circle",{cx:t.x,cy:t.y,r:3,fill:"var(--green-map)"},radarSvg);
+  }
+  return sweep;
+}
+const sweepLine=buildRadar();
+let sweepDeg=0;
+function tickSweep(){
+  sweepDeg=(sweepDeg+15)%360;
+  sweepLine.setAttribute("transform",`rotate(${sweepDeg} 60 60)`);
+}
+function setFocus(id){
+  for(const k in blipEls){
+    blipEls[k].setAttribute("r","3");
+    blipEls[k].setAttribute("fill","var(--green-map)");
+  }
+  blipEls[id].setAttribute("r","5");
+  blipEls[id].setAttribute("fill","var(--mint-hi)");
+  document.getElementById("mFocus").textContent=id==="UNIT07"?"UNIT-07":id+"·"+(id==="VEGA"?"1":"2");
+  railBtns.forEach(b=>b.classList.toggle("active",b.dataset.id===id));
+}
+
+/* ---------------- gauge ---------------- */
+const N_SEG=10, LIMIT_IDX=7; /* segments above idx 7 cross the limit line */
+const segEls=[];
+for(let i=0;i<N_SEG;i++){
+  const d=document.createElement("div");
+  d.className="seg";
+  gaugeSegsEl.appendChild(d);
+  segEls.push(d);
+}
+let load=5;
+function renderGauge(){
+  segEls.forEach((s,i)=>s.classList.toggle("on",i<load));
+}
+function tickGauge(){
+  const nominal=()=>Math.max(2,Math.min(7,load+(Math.random()<0.5?-1:1)));
+  const spike=()=>Math.min(N_SEG,load+2);
+  load=biased(nominal,spike,0.08);
+  renderGauge();
+}
+
+/* ---------------- metadata ticker ---------------- */
+const mHull=document.getElementById("mHull"), mTherm=document.getElementById("mTherm"), mO2=document.getElementById("mO2");
+let hull=98.2, therm=11, o2=99.6;
+function tickMeta(){
+  hull=Math.max(94,hull-Math.random()*0.05);
+  therm=Math.round(therm+rnd(-1,1));
+  o2=Math.max(97,Math.min(99.9,o2+rnd(-0.15,0.15)));
+  mHull.textContent=hull.toFixed(1)+"%";
+  mTherm.textContent=(therm>=0?"+":"")+therm+"C";
+  mO2.textContent=o2.toFixed(1)+"%";
+}
+
+/* ---------------- wiring ---------------- */
+railBtns.forEach(b=>b.addEventListener("click",()=>setFocus(b.dataset.id)));
+
+/* ---- START ---- */
+renderCountdown(remaining);
+renderGauge();
+setFocus("VEGA");
+setInterval(tickCountdown,1000);
+setInterval(tickGauge,1300);
+setInterval(tickMeta,3600);
+if(!REDUCED){
+  setInterval(()=>toggleColon(true),0); /* no-op placeholder kept out of hot path */
+  let colonOn=true;
+  setInterval(()=>{colonOn=!colonOn;toggleColon(colonOn);},500);
+  stampBox.classList.add("blink");
+  setInterval(tickSweep,120);
+}else{
+  toggleColon(true);
+  sweepLine.setAttribute("transform","rotate(0 60 60)");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-25 · ASSET SCAN OVERLAY GREEN</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--mint);font-family:var(--mono);
+  text-transform:uppercase;line-height:1.25;overflow:hidden}
+
+/* CRT pass — every dark experiment carries this */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---- backdrop: the "content" being scanned — dim shelving grid, not the star ---- */
+#backdrop{position:fixed;inset:0;z-index:0;
+  background:
+    repeating-linear-gradient(90deg,rgba(60,156,108,.08) 0 1px,transparent 1px 64px),
+    repeating-linear-gradient(0deg,rgba(60,156,108,.08) 0 1px,transparent 1px 64px);
+  opacity:.6}
+#backdrop span{position:absolute;font-size:10px;letter-spacing:.14em;color:var(--green-map)}
+
+/* ---- scan overlay: repeating icon+label units, additive over the backdrop ---- */
+#scanGrid{position:fixed;inset:0;z-index:2;display:grid;mix-blend-mode:screen}
+.unit{display:flex;align-items:center;justify-content:center;gap:8px;
+  opacity:0;transform:scaleY(.15);transform-origin:center}
+.unit.show{opacity:1;transform:none} /* hard snap — no transition, cascade timing does the work */
+
+/* folder glyph — single-weight 2px geometric outline, the one true pictogram */
+.folder{width:26px;height:20px;position:relative;flex:none;
+  border:2px solid var(--mint);border-radius:1px;opacity:.9}
+.folder::before{content:"";position:absolute;top:-6px;left:-2px;width:12px;height:5px;
+  border:2px solid var(--mint);border-bottom:none;border-radius:1px 1px 0 0}
+
+/* vertical label bar — additive mint fill, rotated mono id */
+.bar{width:20px;height:74%;background:rgba(82,242,154,.16);
+  border-left:2px solid rgba(82,242,154,.55);flex:none;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bar span{transform:rotate(90deg);white-space:nowrap;font-size:9px;
+  letter-spacing:.12em;color:var(--mint-hi);
+  text-shadow:0 0 3px currentColor,0 0 8px rgba(82,242,154,.4)}
+
+/* ---- HUD chrome: corner-pinned metadata, boxed stamp, giant readout ---- */
+.meta{position:fixed;top:14px;left:16px;z-index:10;font-size:11px;line-height:1.3;
+  color:var(--orange);text-shadow:0 0 4px rgba(242,100,0,.35)}
+.meta b{color:var(--mint)}
+
+.stamp{position:fixed;top:14px;right:16px;z-index:10;border:1px solid var(--mint);
+  color:var(--mint);padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-shadow:0 0 4px currentColor}
+.stamp.busy{animation:blink 1s steps(1) infinite}
+.stamp.done{background:var(--mint);color:var(--bg);text-shadow:none;border-color:var(--mint)}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.readout{position:fixed;left:16px;bottom:64px;z-index:10}
+.readout .big{font-family:var(--cond);font-weight:700;font-size:clamp(30px,6vw,54px);
+  color:var(--mint);text-shadow:0 0 4px currentColor,0 0 14px rgba(82,242,154,.4)}
+.readout .cap{font-size:10px;letter-spacing:.16em;color:var(--green-map)}
+
+.pair{position:fixed;right:16px;bottom:64px;z-index:10;text-align:right}
+.pair .kanji{font-family:var(--jp);font-weight:800;font-size:26px;color:var(--paper);
+  text-shadow:0 0 6px rgba(237,248,214,.35)}
+.pair .cap{font-size:10px;letter-spacing:.14em;color:var(--green-map);margin-top:1px}
+
+.hud{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:center;
+  gap:16px;background:var(--bg);border-top:2px solid var(--orange);padding:10px 16px}
+.hud .label{font-size:10px;color:var(--amber);letter-spacing:.14em;line-height:1.35;flex:1}
+.hud button{background:transparent;border:2px solid var(--orange);color:var(--orange);
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;padding:8px 20px;cursor:pointer}
+.hud button:hover{background:var(--orange);color:var(--bg)}
+.hud button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.hud button:disabled{opacity:.4;cursor:default}
+
+@media (prefers-reduced-motion:reduce){.stamp.busy{animation:none}}
+</style>
+</head>
+<body>
+
+<div id="backdrop" aria-hidden="true"></div>
+<div id="scanGrid" aria-hidden="true"></div>
+
+<div class="meta">
+  CODE:<b>KT4-ARCV-091</b><br>
+  FILE:<b>SECTOR_07_IDX</b><br>
+  ORIGIN:<b>KESTREL·4 / ARCHIVE DECK</b><br>
+  EX_MODE:<b>READ-ONLY</b><br>
+  PRIORITY:<b>C--</b>
+</div>
+
+<div class="stamp busy" id="stamp">点検中 · SCANNING</div>
+
+<div class="readout">
+  <div class="big" id="bigCount">00000/00000</div>
+  <div class="cap">ASSETS INDEXED</div>
+</div>
+
+<div class="pair">
+  <div class="kanji" id="kanji">点検中</div>
+  <div class="cap" id="kanjiCap">INTEGRITY SWEEP</div>
+</div>
+
+<div class="hud">
+  <span class="label">ARCHIVE INTEGRITY SCAN · SECTOR-07<br>PASS <span id="passNo">01</span> · KESTREL·4 CONSENSUS AUDIT</span>
+  <div role="group" aria-label="Scan controls">
+    <button id="rescan" type="button">RESCAN SECTOR</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* Grammar under study: §20 folder.gif — a repeating grid of icon+label units,
+   additive/screen-blend over content, whose only job is to convey VOLUME
+   (how much is being scanned), not per-item detail. The signature move is
+   the cascade itself: the grid does not fade in, it snaps in unit-by-unit,
+   row-major, until the whole screen is dense with it. */
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- helpers ---- */
+const rid = () => {
+  /* binary-flavoured asset id, e.g. 10110·CAT7 */
+  const bits = Array.from({length:6},()=>Math.random()<.5?"0":"1").join("");
+  const cat = "CAT" + String(Math.floor(Math.random()*9)+1);
+  return bits + "·" + cat;
+};
+const pad = (n,w) => String(n).padStart(w,"0");
+
+/* ---- state ---- */
+const grid = document.getElementById("scanGrid");
+const bigCount = document.getElementById("bigCount");
+const stamp = document.getElementById("stamp");
+const kanji = document.getElementById("kanji");
+const kanjiCap = document.getElementById("kanjiCap");
+const passNo = document.getElementById("passNo");
+const rescanBtn = document.getElementById("rescan");
+
+let queue = [];     /* units in row-major reveal order */
+let TOTAL = 0;
+let scanning = false; /* repeating-trigger guard — one cascade at a time */
+let pass = 1;
+
+/* Backdrop sector labels — just enough to read as "content" under the veil */
+function buildBackdrop(){
+  const bd = document.getElementById("backdrop");
+  bd.innerHTML = "";
+  const labels = ["DECK-3 / RACK-12","DECK-3 / RACK-13","DECK-3 / RACK-14","DECK-3 / RACK-15"];
+  labels.forEach((t,i)=>{
+    const s = document.createElement("span");
+    s.textContent = t;
+    s.style.left = (8 + i*24) + "%";
+    s.style.top = (10 + i*20) + "%";
+    bd.appendChild(s);
+  });
+}
+
+/* Build the dense unit grid to exactly tile the current viewport —
+   density itself is the message, so the grid always fills the screen. */
+function buildGrid(){
+  grid.innerHTML = "";
+  queue = [];
+  const cw = 76, ch = 92; /* target cell size, px */
+  const cols = Math.max(4, Math.round(innerWidth / cw));
+  const rows = Math.max(4, Math.round(innerHeight / ch));
+  grid.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  grid.style.gridTemplateRows = `repeat(${rows},1fr)`;
+  TOTAL = cols * rows;
+  for(let i=0;i<TOTAL;i++){
+    const u = document.createElement("div");
+    u.className = "unit";
+    u.innerHTML = `<div class="folder"></div><div class="bar"><span>${rid()}</span></div>`;
+    grid.appendChild(u);
+    queue.push(u);
+  }
+  bigCount.textContent = pad(0,5) + "/" + pad(TOTAL,5);
+}
+
+/* Cascade the grid into view: staggered hard-snap reveal, row-major,
+   30-80ms/unit per the motion grammar. REDUCED users get the final
+   state immediately with no strobing stamp. */
+function runScan(){
+  if(scanning) return;
+  scanning = true;
+  rescanBtn.disabled = true;
+  queue.forEach(u=>u.classList.remove("show"));
+  stamp.className = "stamp busy";
+  stamp.textContent = "点検中 · SCANNING";
+  kanji.textContent = "点検中";
+  kanjiCap.textContent = "INTEGRITY SWEEP";
+
+  if(REDUCED){
+    queue.forEach(u=>u.classList.add("show"));
+    bigCount.textContent = pad(TOTAL,5) + "/" + pad(TOTAL,5);
+    finishScan();
+    return;
+  }
+
+  let idx = 0;
+  const STAGGER = 40; /* ms/unit — cascade stagger, per the motion grammar */
+  const timer = setInterval(()=>{
+    queue[idx].classList.add("show");
+    idx++;
+    bigCount.textContent = pad(idx,5) + "/" + pad(TOTAL,5);
+    if(idx >= queue.length){
+      clearInterval(timer);
+      finishScan();
+    }
+  },STAGGER);
+}
+
+/* Completion: figure/ground inversion marks the state change — the stamp
+   flips from outline-on-black to solid mint fill with punched black text. */
+function finishScan(){
+  stamp.className = "stamp done";
+  stamp.textContent = "承認 · APPROVED";
+  kanji.textContent = "承認";
+  kanjiCap.textContent = "PASS NOMINAL";
+  rescanBtn.disabled = false;
+  scanning = false;
+}
+
+rescanBtn.addEventListener("click", ()=>{
+  pass += 1;
+  passNo.textContent = pad(pass,2);
+  buildGrid();
+  runScan();
+});
+
+/* resize: full-screen procedural pieces rebuild and re-cascade on resize */
+addEventListener("resize", ()=>{ if(!scanning){ buildGrid(); runScan(); } });
+
+/* ---- START ---- */
+buildBackdrop();
+buildGrid();
+runScan();
+</script>
+</body>
+</html>

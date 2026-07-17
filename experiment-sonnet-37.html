@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-37 · UNIT ROSTER GRID</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--mint);font-family:var(--mono);
+  text-transform:uppercase;letter-spacing:.03em;padding:20px 24px 32px}
+/* CRT pass — phosphor scan + vignette, present on every dark screen */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---------- header: corner-pinned metadata + kanji header pair ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  flex-wrap:wrap;margin-bottom:16px;border-bottom:2px solid var(--orange);padding-bottom:12px}
+.meta{font-size:12px;color:var(--orange);line-height:1.3;letter-spacing:.05em}
+.meta b{color:var(--mint-hi)}
+.kanji-head{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.kanji-head .jp{font-family:var(--jp);font-weight:800;font-size:1.8rem;line-height:1;color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(242,100,0,.4)}
+.kanji-head .cap{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--mint)}
+.fleet-count{font-family:var(--cond);font-weight:700;font-size:22px;color:var(--mint-hi);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4)}
+
+/* ---------- legend: boxed status stamps, kanji+EN caption pairing ---------- */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.lg{border:1px solid;padding:3px 10px;display:flex;flex-direction:column;align-items:center;
+  min-width:56px;border-radius:2px}
+.lg .jp{font-family:var(--jp);font-weight:800;font-size:1rem;line-height:1.1}
+.lg .cap{font-family:var(--mono);font-size:9px;letter-spacing:.1em;margin-top:1px}
+.lg-nominal{border-color:var(--mint);color:var(--mint)}
+.lg-caution{border-color:var(--amber);color:var(--amber)}
+.lg-standby{border-color:var(--blue);color:var(--blue)}
+.lg-offline{border-color:var(--red-hi);background:var(--red-hi);color:#000}
+
+/* ---------- layout: grid + telemetry rail ---------- */
+.layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.grid{flex:2 1 520px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px}
+
+/* ---------- unit card: idle outline, state-driven color, offline = figure/ground flip ---------- */
+.card{font-family:var(--mono);text-transform:uppercase;cursor:pointer;text-align:left;
+  background:var(--bg);border:1px solid var(--green-dim);color:var(--mint);
+  padding:10px 12px;display:flex;flex-direction:column;gap:8px;position:relative;transition:none}
+.card:focus-visible{outline:2px dashed var(--amber);outline-offset:2px}
+.card .row{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.05em}
+.card .uid{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.02em}
+.card .core{font-size:10px;color:inherit;opacity:.85}
+.card .meta-line{font-size:10px;letter-spacing:.04em;opacity:.85}
+.card .stamp{align-self:flex-start;border:1px solid currentColor;padding:2px 8px;font-size:10px;
+  letter-spacing:.08em;border-radius:2px}
+.card[aria-pressed="true"]{border-width:2px}
+
+/* per-status colorway: idle outline on black, hue = state, layout constant */
+.card[data-status="NOMINAL"]{border-color:var(--mint);color:var(--mint)}
+.card[data-status="CAUTION"]{border-color:var(--amber);color:var(--amber)}
+.card[data-status="CAUTION"] .stamp{animation:blink 1s steps(1) infinite}
+.card[data-status="STANDBY"]{border-color:var(--blue);color:var(--blue)}
+/* OFFLINE: the signature inversion — solid fill, black content, no glow, no stroke */
+.card[data-status="OFFLINE"]{background:var(--red-hi);border-color:var(--red-hi);color:#000}
+.card[data-status="OFFLINE"] .stamp{border-color:#000;background:#000;color:var(--red-hi)}
+/* transitional flicker: 2-3 frame hide/show before the state settles (never a fade) */
+.card.flicker{visibility:hidden}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ---------- telemetry rail: single selected unit, corner-pinned metadata ---------- */
+.rail{flex:1 1 220px;border:1px solid var(--orange);padding:16px;min-height:180px;
+  box-shadow:0 0 6px rgba(242,100,0,.3),inset 0 0 6px rgba(242,100,0,.12)}
+.rail h2{font-family:var(--cond);font-size:14px;margin:0 0 10px;color:var(--orange);letter-spacing:.06em}
+.rail p{margin:3px 0;font-size:12px;color:var(--mint);letter-spacing:.04em}
+.rail .placeholder{color:var(--green-dim);font-size:11px}
+.rail .rstat{display:inline-block;border:1px solid currentColor;padding:2px 8px;border-radius:2px;
+  font-size:11px;margin-top:6px}
+
+.clock{position:fixed;bottom:8px;right:10px;font-size:11px;color:var(--green-map);z-index:1}
+
+@media (prefers-reduced-motion:reduce){
+  .card[data-status="CAUTION"] .stamp{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="meta">
+    KESTREL·4 // FLEET ROSTER<br>
+    CORE:<b>ALTAIR·2</b> · OVERSEER<br>
+    SECTOR:07-C · <span class="fleet-count" id="fleetCount">16/16 NOMINAL</span>
+  </div>
+  <div class="kanji-head">
+    <span class="jp">配備</span>
+    <span class="cap">DEPLOYMENT ROSTER</span>
+  </div>
+</div>
+
+<div class="legend" role="img" aria-label="Status key: nominal, caution, standby, offline">
+  <span class="lg lg-nominal"><span class="jp">正常</span><span class="cap">NOMINAL</span></span>
+  <span class="lg lg-caution"><span class="jp">注意</span><span class="cap">CAUTION</span></span>
+  <span class="lg lg-standby"><span class="jp">待機</span><span class="cap">STANDBY</span></span>
+  <span class="lg lg-offline"><span class="jp">離脱</span><span class="cap">OFFLINE</span></span>
+</div>
+
+<div class="layout">
+  <div id="grid" class="grid" role="group" aria-label="KESTREL·4 tactical unit roster"></div>
+
+  <aside class="rail" aria-live="polite">
+    <h2>UNIT TELEMETRY</h2>
+    <div id="railBody"><p class="placeholder">SELECT A UNIT FOR TELEMETRY READOUT</p></div>
+  </aside>
+</div>
+
+<div class="clock" id="clock">T+00:00:00</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+function pad(n){return String(n).padStart(2,"0");}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function rand(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+
+/* ---- state ---- */
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const CORES=["VEGA·1","ALTAIR·2","DENEB·3","LYRA","CYGNUS","AQUILA"];
+/* weighted roll: nominal state dominates, offline is rare and dramatic */
+const ROLL=[
+  {status:"NOMINAL",w:80},
+  {status:"CAUTION",w:12},
+  {status:"STANDBY",w:5},
+  {status:"OFFLINE",w:3}
+];
+function rollStatus(){
+  const total=ROLL.reduce((s,r)=>s+r.w,0);
+  let n=Math.random()*total;
+  for(const r of ROLL){ if((n-=r.w)<=0) return r.status; }
+  return "NOMINAL";
+}
+
+const N=16;
+const units=[];
+for(let i=1;i<=N;i++){
+  units.push({
+    id:"UNIT-"+pad(i,2)===undefined?"":"UNIT-"+pad(i),
+    core:pick(CORES),
+    hull:rand(84,100),
+    sector:pad(rand(1,9))+"-"+String.fromCharCode(65+rand(0,4)),
+    status: i===7?"CAUTION":(Math.random()<.9?"NOMINAL":"STANDBY"), /* seed a little life at load */
+    locked:false
+  });
+}
+
+const grid=document.getElementById("grid");
+const railBody=document.getElementById("railBody");
+const fleetCount=document.getElementById("fleetCount");
+const clockEl=document.getElementById("clock");
+let selectedId=null;
+let elapsed=0;
+
+/* ---- rendering ---- */
+function cardMarkup(u){
+  return '<span class="row"><span class="uid">'+u.id+'</span><span class="core">'+u.core+'</span></span>'+
+    '<span class="stamp">'+u.status+'</span>'+
+    '<span class="meta-line">HULL:'+u.hull+'% · SECTOR:'+u.sector+'</span>';
+}
+function buildGrid(){
+  units.forEach(u=>{
+    const b=document.createElement("button");
+    b.className="card";
+    b.type="button";
+    b.dataset.id=u.id;
+    b.dataset.status=u.status;
+    b.setAttribute("aria-pressed","false");
+    b.setAttribute("aria-label",u.id+" status "+u.status);
+    b.innerHTML=cardMarkup(u);
+    grid.appendChild(b);
+  });
+}
+function cardEl(id){ return grid.querySelector('.card[data-id="'+id+'"]'); }
+
+function renderRail(){
+  if(!selectedId){ railBody.innerHTML='<p class="placeholder">SELECT A UNIT FOR TELEMETRY READOUT</p>'; return; }
+  const u=units.find(x=>x.id===selectedId);
+  if(!u){ selectedId=null; renderRail(); return; }
+  railBody.innerHTML=
+    '<p>ID:'+u.id+'</p>'+
+    '<p>CORE:'+u.core+'</p>'+
+    '<p>HULL:'+u.hull+'%</p>'+
+    '<p>SECTOR:'+u.sector+'</p>'+
+    '<span class="rstat">'+u.status+'</span>';
+}
+
+function updateFleetCount(){
+  const nom=units.filter(u=>u.status==="NOMINAL").length;
+  fleetCount.textContent=nom+"/"+N+" NOMINAL";
+}
+
+/* ---- status application: snap with a 2-3 frame flicker, never a fade ---- */
+function setStatus(u,next){
+  if(u.status===next||u.locked)return;   /* repeating-trigger guard */
+  u.locked=true;
+  const el=cardEl(u.id);
+  function settle(){
+    u.status=next;
+    if(el){ el.dataset.status=next; el.querySelector(".stamp").textContent=next;
+      el.setAttribute("aria-label",u.id+" status "+next); }
+    updateFleetCount();
+    if(selectedId===u.id) renderRail();
+    u.locked=false;
+  }
+  if(REDUCED||!el){ settle(); return; }        /* reduced motion: snap, no flicker */
+  el.classList.add("flicker");
+  setTimeout(()=>{ el.classList.remove("flicker");
+    setTimeout(()=>{ el.classList.add("flicker");
+      setTimeout(()=>{ el.classList.remove("flicker"); settle(); },50);
+    },120);
+  },60);
+}
+
+/* ---- wiring ---- */
+grid.addEventListener("click",(e)=>{
+  const btn=e.target.closest(".card");
+  if(!btn)return;
+  const prev=grid.querySelector('.card[aria-pressed="true"]');
+  if(prev&&prev!==btn) prev.setAttribute("aria-pressed","false");
+  const nowSelected=btn.getAttribute("aria-pressed")==="true";
+  btn.setAttribute("aria-pressed",nowSelected?"false":"true");
+  selectedId=nowSelected?null:btn.dataset.id;
+  renderRail();
+});
+
+/* keep a few cells ticking even when idle */
+setInterval(()=>{
+  const count=REDUCED?1:rand(1,2);
+  for(let i=0;i<count;i++){
+    const u=pick(units);
+    setStatus(u,rollStatus());
+  }
+},2200);
+
+setInterval(()=>{
+  elapsed++;
+  const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
+  clockEl.textContent="T+"+pad(h)+":"+pad(m)+":"+pad(s);
+},1000);
+
+/* ---- START ---- */
+buildGrid();
+updateFleetCount();
+renderRail();
+</script>
+</body>
+</html>

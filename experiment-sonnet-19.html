@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXPERIMENT-19 · CONSENSUS VOTE BOARD</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);}
+body{
+  color:var(--mint);font-family:var(--mono);text-transform:uppercase;
+  overflow:hidden;position:relative;letter-spacing:.04em;
+  -webkit-font-smoothing:antialiased;
+}
+/* CRT pass — scanlines + vignette, every dark experiment carries this */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---- metadata / chrome, corner-pinned ---- */
+.meta{position:fixed;top:14px;left:16px;font-size:11px;line-height:1.3;color:var(--orange);z-index:5;}
+.meta b{color:var(--orange);}
+.clock{position:fixed;bottom:14px;left:16px;font-size:11px;color:var(--green-map);z-index:5;}
+.clock span{color:var(--mint);}
+
+header.hdr{position:fixed;top:12px;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:5;}
+.hdr-jp{font-family:var(--jp);font-weight:800;font-size:34px;color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(242,100,0,.4);line-height:1;}
+.hdr-rule{width:180px;height:2px;background:var(--teal);margin-top:6px;box-shadow:0 4px 0 -2px var(--teal);}
+.hdr-rule::after{content:"";display:block;width:180px;height:2px;background:var(--teal);margin-top:3px;}
+.hdr-en{font-size:11px;letter-spacing:.2em;color:var(--teal);margin-top:6px;}
+
+/* status stamp, top-right */
+.stamp{position:fixed;top:14px;right:16px;z-index:5;border:1px solid var(--orange);color:var(--orange);
+  padding:4px 10px;font-size:11px;line-height:1.3;text-align:right;}
+.stamp b{display:block;font-size:13px;}
+.stamp.review{border-color:var(--red-hi);color:var(--red-hi);animation:blink 1s steps(1) infinite;}
+.stamp.approved{background:var(--mint);border-color:var(--mint);color:var(--bg);text-shadow:none;}
+.stamp.denied{background:var(--red-hi);border-color:var(--red-hi);color:var(--bg);text-shadow:none;}
+@keyframes blink{50%{opacity:0;}}
+
+/* ---- stage: horizontal row of nodes over a hub ---- */
+.stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(28px,6vh,56px);}
+.row{display:flex;gap:clamp(18px,3vw,40px);z-index:2;}
+
+.node{
+  width:clamp(170px,20vw,240px);height:clamp(130px,16vw,180px);
+  background:var(--bg);border:2px solid var(--orange);
+  box-shadow:0 0 6px rgba(242,100,0,.4),inset 0 0 6px rgba(242,100,0,.15);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  transition:none; /* state changes snap, never ease */
+}
+/* three distinct chamfer geometries — never a plain cut-two-corners rectangle */
+.node[data-shape="a"]{clip-path:polygon(24px 0,100% 0,100% calc(100% - 24px),calc(100% - 24px) 100%,0 100%,0 24px);}
+.node[data-shape="b"]{clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 24px,100% calc(100% - 24px),calc(100% - 24px) 100%,24px 100%,0 calc(100% - 24px),0 24px);}
+.node[data-shape="c"]{clip-path:polygon(0 0,calc(100% - 40px) 0,100% 40px,100% 100%,14px 100%,0 calc(100% - 14px));}
+
+.node .desig{font-family:var(--cond);font-weight:700;font-size:clamp(18px,2.4vw,26px);color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.35);}
+.node .chip{border:1px solid var(--orange);color:var(--orange);font-size:10px;padding:2px 8px;}
+.node.pending{background:var(--blue);border-color:var(--blue);box-shadow:none;}
+.node.pending .desig,.node.pending .chip{color:var(--bg);text-shadow:none;border-color:var(--bg);}
+.node.approved{background:var(--mint);border-color:var(--mint);box-shadow:none;}
+.node.approved .desig,.node.approved .chip{color:var(--bg);text-shadow:none;border-color:var(--bg);}
+.node.denied{background:var(--red);border-color:var(--red);box-shadow:none;}
+.node.denied .desig,.node.denied .chip{color:var(--bg);text-shadow:none;border-color:var(--bg);}
+/* two-to-three frame settle flicker on a fresh state */
+.node.flick{animation:flick .28s steps(1) 3;}
+@keyframes flick{50%{filter:brightness(2.4);}}
+
+svg.wires{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+
+.hub{
+  width:clamp(220px,26vw,300px);height:clamp(110px,13vw,140px);
+  background:var(--bg);border:2px solid var(--orange);
+  box-shadow:0 0 6px rgba(242,100,0,.4),inset 0 0 6px rgba(242,100,0,.15);
+  clip-path:polygon(32px 0,calc(100% - 32px) 0,100% 32px,100% calc(100% - 32px),calc(100% - 32px) 100%,32px 100%,0 calc(100% - 32px),0 32px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:2;
+}
+.hub .name{font-family:var(--cond);font-weight:700;font-size:clamp(28px,4vw,44px);color:var(--mint);
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.4);}
+.hub .cap{font-size:10px;color:var(--green-map);}
+.hub.approved{background:var(--mint);border-color:var(--mint);box-shadow:none;}
+.hub.approved .name,.hub.approved .cap{color:var(--bg);text-shadow:none;}
+.hub.denied{background:var(--red);border-color:var(--red);box-shadow:none;}
+.hub.denied .name,.hub.denied .cap{color:var(--bg);text-shadow:none;}
+.hub.flick{animation:flick .28s steps(1) 3;}
+
+/* ---- controls ---- */
+.controls{position:fixed;bottom:20px;right:16px;display:flex;align-items:center;gap:14px;z-index:5;}
+.result{border:1px solid var(--orange);color:var(--orange);padding:5px 12px;font-size:12px;min-width:150px;text-align:center;}
+.result.review{border-color:var(--red-hi);color:var(--red-hi);animation:blink 1s steps(1) infinite;}
+.result.approved{background:var(--mint);color:var(--bg);border-color:var(--mint);}
+.result.denied{background:var(--red-hi);color:var(--bg);border-color:var(--red-hi);}
+button{
+  font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  background:var(--bg);color:var(--orange);border:2px solid var(--orange);
+  padding:10px 20px;font-size:13px;cursor:pointer;
+}
+button:hover{background:var(--orange);color:var(--bg);}
+button:disabled{color:var(--green-dim);border-color:var(--green-dim);cursor:default;background:var(--bg);}
+button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px;}
+
+@media (prefers-reduced-motion:reduce){
+  .stamp.review,.result.review{animation:none;}
+  .node.flick,.hub.flick{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="meta" aria-hidden="true">
+  <div><b>CODE:</b>184</div>
+  <div><b>FILE:</b>SYNOD_ARB</div>
+  <div><b>EX_MODE:</b>LIVE</div>
+  <div><b>PRIORITY:</b>B++</div>
+  <div><b>SUBJECT:</b>UNIT-07</div>
+</div>
+<div class="clock" aria-hidden="true">T+<span id="clk">00:00</span> · KESTREL·4</div>
+
+<header class="hdr">
+  <div class="hdr-jp">決議</div>
+  <div class="hdr-rule"></div>
+  <div class="hdr-en">RESOLUTION · ARBITRATION CYCLE</div>
+</header>
+
+<div class="stamp" id="stamp" role="status" aria-live="polite">
+  <b id="stampJp">待機</b><span id="stampEn">STANDBY</span>
+</div>
+
+<main class="stage">
+  <div class="row" role="group" aria-label="consensus nodes">
+    <div class="node" data-shape="a" id="n0">
+      <div class="desig">RIGEL·1</div>
+      <div class="chip" id="c0">STANDBY</div>
+    </div>
+    <div class="node" data-shape="b" id="n1">
+      <div class="desig">SPICA·2</div>
+      <div class="chip" id="c1">STANDBY</div>
+    </div>
+    <div class="node" data-shape="c" id="n2">
+      <div class="desig">ANTARES·3</div>
+      <div class="chip" id="c2">STANDBY</div>
+    </div>
+  </div>
+
+  <svg class="wires" id="wires" aria-hidden="true"></svg>
+
+  <div class="hub" id="hub">
+    <div class="name">SYNOD</div>
+    <div class="cap">ARBITRATION CORE · KESTREL·4</div>
+  </div>
+</main>
+
+<div class="controls">
+  <div class="result" id="result">否 / 承 —</div>
+  <button id="voteBtn">COMMIT VOTE</button>
+</div>
+
+<script>
+"use strict";
+
+/* zero-size viewport guard — background 0x0 tabs otherwise render broken SVG */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---------- helpers ---------- */
+const el=(n,a,p)=>{
+  const s=document.createElementNS("http://www.w3.org/2000/svg",n);
+  for(const k in a)s.setAttribute(k,a[k]);
+  if(p)p.appendChild(s);
+  return s;
+};
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- state ---------- */
+const nodeEls=[document.getElementById("n0"),document.getElementById("n1"),document.getElementById("n2")];
+const chipEls=[document.getElementById("c0"),document.getElementById("c1"),document.getElementById("c2")];
+const hubEl=document.getElementById("hub");
+const wiresSvg=document.getElementById("wires");
+const stampEl=document.getElementById("stamp");
+const stampJp=document.getElementById("stampJp");
+const stampEn=document.getElementById("stampEn");
+const resultEl=document.getElementById("result");
+const voteBtn=document.getElementById("voteBtn");
+const clk=document.getElementById("clk");
+
+let running=false;   /* repeating-trigger guard: blocks overlapping vote cycles */
+let wireLines=[];
+let elapsed=0;
+
+/* ---------- wiring / drawing ---------- */
+function drawWires(){
+  wiresSvg.innerHTML="";
+  wireLines=[];
+  const stageBox=wiresSvg.getBoundingClientRect();
+  const hubBox=hubEl.getBoundingClientRect();
+  const hx=hubBox.left+hubBox.width/2-stageBox.left;
+  const hy=hubBox.top-stageBox.top;
+  nodeEls.forEach(n=>{
+    const b=n.getBoundingClientRect();
+    const nx=b.left+b.width/2-stageBox.left;
+    const ny=b.bottom-stageBox.top;
+    const line=el("line",{x1:nx,y1:ny,x2:hx,y2:hy,stroke:"#F26400","stroke-width":2,opacity:.7},wiresSvg);
+    wireLines.push(line);
+  });
+}
+
+function setNodeState(i,state,word){
+  const n=nodeEls[i],c=chipEls[i];
+  n.classList.remove("pending","approved","denied");
+  if(state)n.classList.add(state);
+  c.textContent=word;
+  if(!REDUCED){
+    n.classList.remove("flick");void n.offsetWidth;n.classList.add("flick");
+  }
+  wireLines[i].setAttribute("stroke",
+    state==="approved"?"#52F29A":state==="denied"?"#C20C0C":state==="pending"?"#5090D0":"#F26400");
+}
+
+function setStamp(mode,jp,en){
+  stampEl.className="stamp "+mode;
+  resultEl.className="result "+mode;
+  stampJp.textContent=jp;
+  stampEn.textContent=en;
+  resultEl.textContent=jp+" / "+en;
+}
+
+function resetBoard(){
+  nodeEls.forEach((n,i)=>{n.className="node";n.setAttribute("data-shape",["a","b","c"][i]);chipEls[i].textContent="STANDBY";});
+  hubEl.classList.remove("approved","denied","flick");
+  setStamp("","待機","STANDBY");
+  drawWires();
+}
+
+/* ---------- vote cycle ---------- */
+function commitVote(){
+  if(running)return;           /* guard against re-firing mid-cycle */
+  running=true;
+  voteBtn.disabled=true;
+  setStamp("review","審査中","IN REVIEW");
+  nodeEls.forEach((n,i)=>{wireLines[i].setAttribute("stroke","#F49F09");});
+
+  let resolved=0;
+  const outcomes=[];
+
+  nodeEls.forEach((n,i)=>{
+    /* cascade: nodes enter pending in a stagger, not all at once */
+    setTimeout(()=>{
+      setNodeState(i,"pending","PENDING");
+      /* each node settles after its own dwell, biased toward approval */
+      setTimeout(()=>{
+        const approve=Math.random()<0.8;
+        outcomes[i]=approve;
+        setNodeState(i,approve?"approved":"denied",approve?"APPROVED":"DENIED");
+        resolved++;
+        if(resolved===nodeEls.length)finalizeBoard(outcomes);
+      },900+i*140);
+    },i*380);
+  });
+}
+
+function finalizeBoard(outcomes){
+  const approvals=outcomes.filter(Boolean).length;
+  const approved=approvals>=2;
+  const finish=()=>{
+    hubEl.classList.add(approved?"approved":"denied");
+    setStamp(approved?"approved":"denied",approved?"承認":"否定",approved?"APPROVED":"DENIED");
+    running=false;
+    voteBtn.disabled=false;
+  };
+  if(REDUCED){finish();return;}
+  /* signature moment: 2-3 frame flicker on the hub before the result snaps in */
+  hubEl.classList.add("flick");
+  let ticks=0;
+  const flicker=setInterval(()=>{
+    ticks++;
+    if(ticks>=3){clearInterval(flicker);hubEl.classList.remove("flick");finish();}
+  },90);
+}
+
+/* ---------- clock (screens stay alive even when idle) ---------- */
+function tickClock(){
+  elapsed++;
+  const m=String(Math.floor(elapsed/60)).padStart(2,"0");
+  const s=String(elapsed%60).padStart(2,"0");
+  clk.textContent=m+":"+s;
+}
+
+voteBtn.addEventListener("click",commitVote);
+window.addEventListener("resize",drawWires);
+
+/* ---- START ---- */
+resetBoard();
+setInterval(tickClock,1000);
+</script>
+</body>
+</html>

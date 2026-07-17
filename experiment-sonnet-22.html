@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPERIMENT-22 · DENSE PROGRESS LATTICE</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--mint);height:100%;overflow:hidden}
+body{font-family:var(--mono);text-transform:uppercase}
+
+#lattice{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+.corner{position:fixed;line-height:1.3;letter-spacing:.05em;z-index:6}
+.meta{top:14px;left:14px;font-size:11px}
+.meta-head{font-family:var(--cond);font-weight:700;font-size:13px;color:var(--mint-hi);
+  margin-bottom:5px;padding-bottom:3px;border-bottom:3px double var(--teal);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(124,244,171,.35)}
+.meta .k{color:var(--orange)}
+.meta .v{color:var(--amber);margin-left:4px}
+
+.title-plate{bottom:14px;right:14px;text-align:right;font-size:11px}
+.title-plate .name{font-family:var(--cond);font-weight:700;font-size:19px;color:var(--orange);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(242,100,0,.4)}
+.title-plate .sub{color:var(--green-map);letter-spacing:.08em;margin-top:2px}
+
+.stamp{position:fixed;top:14px;right:14px;z-index:7;padding:5px 12px;font-size:11px;
+  border:1px solid var(--red-hi);color:var(--red-hi);letter-spacing:.08em;
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.4)}
+.stamp .cap{display:block;font-size:8px;letter-spacing:.1em;margin-top:2px}
+.stamp.standby{border-color:var(--green-dim);color:var(--green-dim);text-shadow:none}
+.stamp.scanning{border-color:var(--amber);color:var(--amber);
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(244,159,9,.4);
+  animation:blink 1s steps(1) infinite}
+.stamp.verified{background:var(--mint);border-color:var(--mint);color:var(--bg);text-shadow:none;animation:none}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+
+.threshold{position:fixed;left:57%;top:38%;transform:rotate(-8deg);z-index:5;text-align:center}
+.threshold .plate{position:relative;border:2px solid var(--red-hi);background:rgba(10,10,10,.85);
+  color:var(--red-hi);font-family:var(--cond);font-weight:700;letter-spacing:.04em;
+  padding:5px 22px;font-size:13px;
+  text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.4)}
+.threshold .plate::before,.threshold .plate::after{content:"";position:absolute;top:-2px;bottom:-2px;width:10px;
+  background:repeating-linear-gradient(45deg,var(--crimson) 0 4px,#0A0A0A 4px 8px)}
+.threshold .plate::before{left:-12px}
+.threshold .plate::after{right:-12px}
+.threshold .jp{margin-top:6px;display:inline-block;font-family:var(--jp);font-weight:800;font-size:15px;
+  color:var(--red-hi);border:1px solid var(--red-hi);padding:1px 10px;background:rgba(10,10,10,.85)}
+.threshold .cap{margin-top:3px;font-size:8px;letter-spacing:.1em;color:var(--red-hi)}
+
+.controls{position:fixed;bottom:14px;left:14px;display:flex;gap:8px;z-index:7}
+.btn{background:transparent;border:1px solid var(--orange);color:var(--orange);font:11px var(--mono);
+  letter-spacing:.05em;padding:7px 11px;cursor:pointer;text-transform:uppercase}
+.btn:hover{background:rgba(242,100,0,.14)}
+.btn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.btn.active{background:var(--orange);color:var(--bg)}
+
+/* --- lattice graphics: state = class swap, never transitioned/eased --- */
+.bar{fill:var(--bg);stroke:var(--green-dim);stroke-width:1}
+.bar.pending{fill:var(--blue);stroke:none;opacity:.6}
+.bar.lit-g{fill:var(--mint);stroke:none;filter:drop-shadow(0 0 4px var(--mint))}
+.bar.lit-r{fill:var(--red-hi);stroke:none;filter:drop-shadow(0 0 5px var(--red-hi))}
+
+.edge{stroke:var(--green-dim);stroke-width:1;opacity:.5}
+.edge.skip{stroke-dasharray:2 3;opacity:.32}
+.edge.lit{stroke:var(--orange);stroke-width:1.4;opacity:1;filter:drop-shadow(0 0 3px var(--orange))}
+
+.bus-line{stroke:var(--green-dim);stroke-width:2;opacity:.4}
+.bus-line.lit{stroke:var(--orange);stroke-width:2.5;opacity:1;filter:drop-shadow(0 0 4px var(--orange))}
+
+.bus-node{fill:var(--bg);stroke:var(--orange);stroke-width:1}
+.bus-node.lit{fill:var(--orange);stroke:none;filter:drop-shadow(0 0 4px var(--orange))}
+.bus-label{fill:var(--orange);font-family:var(--mono);font-size:8px;text-anchor:middle}
+
+.id-label{fill:var(--green-map);font-family:var(--mono);font-size:7px;opacity:.8;
+  text-anchor:middle;letter-spacing:.02em}
+.id-label.lit{fill:var(--amber)}
+.id-label.lit.bad{fill:var(--red-hi)}
+
+.col-header{fill:var(--amber);font-family:var(--cond);font-weight:700;font-size:11px}
+
+/* CRT pass */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+@media (prefers-reduced-motion: reduce){
+  .stamp.scanning{animation:none;opacity:1}
+}
+</style>
+</head>
+<body>
+
+<svg id="lattice" aria-hidden="true"></svg>
+
+<div class="corner meta">
+  <div class="meta-head">KESTREL·4 SYS-SWEEP</div>
+  <div><span class="k">CODE:</span><span class="v">1147</span></div>
+  <div><span class="k">FILE:</span><span class="v">KESTREL_LATTICE</span></div>
+  <div><span class="k">EXTENTION:</span><span class="v">0932</span></div>
+  <div><span class="k">EX_MODE:</span><span class="v">ON</span></div>
+  <div><span class="k">PRIORITY:</span><span class="v">AA-</span></div>
+  <div><span class="k">REQUESTOR:</span><span class="v">UNIT·07</span></div>
+  <div><span class="k">SCOPE:</span><span class="v">ALL·CORES</span></div>
+</div>
+
+<div id="stamp" class="stamp standby" aria-live="polite">待機<span class="cap">STANDBY</span></div>
+
+<div class="corner title-plate">
+  <div class="name">KESTREL·4 INTEGRITY SWEEP</div>
+  <div class="sub">PROPAGATION // FULL LATTICE</div>
+</div>
+
+<div class="threshold" aria-hidden="true">
+  <div class="plate">COHERENCE·LINE</div>
+  <div class="jp">警戒</div>
+  <div class="cap">CAUTION</div>
+</div>
+
+<div class="controls" role="group" aria-label="lattice sweep controls">
+  <button id="replayBtn" class="btn" type="button">REPLAY SWEEP</button>
+  <button id="anomalyBtn" class="btn" type="button">BIAS: NOMINAL</button>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* DENSE PROGRESS LATTICE — many-column node-link mesh of 45deg chevron
+   bars with a numbered bus spine underneath. Ignition propagates column
+   by column, stepped, staggered per-node; traces light a beat before
+   their bars, bars pass through a brief "pending" (blue) phase before
+   snapping to green/red. Completion = reverse-cascade to black, not fade. */
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("lattice");
+const VBW=innerWidth, VBH=innerHeight;
+svg.setAttribute("viewBox",`0 0 ${VBW} ${VBH}`);
+const el=(n,a,p=svg)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+
+/* ---------- helpers ---------- */
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function makeId(){
+  const letters=["V","A","D","L","C","Q","K","R","MT","B"];
+  const p=letters[Math.floor(Math.random()*letters.length)];
+  const n=Math.floor(rnd(1000,9999));
+  return Math.random()<0.3?`${p}-${n}`:`${p}${n}`;
+}
+function chevPoints(cx,cy,w,h,skew){
+  const x=cx-w/2, y=cy-h/2;
+  return `${x+skew},${y} ${x+w},${y} ${x+w-skew},${y+h} ${x},${y+h}`;
+}
+
+/* ---------- state: build the lattice geometry ---------- */
+const NCOLS=10;
+const ROWS=[5,7,6,8,7,9,7,8,6,5];
+const CORES=["VEGA·1","UNIT·07","ALTAIR·2","UNIT·11","DENEB·3","LYRA","UNIT·15","CYGNUS","AQUILA","UNIT·19"];
+
+const MX=70, MY_TOP=110, MY_BOT=150;
+const W=VBW-MX*2, H=VBH-MY_TOP-MY_BOT;
+const colStep=NCOLS>1?W/(NCOLS-1):0;
+const BARW=26, BARH=13, SKEW=11;
+
+const cols=[]; // per-column arrays of node objects, top-to-bottom
+for(let c=0;c<NCOLS;c++){
+  const rows=ROWS[c];
+  const rowStep=H/(rows+1);
+  const x=MX+c*colStep+rnd(-6,6);
+  const colArr=[];
+  for(let r=0;r<rows;r++){
+    const y=MY_TOP+(r+1)*rowStep+rnd(-7,7);
+    colArr.push({col:c,row:r,x,y,id:makeId(),elBar:null,elLabel:null});
+  }
+  cols.push(colArr);
+}
+const nodes=cols.flat();
+
+/* lattice edges: each node links to 1-2 nearest nodes in the prior column,
+   plus sparse skip-column links for genuine mesh (not a strict tree) */
+const edges=[];
+for(let c=1;c<NCOLS;c++){
+  cols[c].forEach(n=>{
+    const prev=[...cols[c-1]].sort((a,b)=>Math.abs(a.y-n.y)-Math.abs(b.y-n.y));
+    const links=Math.random()<0.3?2:1;
+    for(let k=0;k<links&&k<prev.length;k++) edges.push({from:prev[k],to:n,skip:false});
+  });
+}
+for(let c=2;c<NCOLS;c++){
+  cols[c].forEach(n=>{
+    if(Math.random()<0.12){
+      const far=cols[c-2][Math.floor(Math.random()*cols[c-2].length)];
+      edges.push({from:far,to:n,skip:true});
+    }
+  });
+}
+
+/* numbered bus spine near the bottom + vertical drops from each column */
+const busY=VBH-70;
+const busNodes=cols.map((colArr,c)=>({x:colArr[0].x,y:busY,num:String(c+1).padStart(2,"0"),elRect:null}));
+const busDrops=cols.map((colArr,c)=>{
+  const bottom=colArr.reduce((m,n)=>n.y>m.y?n:m,colArr[0]);
+  return {from:bottom,to:busNodes[c],elLine:null};
+});
+const busSegs=[];
+for(let c=0;c<NCOLS-1;c++) busSegs.push({a:busNodes[c],b:busNodes[c+1],elLine:null});
+
+/* ---------- render (draw order: traces under bars under labels) ---------- */
+edges.forEach(ed=>{ ed.elLine=el("line",{x1:ed.from.x,y1:ed.from.y,x2:ed.to.x,y2:ed.to.y,class:"edge"+(ed.skip?" skip":"")}); });
+busDrops.forEach(bd=>{ bd.elLine=el("line",{x1:bd.from.x,y1:bd.from.y,x2:bd.to.x,y2:bd.to.y,class:"edge bus-drop"}); });
+busSegs.forEach(bs=>{ bs.elLine=el("line",{x1:bs.a.x,y1:bs.a.y,x2:bs.b.x,y2:bs.b.y,class:"bus-line"}); });
+
+nodes.forEach(n=>{
+  n.elBar=el("polygon",{points:chevPoints(n.x,n.y,BARW,BARH,SKEW),class:"bar"});
+  const above=n.row%2===0;
+  n.elLabel=el("text",{x:n.x,y:above?n.y-BARH/2-4:n.y+BARH/2+10,class:"id-label"});
+  n.elLabel.textContent=n.id;
+});
+
+busNodes.forEach(bn=>{
+  bn.elRect=el("rect",{x:bn.x-7,y:bn.y-7,width:14,height:14,class:"bus-node"});
+  const t=el("text",{x:bn.x,y:bn.y+22,class:"bus-label"}); t.textContent=bn.num;
+});
+
+cols.forEach((colArr,c)=>{
+  const hx=colArr[0].x, hy=MY_TOP-24;
+  const t=el("text",{x:hx,y:hy,class:"col-header",transform:`rotate(-12 ${hx} ${hy})`});
+  t.textContent=CORES[c];
+});
+
+/* ---------- wiring: propagation sequencer ---------- */
+const stampEl=document.getElementById("stamp");
+function setStamp(mode){
+  stampEl.className="stamp "+mode;
+  if(mode==="scanning") stampEl.innerHTML='点検中<span class="cap">SCANNING</span>';
+  else if(mode==="verified") stampEl.innerHTML='承認<span class="cap">VERIFIED</span>';
+  else stampEl.innerHTML='待機<span class="cap">STANDBY</span>';
+}
+
+const COL_STAGGER=REDUCED?20:260;
+const NODE_MIN=30, NODE_MAX=80;
+const HOLD_MS=REDUCED?400:1800;
+const TEARDOWN_STAGGER=REDUCED?10:140;
+const LOOP_PAUSE=1600;
+
+let anomalyBias=0.12;
+let seq=0;
+let timers=[];
+function schedule(fn,ms){ const id=setTimeout(fn,ms); timers.push(id); return id; }
+function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+
+function resetVisual(){
+  nodes.forEach(n=>{ n.elBar.setAttribute("class","bar"); n.elLabel.setAttribute("class","id-label"); });
+  edges.forEach(ed=> ed.elLine.setAttribute("class","edge"+(ed.skip?" skip":"")));
+  busDrops.forEach(bd=> bd.elLine.setAttribute("class","edge bus-drop"));
+  busSegs.forEach(bs=> bs.elLine.setAttribute("class","bus-line"));
+  busNodes.forEach(bn=> bn.elRect.setAttribute("class","bus-node"));
+  setStamp("standby");
+}
+
+function igniteBar(n){
+  const bad=Math.random()<anomalyBias;
+  n.elBar.classList.remove("pending");
+  n.elBar.classList.add(bad?"lit-r":"lit-g");
+  n.elLabel.classList.add("lit");
+  if(bad) n.elLabel.classList.add("bad");
+}
+
+function igniteColumn(c,mySeq){
+  if(mySeq!==seq) return;
+  edges.filter(ed=>ed.to.col===c).forEach(ed=> ed.elLine.classList.add("lit"));
+  const colArr=cols[c];
+  colArr.forEach(n=> n.elBar.classList.add("pending"));
+  let lastDelay=0;
+  colArr.forEach((n,i)=>{
+    const d=40+i*rnd(NODE_MIN,NODE_MAX);
+    lastDelay=Math.max(lastDelay,d);
+    schedule(()=>{ if(mySeq===seq) igniteBar(n); }, REDUCED?0:d);
+  });
+  schedule(()=>{
+    if(mySeq!==seq) return;
+    busDrops[c].elLine.classList.add("lit");
+    busNodes[c].elRect.classList.add("lit");
+    if(c>0) busSegs[c-1].elLine.classList.add("lit");
+  }, REDUCED?10:(lastDelay+60));
+}
+
+function extinguishColumn(c,mySeq){
+  if(mySeq!==seq) return;
+  cols[c].forEach(n=>{ n.elBar.setAttribute("class","bar"); n.elLabel.setAttribute("class","id-label"); });
+  edges.filter(ed=>ed.to.col===c).forEach(ed=> ed.elLine.setAttribute("class","edge"+(ed.skip?" skip":"")));
+  busDrops[c].elLine.setAttribute("class","edge bus-drop");
+  busNodes[c].elRect.setAttribute("class","bus-node");
+  if(c>0) busSegs[c-1].elLine.setAttribute("class","bus-line");
+}
+
+function teardown(mySeq){
+  if(mySeq!==seq) return;
+  let delay=0;
+  for(let c=NCOLS-1;c>=0;c--){
+    schedule(()=> extinguishColumn(c,mySeq), delay);
+    delay+=TEARDOWN_STAGGER;
+  }
+  schedule(()=>{
+    if(mySeq!==seq) return;
+    setStamp("standby");
+    schedule(()=>{ if(mySeq===seq) startSequence(); }, LOOP_PAUSE);
+  }, delay+120);
+}
+
+function onFullyLit(mySeq){
+  if(mySeq!==seq) return;
+  setStamp("verified");
+  schedule(()=> teardown(mySeq), HOLD_MS);
+}
+
+function startSequence(){ // repeating-trigger guard: seq invalidates stale timers, clearTimers drops them
+  clearTimers();
+  seq+=1;
+  const mySeq=seq;
+  resetVisual();
+  setStamp("scanning");
+  let delay=0;
+  for(let c=0;c<NCOLS;c++){
+    schedule(()=> igniteColumn(c,mySeq), delay);
+    delay+=COL_STAGGER;
+  }
+  schedule(()=> onFullyLit(mySeq), delay+(REDUCED?60:500));
+}
+
+const replayBtn=document.getElementById("replayBtn");
+replayBtn.addEventListener("click",()=> startSequence());
+
+const anomalyBtn=document.getElementById("anomalyBtn");
+let elevated=false;
+anomalyBtn.addEventListener("click",()=>{
+  elevated=!elevated;
+  anomalyBias=elevated?0.38:0.12;
+  anomalyBtn.classList.toggle("active",elevated);
+  anomalyBtn.textContent=elevated?"BIAS: ELEVATED":"BIAS: NOMINAL";
+});
+
+addEventListener("resize",()=>location.reload());
+
+/* ---- START ---- */
+startSequence();
+</script>
+</body>
+</html>

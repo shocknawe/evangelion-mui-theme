@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-14 · HANDHELD MINI CONSOLE</title>
+<!-- exp-14: council-small.gif study — same node/stamp grammar, forced into a
+     handheld form factor. hierarchy survives density by weight, not space. -->
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--mint);font-family:var(--mono);text-transform:uppercase;
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* the void: fixed device floats center, room to breathe in true black */
+.void{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 20px;
+  background:
+    repeating-linear-gradient(90deg,rgba(82,242,154,.02) 0 1px,transparent 1px 64px),
+    repeating-linear-gradient(0deg,rgba(82,242,154,.02) 0 1px,transparent 1px 64px);
+}
+
+/* physical bezel: dark hardware shell, teal trim, chamfered top-right / bottom-left */
+.device{
+  position:relative;width:400px;flex:0 0 auto;background:#111412;
+  border:1px solid #050605;
+  padding:26px 16px 20px;
+  clip-path:polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  box-shadow:0 0 0 1px rgba(12,108,128,.5), inset 0 0 30px rgba(0,0,0,.8);
+}
+.bolt{position:absolute;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #8a8f8c, #1a1c1b 70%);
+  box-shadow:0 0 2px #000 inset;
+}
+.bolt.tl{top:8px;left:8px}.bolt.bl{bottom:8px;left:8px}.bolt.br{bottom:8px;right:8px}
+.device .brand{position:absolute;top:6px;right:12px;font-size:8px;letter-spacing:.18em;color:var(--teal);opacity:.8}
+
+/* screen: the actual console surface, everything below is UI, not hardware */
+.screen{
+  position:relative;background:var(--bg);border:2px solid var(--teal);
+  padding:10px 10px 12px;overflow:hidden;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.9), inset 0 0 2px rgba(82,242,154,.15);
+}
+
+/* header: stacked title bars, one reversed (boxed fill), one outlined */
+.hdr{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.hdr .bar{font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.1em;
+  padding:3px 6px;border:1px solid var(--orange);color:var(--orange)}
+.hdr .bar.rev{background:var(--orange);color:var(--bg);border-color:var(--orange)}
+
+/* corner-pinned metadata: mono KEY:VALUE, tight leading */
+.meta{position:absolute;top:60px;right:10px;font-size:8px;line-height:1.3;color:var(--orange);
+  text-align:right;letter-spacing:.05em;z-index:2}
+.meta div{white-space:nowrap}
+
+/* board: triangular node diagram, links drawn as static inline svg */
+.boardwrap{position:relative;width:300px;height:170px;margin:6px auto 4px}
+.links{position:absolute;inset:0;width:100%;height:100%}
+.links line{stroke:var(--orange);stroke-width:1;opacity:.65}
+
+.hub{position:absolute;left:150px;top:92px;transform:translate(-50%,-50%);
+  width:44px;height:28px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--green-dim);color:var(--green-dim);font-size:7px;letter-spacing:.06em;
+  text-align:center;line-height:1.15;background:var(--bg)}
+
+.node{position:absolute;width:84px;height:52px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;background:var(--bg);
+  border:1px solid var(--green-dim);color:var(--green-dim);
+  clip-path:polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.node .n-name{font-family:var(--cond);font-weight:700;font-size:9px;letter-spacing:.05em}
+.node .n-jp{font-family:var(--jp);font-weight:800;font-size:12px;line-height:1;height:13px}
+.node .n-cap{font-size:7px;letter-spacing:.08em}
+.node[data-state="idle"]{border-color:var(--green-dim);color:var(--green-dim)}
+.node[data-state="pending"]{border-color:var(--blue);color:var(--blue);
+  box-shadow:0 0 6px rgba(80,144,208,.45),inset 0 0 6px rgba(80,144,208,.2);
+  text-shadow:0 0 4px currentColor}
+.node[data-state="approved"]{border-color:transparent;background:var(--mint);color:var(--bg);
+  box-shadow:0 0 8px rgba(82,242,154,.6),0 0 18px rgba(82,242,154,.3)}
+.node[data-state="denied"]{border-color:transparent;background:var(--red);color:var(--bg);
+  box-shadow:0 0 8px rgba(194,12,12,.7),0 0 18px rgba(194,12,12,.35)}
+.node .n-jp.blink{animation:blink 1s steps(1) infinite}
+
+/* side annotations: decorative density, mirrors council-small's dense ID
+   column. sits in the blank gutter between the two lower nodes, clear of
+   the meta block (top-right) and every node's own text. */
+.annot{position:absolute;left:150px;top:132px;transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:2px;
+  font-size:7px;color:var(--green-dim);letter-spacing:.04em;text-align:center}
+
+/* overall stamp: the one giant element permitted at this scale */
+.overall{margin:8px auto 10px;width:300px;border:1px solid var(--green-dim);
+  padding:8px 10px;text-align:center;background:var(--bg)}
+.overall .word{font-family:var(--cond);font-weight:700;font-size:26px;letter-spacing:.03em;
+  color:var(--green-dim)}
+.overall .cap{font-size:8px;letter-spacing:.12em;margin-top:2px;color:var(--green-dim)}
+.overall[data-state="review"]{border-color:var(--blue)}
+.overall[data-state="review"] .word,.overall[data-state="review"] .cap{color:var(--blue);text-shadow:0 0 6px currentColor}
+.overall[data-state="approved"]{border-color:transparent;background:var(--mint)}
+.overall[data-state="approved"] .word,.overall[data-state="approved"] .cap{color:var(--bg)}
+.overall[data-state="denied"]{border-color:transparent;background:var(--red-hi)}
+.overall[data-state="denied"] .word,.overall[data-state="denied"] .cap{color:var(--bg)}
+.overall .word.blink{animation:blink 1s steps(1) infinite}
+
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.blink{animation:none;opacity:1}}
+
+/* hardware control rail below screen: real buttons + one decorative dial */
+.hw{display:flex;align-items:center;gap:10px;margin-top:16px;padding:0 4px}
+.hw button{
+  font-family:var(--cond);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:#1c211f;color:var(--mint);border:2px solid var(--green-map);cursor:pointer;
+  padding:9px 6px;line-height:1.15;
+}
+.hw button#voteBtn{flex:1 1 auto;font-size:11px;border-color:var(--orange);color:var(--orange)}
+.hw button#voteBtn:not(:disabled):hover{background:var(--orange);color:var(--bg)}
+.hw button#resetBtn{font-size:9px;padding:9px 10px}
+.hw button:disabled{opacity:.35;cursor:default}
+.hw button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.dial{width:26px;height:26px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 35% 30%,#3a3f3c,#101211 75%);
+  border:1px solid #050605;position:relative}
+.dial::after{content:"";position:absolute;top:3px;left:50%;width:2px;height:8px;
+  background:var(--teal);transform:translateX(-50%)}
+
+.footline{margin-top:10px;text-align:center;font-size:7px;letter-spacing:.1em;color:var(--green-dim)}
+.hint{display:block;margin-top:2px;opacity:.7}
+</style>
+</head>
+<body>
+<div class="void">
+  <div class="device">
+    <div class="bolt tl"></div><div class="bolt bl"></div><div class="bolt br"></div>
+    <div class="brand">FIELD·READER MK2</div>
+
+    <div class="screen">
+      <div class="hdr">
+        <div class="bar rev">ACCESS MODE: FIELD-GRADE</div>
+        <div class="bar">LINK: KESTREL·4 CORE CLUSTER</div>
+      </div>
+
+      <div class="meta">
+        <div>CODE:<span id="metaCode">118</span></div>
+        <div>FILE:FLD_RDR</div>
+        <div>EX_MODE:ON</div>
+        <div>PRIORITY:B++</div>
+        <div>TIME:<span id="metaClock">00:00:00</span></div>
+      </div>
+
+      <div class="boardwrap" role="group" aria-label="Consensus node board">
+        <svg class="links" viewBox="0 0 300 170" aria-hidden="true">
+          <line x1="150" y1="52" x2="150" y2="92"></line>
+          <line x1="150" y1="92" x2="42" y2="120"></line>
+          <line x1="150" y1="92" x2="258" y2="120"></line>
+        </svg>
+        <div class="hub">CORE<br>LINK</div>
+
+        <div class="node" id="node-lyra" data-state="idle" style="left:108px;top:0px">
+          <div class="n-name">LYRA·1</div>
+          <div class="n-jp"></div>
+          <div class="n-cap">STANDBY</div>
+        </div>
+        <div class="node" id="node-cygnus" data-state="idle" style="left:0px;top:120px">
+          <div class="n-name">CYGNUS·2</div>
+          <div class="n-jp"></div>
+          <div class="n-cap">STANDBY</div>
+        </div>
+        <div class="node" id="node-aquila" data-state="idle" style="left:216px;top:120px">
+          <div class="n-name">AQUILA·3</div>
+          <div class="n-jp"></div>
+          <div class="n-cap">STANDBY</div>
+        </div>
+
+        <div class="annot" aria-hidden="true">
+          <div>N-118</div><div>N-204</div><div>N-092</div>
+        </div>
+      </div>
+
+      <div class="overall" id="overall" data-state="standby" aria-live="polite">
+        <div class="word" id="overallWord">STANDBY</div>
+        <div class="cap" id="overallCap">AWAITING QUORUM CALL</div>
+      </div>
+
+      <div class="footline">UNIT-07 REMOTE HANDSET<span class="hint">[V] VOTE&nbsp;&nbsp;[R] RESET</span></div>
+    </div>
+
+    <div class="hw" role="group" aria-label="Handset controls">
+      <button id="resetBtn" type="button">RST</button>
+      <button id="voteBtn" type="button">INITIATE VOTE</button>
+      <div class="dial" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+/* Handheld study: identical council-board grammar (chamfered node, boxed
+   kanji stamp, figure/ground inversion) compressed to a ~300px board.
+   Hierarchy survives on weight (color+glow), not on room to spread out. */
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const NODES = [
+  {key:"lyra",   el:null, jp:null, cap:null},
+  {key:"cygnus", el:null, jp:null, cap:null},
+  {key:"aquila", el:null, jp:null, cap:null},
+];
+for(const n of NODES){
+  n.el  = document.getElementById("node-"+n.key);
+  n.jp  = n.el.querySelector(".n-jp");
+  n.cap = n.el.querySelector(".n-cap");
+}
+
+const voteBtn    = document.getElementById("voteBtn");
+const resetBtn   = document.getElementById("resetBtn");
+const overallEl  = document.getElementById("overall");
+const overallWord= document.getElementById("overallWord");
+const overallCap = document.getElementById("overallCap");
+const clockEl    = document.getElementById("metaClock");
+const codeEl     = document.getElementById("metaCode");
+
+let voting = false;   /* repeating-trigger guard: blocks re-entry mid-sequence */
+let voteCount = 18;
+let tickTimer = null;
+
+function setNode(n,state,jp,cap){
+  n.el.dataset.state = state;
+  n.jp.textContent = jp;
+  n.cap.textContent = cap;
+  n.jp.classList.toggle("blink", state==="pending" && !REDUCED);
+}
+
+function setOverall(state,word,cap){
+  overallEl.dataset.state = state;
+  overallWord.textContent = word;
+  overallCap.textContent = cap;
+  overallWord.classList.toggle("blink", state==="review" && !REDUCED);
+}
+
+/* mechanical flicker before a state settles: hard visibility toggles,
+   never an opacity tween — matches the council-voting.gif "snap" cut. */
+function flicker(el,done){
+  if(REDUCED){ done(); return; }
+  let n=0;
+  const iv=setInterval(()=>{
+    el.style.visibility = (n%2===0) ? "hidden" : "visible";
+    n++;
+    if(n>=4){ clearInterval(iv); el.style.visibility="visible"; done(); }
+  },65);
+}
+
+function biasedApprove(){ return Math.random() < 0.82; } /* nominal state dominates */
+
+function resetBoard(){
+  if(voting) return;
+  for(const n of NODES) setNode(n,"idle","","STANDBY");
+  setOverall("standby","STANDBY","AWAITING QUORUM CALL");
+  voteBtn.disabled = false;
+}
+
+function runVote(){
+  if(voting) return;
+  voting = true;
+  voteBtn.disabled = true;
+  resetBtn.disabled = true;
+  for(const n of NODES) setNode(n,"pending","審査中","REVIEW");
+  setOverall("review","DELIBERATING","審査中 · UNDER REVIEW");
+
+  /* sequential resolution, chained rather than run off a parallel interval:
+     each node only advances once the previous one's flicker has actually
+     settled, so the final tally can never be read one node early. */
+  const order = [...NODES].sort(()=>Math.random()-0.5);
+  let idx = 0;
+  function next(){
+    if(idx >= order.length){ finalizeVote(); return; }
+    const n = order[idx]; idx++;
+    setTimeout(()=>{
+      const ok = biasedApprove();
+      flicker(n.el, ()=>{
+        if(ok) setNode(n,"approved","承認","APPROVED");
+        else   setNode(n,"denied","否定","DENIED");
+        next();
+      });
+    }, 560);
+  }
+  next();
+}
+
+function finalizeVote(){
+  const approvedCt = NODES.filter(n=>n.el.dataset.state==="approved").length;
+  voteCount++;
+  codeEl.textContent = String(100+voteCount);
+  if(approvedCt >= 2){
+    const word = approvedCt===NODES.length ? "UNANIMOUS" : "APPROVED";
+    setOverall("approved", word, "承認 · QUORUM REACHED");
+  } else {
+    setOverall("denied","DENIED","否定 · QUORUM FAILED");
+  }
+  voting = false;
+  voteBtn.disabled = false;
+  resetBtn.disabled = false;
+}
+
+function tickClock(){
+  const d = new Date();
+  const p = (v)=>String(v).padStart(2,"0");
+  clockEl.textContent = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+
+voteBtn.addEventListener("click", runVote);
+resetBtn.addEventListener("click", resetBoard);
+addEventListener("keydown",(e)=>{
+  const k = e.key.toLowerCase();
+  if(k==="v") runVote();
+  else if(k==="r") resetBoard();
+});
+
+/* ---- START ---- */
+resetBoard();
+tickClock();
+tickTimer = setInterval(tickClock,1000);
+</script>
+</body>
+</html>

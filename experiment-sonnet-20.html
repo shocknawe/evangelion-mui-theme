@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-20 · DIAGNOSTIC BOOT TERMINAL</title>
+<!-- exp-20: boot/diagnostic terminal study — terminal-prompt.gif grammar -->
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--amber);font-family:var(--mono);text-transform:uppercase;
+  min-height:100vh;position:relative;overflow-x:hidden;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* corner metadata block — mono KEY:VALUE, corner-pinned */
+.meta{position:fixed;top:14px;left:16px;font-size:11px;color:var(--orange);letter-spacing:.08em;
+  line-height:1.3;z-index:2;text-shadow:0 0 4px rgba(242,100,0,.4)}
+.meta div{white-space:nowrap}
+
+.wrap{max-width:760px;margin:0 auto;padding:9vh 4vw 6vh}
+
+.titlebar{border-bottom:2px solid var(--orange);padding-bottom:10px;margin-bottom:3vh}
+.titlebar h1{font-family:var(--cond);font-weight:700;font-size:clamp(18px,3vw,28px);
+  letter-spacing:.03em;color:var(--orange);text-shadow:0 0 5px rgba(242,100,0,.45)}
+.titlebar .sub{font-size:11px;color:var(--amber);opacity:.75;letter-spacing:.12em;margin-top:4px}
+
+/* terminal buffer — two brightness levels, dash rules, dot-leader status column */
+.term{font-size:13px;line-height:1.32;min-height:52vh;max-height:66vh;overflow-y:auto;
+  border:1px solid var(--amber-dim);padding:14px 16px;background:rgba(244,159,9,.02)}
+.row{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.row.line{color:var(--amber-dim);letter-spacing:.04em}
+.row.line.bright{color:var(--amber);font-weight:600}
+.row.blank{height:.8em}
+.row.rule{color:var(--amber-dim);white-space:pre;font-size:12px;letter-spacing:0}
+.row.check .lbl{color:var(--amber)}
+.row.check .dots{flex:1 1 auto;border-bottom:1px dotted var(--amber-dim);height:0;margin-bottom:4px;min-width:12px}
+.row.check .val{min-width:44px;text-align:right;font-weight:700}
+.row.check .val.ok{color:var(--amber)}
+.row.check .val.fail{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.4)}
+.row.note{color:var(--red-hi);font-size:11px;letter-spacing:.04em;padding-left:4px;
+  text-shadow:0 0 3px rgba(226,40,15,.35)}
+.row.mem .addr{color:var(--amber-dim);min-width:96px}
+.row.mem .region{flex:1 1 auto;color:var(--amber)}
+.row.mem .dots{flex:0 0 24px;border-bottom:1px dotted var(--amber-dim);height:0;margin-bottom:4px}
+.row.mem .val{min-width:52px;text-align:right}
+.row.mem .val.ok{color:var(--amber)}
+.row.mem .val.lock{color:var(--amber-dim)}
+.row.summary{color:var(--mint);font-weight:700;letter-spacing:.04em;
+  text-shadow:0 0 4px rgba(82,242,154,.4)}
+
+/* stamp row: the one boxed CAUTION exception in an otherwise unboxed log */
+.stamprow{display:flex;justify-content:flex-end;padding:3px 0 5px}
+.stampbox{border:1px solid var(--red-hi);color:var(--red-hi);padding:3px 12px;border-radius:2px;
+  display:inline-flex;flex-direction:column;align-items:center;line-height:1.15;
+  box-shadow:0 0 6px rgba(226,40,15,.45),inset 0 0 6px rgba(226,40,15,.15)}
+.stampbox .jp{font-family:var(--jp);font-weight:800;font-size:16px;letter-spacing:.15em;text-transform:none}
+.stampbox .en{font-family:var(--cond);font-weight:700;font-size:9px;letter-spacing:.2em;margin-top:1px}
+.stampbox.blink{animation:blink 1s steps(1) infinite}
+
+/* prompt line — persistent blinking cursor, the "alive" signal */
+.promptline{margin-top:12px;font-size:14px;letter-spacing:.06em;color:var(--amber)}
+.promptline .chevron{color:var(--amber-dim);margin-right:8px}
+.cursor{display:inline-block;margin-left:6px;color:var(--amber)}
+.cursor.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.rail{display:flex;align-items:center;gap:14px;margin-top:5vh}
+.rail button{
+  border:2px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;padding:9px 18px;
+}
+.rail button:hover:not(:disabled){background:var(--amber);color:var(--bg)}
+.rail button:disabled{opacity:.4;cursor:default}
+.rail button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.rail .hint{font-size:10px;color:var(--amber-dim);letter-spacing:.08em}
+
+@media (prefers-reduced-motion:reduce){
+  .stampbox.blink,.cursor.blink{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <div>CODE:0417</div>
+  <div>FILE:COOLANT_BOOT</div>
+  <div>EX_MODE:DIAG</div>
+  <div>PRIORITY:B++</div>
+</div>
+
+<div class="wrap">
+  <div class="titlebar">
+    <h1>KESTREL·4 — CRYO-COOLANT RECIRCULATION LOOP</h1>
+    <div class="sub">BOOT / DIAGNOSTIC TERMINAL STUDY</div>
+  </div>
+
+  <div class="term" id="term" role="log" aria-label="Boot diagnostic sequence output" aria-live="polite"></div>
+
+  <div class="promptline">
+    <span class="chevron">&gt;</span><span id="promptstate">STANDBY</span><span id="cursor" class="cursor">▌</span>
+  </div>
+
+  <div class="rail" role="group" aria-label="Diagnostic controls">
+    <button id="btn-rerun">RE-RUN DIAGNOSTIC</button>
+    <span class="hint">[R] RE-RUN</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers (function declarations only — safe to reference before their
+   line since they touch no top-level const) ---- */
+
+/* dash-rule section header, fixed total width, label centered if given */
+function ruleRow(label){
+  const width=62;
+  if(!label) return "-".repeat(width);
+  const dashes=Math.max(width-label.length-2,8);
+  const left=Math.floor(dashes/2), right=dashes-left;
+  return "-".repeat(left)+" "+label+" "+"-".repeat(right);
+}
+
+/* build one DOM row from a plain descriptor object */
+function makeRow(d){
+  const row=document.createElement("div");
+  if(d.kind==="line"){
+    row.className="row line"+(d.bright?" bright":"");
+    row.textContent=d.text;
+  }else if(d.kind==="blank"){
+    row.className="row blank";
+  }else if(d.kind==="rule"){
+    row.className="row rule";
+    row.textContent=ruleRow(d.label);
+  }else if(d.kind==="check"){
+    row.className="row check";
+    const lbl=document.createElement("span"); lbl.className="lbl"; lbl.textContent=d.label;
+    const dots=document.createElement("span"); dots.className="dots";
+    const val=document.createElement("span");
+    val.className="val "+(d.ok?"ok":"fail"); val.textContent=d.ok?"OK":"FAIL";
+    row.append(lbl,dots,val);
+  }else if(d.kind==="note"){
+    row.className="row note";
+    row.textContent="  » "+d.text;
+  }else if(d.kind==="mem"){
+    row.className="row mem";
+    const addr=document.createElement("span"); addr.className="addr"; addr.textContent=d.addr;
+    const region=document.createElement("span"); region.className="region"; region.textContent=d.region;
+    const dots=document.createElement("span"); dots.className="dots";
+    const val=document.createElement("span");
+    val.className="val "+(d.state==="OK"?"ok":"lock"); val.textContent=d.state;
+    row.append(addr,region,dots,val);
+  }else if(d.kind==="stamp"){
+    row.className="stamprow";
+    const box=document.createElement("div");
+    box.className="stampbox"+(REDUCED?"":" blink");
+    box.innerHTML='<span class="jp">'+d.jp+'</span><span class="en">'+d.en+'</span>';
+    row.appendChild(box);
+  }else if(d.kind==="summary"){
+    row.className="row summary";
+    row.textContent=d.text;
+  }
+  return row;
+}
+
+/* full sequence generator — re-rolled each run so telemetry jitters live,
+   but exactly one hardware check (PUMP·B) is always the flagged item */
+function buildSequence(){
+  const vibration=(3.6+Math.random()*1.4).toFixed(1);
+  const pressure=(41+Math.random()*6).toFixed(1);
+  const reservoir=Math.round(82+Math.random()*10);
+  const elapsed=(2.1+Math.random()*0.6).toFixed(1);
+
+  const seq=[
+    {kind:"line",text:"KESTREL·4 STATION AUTONOMOUS SYSTEMS"},
+    {kind:"line",text:"COOLANT-OS DIAGNOSTIC MODULE REV 4.02.1"},
+    {kind:"blank"},
+    {kind:"rule",label:"SYSTEM CONFIGURATION"},
+    {kind:"check",label:"CONTROL BUS LINK",ok:true},
+    {kind:"check",label:"NVRAM CHECKSUM",ok:true},
+    {kind:"check",label:"REALTIME CLOCK SYNC",ok:true},
+    {kind:"check",label:"VEGA·1 UPLINK (CORE)",ok:true},
+    {kind:"check",label:"ALTAIR·2 UPLINK (BACKUP)",ok:true},
+    {kind:"blank"},
+    {kind:"rule",label:"COOLANT LOOP HARDWARE"},
+    {kind:"check",label:"PUMP·A PRIMARY DRIVE",ok:true},
+    {kind:"check",label:"PUMP·B SECONDARY DRIVE",ok:false},
+    {kind:"note",text:"VIBRATION "+vibration+"G — EXCEEDS TOLERANCE (3.0G)"},
+    {kind:"stamp",jp:"警戒",en:"CAUTION"},
+    {kind:"check",label:"VALVE ARRAY 1-8",ok:true},
+    {kind:"check",label:"THERMAL SENSOR RING (12 NODES)",ok:true},
+    {kind:"check",label:"PRESSURE TRANSDUCER "+pressure+" PSI",ok:true},
+    {kind:"check",label:"FLOW REGULATOR",ok:true},
+    {kind:"check",label:"RESERVOIR LEVEL "+reservoir+"%",ok:true},
+    {kind:"check",label:"HEATER BYPASS",ok:true},
+    {kind:"blank"},
+    {kind:"rule",label:"MEMORY MAP"},
+    {kind:"mem",addr:"0000-1FFF",region:"BOOT ROM",state:"LOCKED"},
+    {kind:"mem",addr:"2000-5FFF",region:"NVRAM CONFIG",state:"OK"},
+    {kind:"mem",addr:"6000-DFFF",region:"TELEMETRY BUF",state:"OK"},
+    {kind:"mem",addr:"E000-FFFF",region:"SCRATCH",state:"OK"},
+    {kind:"blank"},
+    {kind:"rule",label:"CONSENSUS RELAY"},
+    {kind:"check",label:"LYRA RELAY HANDSHAKE",ok:true},
+    {kind:"check",label:"CYGNUS RELAY HANDSHAKE",ok:true},
+    {kind:"check",label:"UNIT-07 BEACON",ok:true},
+    {kind:"blank"},
+    {kind:"rule",label:null},
+  ];
+  const total=seq.filter(r=>r.kind==="check").length;
+  const failed=seq.filter(r=>r.kind==="check"&&!r.ok).length;
+  seq.push({kind:"summary",
+    text:total+" CHECKS · "+(total-failed)+" PASS · "+failed+" FLAGGED · "+elapsed+"S ELAPSED"});
+  seq.push({kind:"line",bright:true,
+    text:"BOOT SEQUENCE COMPLETE — SYSTEM NOMINAL, "+failed+" ITEM FLAGGED FOR REVIEW"});
+  return seq;
+}
+
+/* ---- state ---- */
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const term=document.getElementById("term");
+const promptstate=document.getElementById("promptstate");
+const cursor=document.getElementById("cursor");
+const rerunBtn=document.getElementById("btn-rerun");
+
+let queue=[];
+let tickTimer=null;
+let booting=false;
+
+/* ---- wiring ---- */
+
+function setPrompt(text){ promptstate.textContent=text; }
+
+function tick(){
+  if(queue.length===0){ clearInterval(tickTimer); finishBoot(); return; }
+  term.appendChild(makeRow(queue.shift()));
+  term.scrollTop=term.scrollHeight;
+}
+
+function finishBoot(){
+  booting=false;
+  rerunBtn.disabled=false;
+  setPrompt("READY");
+}
+
+/* repeating-trigger guard: ignore re-entry while a cascade is already running */
+function runBoot(){
+  if(booting) return;
+  booting=true;
+  rerunBtn.disabled=true;
+  term.innerHTML="";
+  setPrompt("BOOTING");
+  queue=buildSequence();
+  clearInterval(tickTimer);
+  if(REDUCED){
+    /* reduced motion: render final state immediately, no cascade */
+    queue.forEach(d=>term.appendChild(makeRow(d)));
+    queue=[];
+    finishBoot();
+  }else{
+    tickTimer=setInterval(tick,130); /* teletype: whole-row chunks, mechanical cadence */
+  }
+}
+
+rerunBtn.addEventListener("click",runBoot);
+addEventListener("keydown",(e)=>{
+  if(e.key.toLowerCase()==="r" && !rerunBtn.disabled) runBoot();
+});
+
+cursor.classList.toggle("blink",!REDUCED);
+
+/* ---- START ---- */
+runBoot();
+</script>
+</body>
+</html>

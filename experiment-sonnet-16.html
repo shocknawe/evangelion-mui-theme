@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-16 · SILENT KLAXON CHOREOGRAPHY</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);font-family:var(--mono);text-transform:uppercase;overflow:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* -------- STAGE : color = state, snapped via [data-state] -------- */
+.stage{position:absolute;inset:0 0 66px 0;background:#000}
+.stage[data-state="amber"]{background:var(--amber)}
+.stage[data-state="red"]{background:var(--red-hi)}
+.stage.ignite{animation:ignite .12s steps(3) 1}
+@keyframes ignite{0%,100%{filter:brightness(1)}33%,66%{filter:brightness(.3)}}
+
+.vignette{position:absolute;inset:0;pointer-events:none}
+.stage[data-state="amber"] .vignette{background:radial-gradient(ellipse at center,transparent 38%,rgba(244,159,9,.55) 100%)}
+.stage[data-state="red"] .vignette{background:radial-gradient(ellipse at center,transparent 34%,rgba(226,40,15,.65) 100%)}
+
+/* hazard chevron corners — diagonal energy, red klaxon only */
+.chev{position:absolute;left:0;right:0;height:14px;background:transparent}
+.chev.top{top:0}.chev.bot{bottom:0}
+.stage[data-state="red"] .chev{background:repeating-linear-gradient(-45deg,var(--crimson) 0 18px,#000 18px 36px);
+  animation:march .9s linear infinite}
+@keyframes march{to{background-position:72px 0}}
+
+/* -------- BAND : figure/ground inversion, word on beat -------- */
+.band{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);background:#000;
+  padding:3.2vh 0;text-align:center;display:none}
+.stage[data-state="amber"] .band,.stage[data-state="red"] .band{display:block}
+.wjpbox{display:inline-block;border:2px solid var(--amber);color:var(--amber);font-family:var(--jp);
+  font-weight:800;font-size:3.4vh;letter-spacing:.4em;padding:4px 20px;margin-bottom:1.6vh}
+.stage[data-state="red"] .wjpbox{border-color:var(--red-hi);color:var(--red-hi)}
+.wen{font-family:var(--cond);font-weight:700;font-size:11vw;line-height:.95;letter-spacing:-.01em;
+  color:var(--amber);text-shadow:0 0 4px currentColor,0 0 10px rgba(244,159,9,.4)}
+.stage[data-state="red"] .wen{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 14px rgba(226,40,15,.5)}
+
+/* -------- CORNER META / DRILL STAMP (persists through every color state) -------- */
+.meta{position:absolute;top:16px;left:16px;color:var(--orange);font-size:11px;line-height:1.3;
+  letter-spacing:.06em;z-index:60}
+.meta b{color:var(--orange);font-weight:400}
+.drill{position:absolute;top:16px;right:16px;text-align:right;z-index:60;border:1px solid var(--mint);
+  color:var(--mint);padding:5px 12px;animation:blink 1s steps(1) infinite}
+.drill .jp{font-family:var(--jp);font-weight:800;font-size:20px;letter-spacing:.3em}
+.drill .en{font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.12em;margin-top:2px}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.35}}
+
+/* -------- BEAT LINE : the choreography made literal -------- */
+.beatwrap{position:absolute;left:16px;right:16px;bottom:96px;z-index:60}
+.beatlabel{display:flex;justify-content:space-between;color:var(--green-map);font-size:10px;
+  letter-spacing:.1em;margin-bottom:4px}
+.beatline{position:relative;height:12px;display:flex;gap:2px;background:#000;border:1px solid var(--green-dim)}
+.beatline .fr{flex:none;height:100%}
+.beatline .fr.off{background:#000}
+.beatline .fr.amber{background:var(--amber)}
+.beatline .fr.red{background:var(--red-hi)}
+.playhead{position:absolute;top:-3px;width:2px;height:18px;background:var(--mint-hi);
+  box-shadow:0 0 6px var(--mint-hi);left:0}
+
+/* -------- PATTERN LABEL PLATE (chamfered hero chip) -------- */
+.plate{position:absolute;left:16px;bottom:66px;background:#000;border:1px solid var(--orange);
+  color:var(--orange);padding:6px 18px 6px 14px;font-family:var(--cond);font-weight:700;
+  font-size:13px;letter-spacing:.1em;z-index:60;
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)}
+.plate span{display:block;font-family:var(--mono);font-weight:400;font-size:10px;color:var(--green-map);
+  letter-spacing:.08em;margin-top:2px}
+
+/* -------- RAIL -------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:66px;display:flex;gap:8px;align-items:stretch;
+  padding:10px 14px;background:var(--bg);border-top:2px solid var(--orange);z-index:100}
+.rail button{background:var(--bg);border:2px solid var(--orange);color:var(--orange);
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;padding:0 12px}
+.rail button.active{background:var(--orange);color:#000}
+.rail button.replay{border-color:var(--mint);color:var(--mint)}
+.rail button.replay.active{background:var(--mint);color:#000}
+.rail button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px}
+.rail .tag{display:flex;align-items:center;padding:0 12px;color:var(--amber);font-size:10px;
+  letter-spacing:.14em;white-space:nowrap}
+.rail .tag.grow{flex:1;justify-content:flex-end;display:flex}
+
+@media (prefers-reduced-motion:reduce){
+  .stage.ignite{animation:none}.drill{animation:none;opacity:1}.chev{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage" data-state="off" role="alertdialog" aria-label="Silent klaxon choreography, drill exercise">
+  <div class="chev top"></div>
+  <div class="vignette"></div>
+  <div class="band">
+    <div class="wjpbox"><span id="wjp"></span></div>
+    <div class="wen" id="wen"></div>
+  </div>
+  <div class="chev bot"></div>
+
+  <div class="meta">
+    CODE:<b>KL-716</b><br>
+    FILE:<b>KESTREL4_DRILL</b><br>
+    EX_MODE:<b>SIM</b><br>
+    PRIORITY:<b>B++</b>
+  </div>
+
+  <div class="drill">
+    <div class="jp">演習</div>
+    <div class="en">DRILL SEQ · NO ACTION REQ</div>
+  </div>
+
+  <div class="beatwrap" role="img" aria-label="Choreography beat map with playhead">
+    <div class="beatlabel"><span id="frameTag">FRAME:01/02</span><span id="clockTag">T+00:00:00 · LOOP:0000</span></div>
+    <div class="beatline" id="beatline"><div class="playhead" id="playhead"></div></div>
+  </div>
+
+  <div class="plate" id="plate">PATTERN 01 · AMBER ADVISORY<span id="plateSub">SLOW SINGLE PULSE</span></div>
+</div>
+
+<div class="rail" role="group" aria-label="Klaxon choreography selector">
+  <span class="tag">EXP-16 / KLAXON CHOREO</span>
+  <button data-p="0" class="active">01 ADVISORY</button>
+  <button data-p="1">02 ESCALATE</button>
+  <button data-p="2">03 KLAXON</button>
+  <button class="replay" id="replayBtn">REPLAY ⟲</button>
+  <span class="tag grow" id="statusTag">KEYS: 1 2 3 · R REPLAY · ESC SILENCE</span>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const $ = id=>document.getElementById(id);
+const OFF_FRAME = {ticks:1,state:"off",jp:null,en:null};
+
+/* ---- state ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TICK_MS = 50; /* 20Hz master clock — every beat is a whole multiple of this */
+
+/* Three choreographies, arc = slow amber pulse -> accelerating alternator -> fast red double-flash.
+   Every frame's "ticks" is a count of TICK_MS steps: the exact same clock drives the
+   background fill, the vignette, the word band and the beat-line playhead — one clock,
+   four surfaces, zero drift. */
+const PATTERNS = [
+  { label:"PATTERN 01 · AMBER ADVISORY", sub:"SLOW SINGLE PULSE", rep:1, frames:[
+    {ticks:16,state:"off",  jp:null,en:null},
+    {ticks:8, state:"amber",jp:"警戒",en:"STAND BY"}
+  ]},
+  { label:"PATTERN 02 · SEAL ESCALATION", sub:"ACCELERATING ALTERNATOR", rep:5, frames:[
+    {ticks:12,state:"off",  jp:null,en:null},
+    {ticks:6, state:"amber",jp:"密閉",en:"SEAL BULKHEAD"},
+    {ticks:8, state:"off",  jp:null,en:null},
+    {ticks:4, state:"amber",jp:"密閉",en:"SEAL BULKHEAD"},
+    {ticks:6, state:"off",  jp:null,en:null},
+    {ticks:4, state:"red",  jp:"密閉",en:"SEAL BULKHEAD"},
+    {ticks:4, state:"off",  jp:null,en:null},
+    {ticks:3, state:"red",  jp:"密閉",en:"SEAL BULKHEAD"},
+    {ticks:10,state:"off",  jp:null,en:null}
+  ]},
+  { label:"PATTERN 03 · BRACE KLAXON", sub:"FAST RED DOUBLE-FLASH", rep:0, frames:[
+    {ticks:3, state:"red",jp:"衝撃",en:"BRACE"},
+    {ticks:2, state:"off",jp:null,en:null},
+    {ticks:3, state:"red",jp:"衝撃",en:"BRACE"},
+    {ticks:10,state:"off",jp:null,en:null}
+  ]}
+];
+
+const stage=$("stage"), wjp=$("wjp"), wen=$("wen"), beatline=$("beatline"), playhead=$("playhead"),
+      plate=$("plate"), plateSub=$("plateSub"), frameTag=$("frameTag"), clockTag=$("clockTag"),
+      replayBtn=$("replayBtn"), statusTag=$("statusTag");
+const patBtns=[...document.querySelectorAll(".rail button[data-p]")];
+
+let patternIndex=0, frameIndex=0, ticksInFrame=0, elapsedLoopTicks=0, loopCount=0, silenced=false;
+let secs=0;
+
+/* ---- wiring / rendering ---- */
+function applyFrame(fr){
+  stage.dataset.state = fr.state;
+  wjp.textContent = fr.jp || "";
+  wen.textContent = fr.en || "";
+  if(!REDUCED && (fr.state==="amber"||fr.state==="red")){
+    stage.classList.remove("ignite"); void stage.offsetWidth; stage.classList.add("ignite");
+  }
+}
+
+function buildBeatline(pat){
+  [...beatline.querySelectorAll(".fr")].forEach(n=>n.remove());
+  const total = pat.frames.reduce((s,f)=>s+f.ticks,0);
+  pat.frames.forEach(f=>{
+    const d=document.createElement("div");
+    d.className="fr "+f.state;
+    d.style.flexGrow = f.ticks/total;
+    beatline.insertBefore(d,playhead);
+  });
+  return total;
+}
+
+let loopTotalTicks = 1;
+
+function selectPattern(i){
+  patternIndex=i; frameIndex=0; ticksInFrame=0; elapsedLoopTicks=0; silenced=false;
+  const pat = PATTERNS[i];
+  patBtns.forEach((b,k)=>b.classList.toggle("active",k===i));
+  loopTotalTicks = buildBeatline(pat);
+  plate.firstChild.textContent = pat.label;
+  plateSub.textContent = pat.sub;
+  statusTag.textContent = "KEYS: 1 2 3 · R REPLAY · ESC SILENCE";
+  applyFrame(REDUCED ? pat.frames[pat.rep] : pat.frames[0]);
+  playhead.style.left = REDUCED ? (100*pat.rep/pat.frames.length)+"%" : "0%";
+  frameTag.textContent = `FRAME:${String(frameIndex+1).padStart(2,"0")}/${String(pat.frames.length).padStart(2,"0")}`;
+}
+function replay(){ selectPattern(patternIndex); }
+function silence(){
+  silenced=true;
+  applyFrame(OFF_FRAME);
+  statusTag.textContent = "SILENCED · SELECT A PATTERN TO RESUME";
+}
+
+/* ---- master clock: one tick drives fill + band + playhead in lockstep ---- */
+function masterTick(){
+  if(REDUCED || silenced) return;
+  const pat = PATTERNS[patternIndex];
+  ticksInFrame++; elapsedLoopTicks++;
+  if(ticksInFrame >= pat.frames[frameIndex].ticks){
+    ticksInFrame = 0;
+    frameIndex = (frameIndex+1) % pat.frames.length;
+    if(frameIndex===0){ elapsedLoopTicks=0; loopCount++; }
+    applyFrame(pat.frames[frameIndex]);
+    frameTag.textContent = `FRAME:${String(frameIndex+1).padStart(2,"0")}/${String(pat.frames.length).padStart(2,"0")}`;
+  }
+  playhead.style.left = (100*elapsedLoopTicks/loopTotalTicks)+"%";
+}
+
+function clockTick(){
+  secs++;
+  const h=String(Math.floor(secs/3600)).padStart(2,"0"),
+        m=String(Math.floor(secs/60)%60).padStart(2,"0"),
+        s=String(secs%60).padStart(2,"0");
+  clockTag.textContent = `T+${h}:${m}:${s} · LOOP:${String(loopCount).padStart(4,"0")}`;
+}
+
+patBtns.forEach(b=>b.addEventListener("click",()=>selectPattern(+b.dataset.p)));
+replayBtn.addEventListener("click",replay);
+document.addEventListener("keydown",e=>{
+  if(e.key==="1") selectPattern(0);
+  else if(e.key==="2") selectPattern(1);
+  else if(e.key==="3") selectPattern(2);
+  else if(e.key.toLowerCase()==="r") replay();
+  else if(e.key==="Escape") silence();
+});
+
+/* ---- START ---- */
+selectPattern(0);
+setInterval(masterTick, TICK_MS);
+setInterval(clockTick, 1000);
+</script>
+</body>
+</html>

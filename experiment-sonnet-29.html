@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-29 · CAUTION HAZARD BARRICADE</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--mint);font-family:var(--mono);
+  text-transform:uppercase;line-height:1.3}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ================= background scene: the zone board behind the barricade ================= */
+.scene{max-width:900px;margin:0 auto;padding:36px 28px 60px;position:relative}
+.scene-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;
+  border-bottom:2px solid var(--orange);padding-bottom:12px;margin-bottom:18px}
+.kanji-block{line-height:.85}
+.kanji{font-family:var(--jp);font-weight:800;font-size:clamp(48px,9vw,72px);
+  color:var(--orange);text-shadow:0 0 4px currentColor,0 0 12px rgba(242,100,0,.4)}
+.kanji-cap{font-size:11px;letter-spacing:.16em;margin-top:2px;color:var(--orange)}
+.meta{font-size:11px;line-height:1.35;text-align:right;min-width:190px;color:var(--orange)}
+.meta div b{color:var(--red-hi)}
+
+h1{font-family:var(--cond);font-weight:700;font-size:clamp(20px,3.4vw,28px);
+  letter-spacing:.02em;margin:4px 0 4px;color:var(--mint)}
+.subtitle{font-size:12px;letter-spacing:.08em;color:var(--green-map);margin-bottom:20px}
+
+.section-label{font-size:11px;letter-spacing:.12em;color:var(--orange);
+  border-bottom:1px solid var(--green-dim);padding-bottom:3px;margin:22px 0 10px}
+
+/* boxed stamp: text in 1px box of its own color, radius 0-4px */
+.stamp{display:inline-block;border:1px solid currentColor;border-radius:2px;
+  padding:3px 9px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.stamp.red{color:var(--red-hi)}
+.stamp.amber{color:var(--amber)}
+.stamp.fill{color:var(--bg);background:currentColor}
+
+/* containment meter: discrete segments + a drawn threshold, never a continuous fill */
+.meter-wrap{position:relative;margin:12px 0 26px}
+.meter{display:flex;gap:4px}
+.seg{width:22px;height:28px;border-radius:3px;background:#141414;
+  border:1px solid var(--green-dim)}
+.seg.lit{background:var(--mint);border-color:var(--mint);
+  box-shadow:0 0 6px rgba(82,242,154,.5)}
+.seg.lit.danger{background:var(--red-hi);border-color:var(--red-hi);
+  box-shadow:0 0 8px rgba(226,40,15,.6)}
+.threshold-line{position:absolute;top:-6px;width:2px;height:40px;background:var(--orange)}
+.threshold-label{position:absolute;top:-22px;font-size:10px;letter-spacing:.06em;
+  color:var(--orange);border:1px solid var(--orange);border-radius:2px;
+  padding:1px 6px;background:var(--bg);white-space:nowrap;transform:translateX(-30%)}
+
+.readout{display:flex;gap:22px;font-size:11px;flex-wrap:wrap;margin-top:6px}
+.readout b{color:var(--mint-hi)}
+
+.controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;
+  background:var(--bg);color:var(--mint);border:1px solid var(--mint);
+  padding:9px 14px;cursor:pointer}
+button:hover:not(:disabled){background:var(--mint);color:var(--bg)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+/* ================= barricade overlay — the signature element ================= */
+.barricade{position:fixed;inset:0;z-index:50;overflow:hidden}
+.barricade[hidden]{display:none}
+
+/* horizontal red/black bands: the barricade's base texture */
+.band-field{position:absolute;top:11vh;bottom:11vh;left:0;right:0;
+  background:repeating-linear-gradient(180deg,var(--red-hi) 0 13vh,#0a0000 13vh 16vh)}
+.band-field.strobe-lo{background:repeating-linear-gradient(180deg,var(--red) 0 13vh,#0a0000 13vh 16vh)}
+
+/* 45deg hazard chevrons, top and bottom bands — marching, mechanical, never eased */
+.chevrons{position:absolute;left:0;right:0;height:11vh;
+  background:repeating-linear-gradient(-45deg,#000 0 20px,var(--crimson) 20px 40px);
+  background-size:160px 100%}
+.chevrons.top{top:0}
+.chevrons.bottom{bottom:0}
+
+/* small mono CAUTION title, dead center — pattern reads before the word does */
+.caution-word{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:13px;letter-spacing:.4em;padding:7px 16px;color:var(--paper);
+  border:1px solid var(--paper);background:rgba(10,10,10,.6);white-space:nowrap}
+.caution-sub{position:absolute;top:calc(50% + 30px);left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:.12em;color:var(--paper);opacity:.85;white-space:nowrap}
+
+/* boxed EN+JP stamps, diagonal corners */
+.corner-stamp{position:absolute;text-align:center;line-height:1.1;
+  border:1px solid var(--paper);background:rgba(10,10,10,.55);padding:6px 10px 5px}
+.corner-stamp .jp{font-family:var(--jp);font-weight:800;font-size:22px;color:var(--paper)}
+.corner-stamp .en{font-size:9px;letter-spacing:.14em;color:var(--paper);margin-top:1px}
+.corner-stamp.tl{top:5vh;left:20px}
+.corner-stamp.br{bottom:5vh;right:20px}
+
+.ack-wrap{position:absolute;bottom:2.2vh;left:50%;transform:translateX(-50%)}
+.ack-btn{background:var(--paper);color:var(--bg);border:1px solid var(--paper);
+  font-weight:700;padding:10px 18px}
+.ack-btn:hover{background:var(--bg);color:var(--paper)}
+.ack-btn:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+
+/* mechanical motion: hard blink + stepped marching, guarded by reduced-motion */
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.18}}
+@keyframes march{from{background-position:0 0}to{background-position:160px 0}}
+@keyframes strobe{0%,49%{filter:brightness(1)}50%,100%{filter:brightness(.55)}}
+.caution-word{animation:blink 1s steps(2,jump-none) infinite}
+.corner-stamp.tl{animation:blink 1s steps(2,jump-none) infinite}
+.corner-stamp.br{animation:blink 1s steps(2,jump-none) infinite;animation-delay:.5s}
+.chevrons{animation:march .8s steps(4,end) infinite}
+.band-field{animation:strobe 1s steps(1,jump-none) infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .caution-word,.corner-stamp.tl,.corner-stamp.br,.chevrons,.band-field{
+    animation:none!important;opacity:1!important;filter:none!important}
+}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="scene-head">
+    <div class="kanji-block">
+      <div class="kanji">過負荷</div>
+      <div class="kanji-cap">CONDUIT OVERLOAD</div>
+    </div>
+    <div class="meta">
+      ZONE:<b>DECK-7/SECTOR-D</b><br>
+      CORE:<b>ALTAIR·2 RELAY</b><br>
+      AUTH:<b>KESTREL·4 OPS</b><br>
+      NOTICE:<b>KT4-BAR-0512</b>
+    </div>
+  </div>
+
+  <h1>RESTRICTED ZONE STATUS BOARD</h1>
+  <div class="subtitle">SECTOR-D CONTAINMENT MONITOR · 区画警戒記録</div>
+
+  <div class="section-label">01 — ZONE STATE</div>
+  <div id="stateChip" class="stamp fill red">密閉 SEALED</div>
+
+  <div class="section-label">02 — CONTAINMENT INTEGRITY</div>
+  <div class="meter-wrap">
+    <div class="meter" id="meter" role="img" aria-label="Conduit containment integrity meter"></div>
+    <div class="threshold-line" id="thresholdLine"></div>
+    <div class="threshold-label" id="thresholdLabel">CONTAINMENT LINE</div>
+  </div>
+  <div class="readout">
+    <span>INTEGRITY:<b id="integrityOut">10/10</b></span>
+    <span>ELAPSED:<b id="elapsedOut">00:00</b></span>
+    <span>BARRICADE:<b id="barricadeOut">ENGAGED</b></span>
+  </div>
+
+  <div class="controls" role="group" aria-label="Barricade controls">
+    <button id="engageBtn" type="button" disabled>ENGAGE BARRICADE PROTOCOL</button>
+  </div>
+</div>
+
+<div class="barricade" id="overlay" role="alertdialog" aria-modal="true"
+     aria-labelledby="cautionTitle" aria-describedby="cautionSub">
+  <div class="band-field" id="bandField"></div>
+  <div class="chevrons top"></div>
+  <div class="chevrons bottom"></div>
+  <div id="cautionTitle" class="caution-word">CAUTION</div>
+  <div id="cautionSub" class="caution-sub">SECTOR-D BARRICADE ENGAGED — CONDUIT OVERLOAD</div>
+  <div class="corner-stamp tl">
+    <div class="jp">警戒</div>
+    <div class="en">CAUTION</div>
+  </div>
+  <div class="corner-stamp br">
+    <div class="jp">退避</div>
+    <div class="en">STAND CLEAR</div>
+  </div>
+  <div class="ack-wrap">
+    <button id="ackBtn" class="ack-btn" type="button">ACKNOWLEDGE — STAND CLEAR</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pad2=n=>String(n).padStart(2,"0");
+
+/* ---- state ---- */
+const overlay=document.getElementById("overlay");
+const engageBtn=document.getElementById("engageBtn");
+const ackBtn=document.getElementById("ackBtn");
+const meter=document.getElementById("meter");
+const thresholdLine=document.getElementById("thresholdLine");
+const thresholdLabel=document.getElementById("thresholdLabel");
+const integrityOut=document.getElementById("integrityOut");
+const elapsedOut=document.getElementById("elapsedOut");
+const barricadeOut=document.getElementById("barricadeOut");
+const stateChip=document.getElementById("stateChip");
+
+const SEG_COUNT=10, SEG_W=22, SEG_GAP=4, THRESH_IDX=7; /* segment index the containment line rides on */
+let segs=[];
+let integrity=SEG_COUNT;
+let barricadeActive=true;   /* overlay starts engaged, per the barricade-grade brief */
+let elapsedSec=0;
+let chipOn=true;
+
+/* Builds the segmented meter and positions the threshold marker over it —
+   thresholds are drawn objects here, not footnotes (see CONTAINMENT LINE). */
+function buildMeter(){
+  meter.innerHTML="";
+  segs=[];
+  for(let i=0;i<SEG_COUNT;i++){
+    const s=document.createElement("div");
+    s.className="seg";
+    meter.appendChild(s);
+    segs.push(s);
+  }
+  const x=THRESH_IDX*(SEG_W+SEG_GAP)-SEG_GAP/2;
+  thresholdLine.style.left=x+"px";
+  thresholdLabel.style.left=x+"px";
+}
+
+/* Segments extinguish rather than fade — emptiness reads as the danger here,
+   the reverse of the "dark board = safe" convention, because this meter
+   tracks containment, not completion. */
+function renderMeter(){
+  segs.forEach((s,i)=>{
+    s.classList.toggle("lit",i<integrity);
+    s.classList.toggle("danger",i<integrity&&i>=THRESH_IDX);
+  });
+  integrityOut.textContent=integrity+"/"+SEG_COUNT;
+}
+
+/* ---- barricade lifecycle (lock-flag guarded — see decay tick below) ---- */
+function engageBarricade(){
+  if(barricadeActive) return;           /* repeating-trigger guard */
+  barricadeActive=true;
+  overlay.hidden=false;
+  overlay.setAttribute("aria-hidden","false");
+  engageBtn.disabled=true;
+  barricadeOut.textContent="ENGAGED";
+  ackBtn.focus();
+}
+
+function acknowledgeBarricade(){
+  if(!barricadeActive) return;
+  barricadeActive=false;
+  overlay.hidden=true;
+  overlay.setAttribute("aria-hidden","true");
+  engageBtn.disabled=false;
+  barricadeOut.textContent="CLEARED";
+  integrity=SEG_COUNT;
+  renderMeter();
+  engageBtn.focus();
+}
+
+/* Containment decays only while the zone is unbarricaded; once integrity
+   bottoms out it re-engages automatically, and the guard inside
+   engageBarricade() stops it firing again every subsequent tick. */
+function decayTick(){
+  if(barricadeActive) return;
+  integrity=Math.max(0,integrity-1);
+  renderMeter();
+  if(integrity<=0) engageBarricade();
+}
+
+/* station clock — keeps ticking regardless of barricade state */
+function clockTick(){
+  elapsedSec++;
+  elapsedOut.textContent=pad2(Math.floor(elapsedSec/60))+":"+pad2(elapsedSec%60);
+}
+
+/* ambient zone-state chip: slow alternation, frozen for reduced-motion users */
+function chipTick(){
+  if(REDUCED) return;
+  chipOn=!chipOn;
+  if(chipOn){stateChip.textContent="密閉 SEALED";stateChip.className="stamp fill red";}
+  else{stateChip.textContent="点検中 INSPECTING";stateChip.className="stamp fill amber";}
+}
+
+engageBtn.addEventListener("click",engageBarricade);
+ackBtn.addEventListener("click",acknowledgeBarricade);
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&barricadeActive) acknowledgeBarricade();
+});
+addEventListener("resize",()=>buildMeter());
+
+/* ---- START ---- */
+buildMeter();
+renderMeter();
+setInterval(decayTick,1100);
+setInterval(clockTick,1000);
+setInterval(chipTick,3600);
+ackBtn.focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-26 · ASSET SCAN OVERLAY ALERT</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  /* colorway-parameterized unit state — default ALERT, .nominal flips it */
+  --unit:var(--red-hi); --unit-glow:rgba(226,40,15,.42); --unit-fill:rgba(226,40,15,.8);
+  --line:var(--amber-dim);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);overflow:hidden;font-family:var(--mono);text-transform:uppercase;color:var(--amber)}
+body.nominal{--unit:var(--mint);--unit-glow:rgba(82,242,154,.35);--unit-fill:rgba(82,242,154,.8);--line:var(--green-dim)}
+
+/* CRT pass — required on every dark experiment */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* faint blueprint grid — the "content" being scanned, kept cheap (no canvas) */
+#backdrop{position:fixed;inset:0;z-index:0;opacity:.5;
+  background:
+    repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 46px),
+    repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px 46px)}
+
+/* ---- scan-grid overlay: repeating icon+label units ---- */
+#grid{position:absolute;inset:0;z-index:1;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(126px,1fr));
+  align-content:center;gap:2.4vh 0;padding:4vh 0;mix-blend-mode:screen}
+.unit{display:flex;align-items:center;justify-content:center;gap:10px;height:19vh;
+  opacity:0;animation:popin 1ms steps(1) forwards}
+@keyframes popin{to{opacity:1}}
+.ficon{width:38px;height:30px;flex:none;color:var(--unit);filter:drop-shadow(0 0 3px var(--unit-glow))}
+.bar{width:30px;height:100%;flex:none;background:var(--unit-fill);
+  box-shadow:0 0 9px var(--unit-glow);display:flex;align-items:center;justify-content:center}
+.bar span{transform:rotate(90deg);white-space:nowrap;font-size:10px;letter-spacing:.14em;
+  font-weight:700;color:var(--bg)}
+
+/* ---- corner metadata: mono key:value, corner-pinned ---- */
+.meta{position:absolute;z-index:10;font-size:11px;line-height:1.3;letter-spacing:.06em;color:var(--amber)}
+#meta-tl{top:14px;left:16px}
+#meta-tl b{color:var(--orange)}
+.meta .rule{border-top:1px solid var(--orange);width:120px;margin:4px 0 6px;opacity:.6}
+
+/* ---- alert stamp + flagged-count plate, top-right ---- */
+#stampzone{position:absolute;z-index:10;top:14px;right:16px;display:flex;flex-direction:column;
+  align-items:flex-end;gap:6px;transform:rotate(-3deg)}
+.stamp{border:1px solid var(--unit);color:var(--unit);padding:3px 8px;border-radius:2px;
+  font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-shadow:0 0 4px currentColor,0 0 12px var(--unit-glow);
+  animation:blink 1s steps(1) infinite}
+body.nominal .stamp{animation:blink 1.6s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+.countbox{border:1px solid var(--unit);border-radius:2px;padding:4px 10px 6px;text-align:right;
+  box-shadow:0 0 8px var(--unit-glow),inset 0 0 8px rgba(0,0,0,.4)}
+.countnum{display:block;font-family:var(--cond);font-weight:700;font-size:34px;color:var(--unit);
+  text-shadow:0 0 4px currentColor,0 0 14px var(--unit-glow);letter-spacing:-.01em}
+.countlabel{display:block;font-size:9.5px;color:var(--amber);letter-spacing:.12em;margin-top:2px}
+
+/* hazard corner accent — only reads while alert is live */
+#hazard{position:absolute;z-index:5;top:0;right:0;width:150px;height:150px;pointer-events:none;
+  clip-path:polygon(100% 0,100% 100%,0 0);
+  background:repeating-linear-gradient(-45deg,var(--crimson) 0 10px,#000 10px 20px);
+  opacity:0;transition:none}
+body:not(.nominal) #hazard{opacity:.16}
+
+/* ---- HUD / control panel, bottom ---- */
+#hud{position:absolute;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:center;gap:16px;
+  background:var(--bg);border-top:2px solid var(--orange);padding:10px 18px}
+#hud .kanji{font-family:var(--jp);font-weight:800;font-size:22px;color:var(--unit);
+  text-shadow:0 0 4px currentColor,0 0 12px var(--unit-glow)}
+#hud .cap{font-size:10px;color:var(--amber);letter-spacing:.16em;margin-left:8px}
+#hud .desig{font-size:10.5px;color:var(--green-map);letter-spacing:.1em;margin-left:auto;margin-right:4px}
+#hud button{background:transparent;border:2px solid var(--orange);color:var(--orange);
+  font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;padding:8px 20px;cursor:pointer}
+#hud button:hover{background:rgba(242,100,0,.12)}
+#hud button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){
+  .unit{animation:none;opacity:1}
+  .stamp{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div id="backdrop"></div>
+<div id="hazard"></div>
+<div id="grid" aria-hidden="true"></div>
+
+<!-- shared icon def: the one true pictogram — a plain tabbed-folder outline -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ifolder" viewBox="0 0 40 32">
+    <path d="M2 10 2 4 15 4 18 8 38 8 38 28 2 28 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+  </symbol>
+</svg>
+
+<div class="meta" id="meta-tl">
+  SOURCE:KESTREL·4 ARCHIVE<br>
+  CORE:VEGA·1<br>
+  SECTOR:ARCHIVE·07
+  <div class="rule"></div>
+  PASS:0042<br>
+  MODE:<span id="modelabel">QUARANTINE</span><br>
+  UNIT:UNIT-07
+</div>
+
+<div id="stampzone" role="group" aria-label="scan state indicator">
+  <div class="stamp" id="stamp">警戒 · ALERT</div>
+  <div class="countbox">
+    <span class="countnum" id="flagnum">037</span>
+    <span class="countlabel" id="countlabel">FLAGGED / <span id="totalnum">4096</span> SCANNED</span>
+  </div>
+</div>
+
+<div id="hud">
+  <span class="kanji" id="kanjimain">警戒</span><span class="cap">ASSET SCAN · KESTREL·4 INTEGRITY PASS</span>
+  <span class="desig" id="desig">COLORWAY:ERROR</span>
+  <button id="toggle" aria-pressed="true">STAND DOWN</button>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* Same grid mechanism as any archive sweep: repeating folder+label units.
+   Meaning lives entirely in --unit/--unit-fill/--unit-glow — one class flip
+   on <body> recolors the whole subsystem, never per-item. Volume over detail:
+   individual IDs are illegible by design, the mass of units is the signal. */
+
+/* ---- helpers ---- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rid=()=>{
+  const h="0123456789ABCDEF";
+  return "K4-"+Array.from({length:4},()=>h[Math.floor(Math.random()*16)]).join("");
+};
+
+/* ---- state ---- */
+let alertMode=true;
+let flagged=37;
+const TOTAL=4096;
+
+/* ---- wiring: grab nodes, build grid ---- */
+const grid=document.getElementById("grid");
+const stamp=document.getElementById("stamp");
+const modelabel=document.getElementById("modelabel");
+const kanjimain=document.getElementById("kanjimain");
+const desig=document.getElementById("desig");
+const countlabel=document.getElementById("countlabel");
+const flagnum=document.getElementById("flagnum");
+const btn=document.getElementById("toggle");
+
+const NUNIT=Math.max(8,Math.ceil(innerWidth/126)*Math.ceil(innerHeight/(innerHeight*.19+1)));
+const units=[];
+for(let i=0;i<NUNIT;i++){
+  const u=document.createElement("div");
+  u.className="unit";
+  u.innerHTML='<svg class="ficon" viewBox="0 0 40 32"><use href="#ifolder"></use></svg>'
+    +'<div class="bar"><span>'+rid()+'</span></div>';
+  u.style.animationDelay = REDUCED ? "0ms" : Math.round(i*(30+Math.random()*50))+"ms";
+  if(!REDUCED && Math.random()<0.18) u.style.opacity="0.2"; // pre-flickered, thinned texture
+  grid.appendChild(u);
+  units.push(u);
+}
+
+/* ---- mechanical liveliness: units pop / relabel, never fades ---- */
+function tickUnits(){
+  for(let i=0;i<4;i++){
+    const u=units[Math.floor(Math.random()*units.length)];
+    u.style.opacity = (u.style.opacity==="0.2") ? "1" : "0.2";
+    if(Math.random()<0.35) u.querySelector(".bar span").textContent=rid();
+  }
+}
+
+/* ---- flagged/scanned counter: stepped tick, not a smooth counter ---- */
+function tickCount(){
+  if(alertMode){
+    flagged=Math.max(14,Math.min(96,flagged+(Math.random()<0.5?-1:1)*(1+Math.floor(Math.random()*3))));
+    flagnum.textContent=String(flagged).padStart(3,"0");
+  }else{
+    flagnum.textContent="000";
+  }
+}
+
+/* ---- colorway toggle: the signature element ----
+   flips the ENTIRE overlay (grid units, stamp, count plate, hazard corner,
+   HUD kanji) between nominal/mint and alert/red via one body class. */
+btn.addEventListener("click",()=>{
+  alertMode=!alertMode;
+  document.body.classList.toggle("nominal",!alertMode);
+  btn.textContent = alertMode ? "STAND DOWN" : "RAISE ALERT";
+  btn.setAttribute("aria-pressed", String(alertMode));
+  stamp.textContent = alertMode ? "警戒 · ALERT" : "承認 · CLEARED";
+  kanjimain.textContent = alertMode ? "警戒" : "承認";
+  modelabel.textContent = alertMode ? "QUARANTINE" : "INDEX";
+  countlabel.innerHTML = (alertMode ? "FLAGGED" : "CLEARED") + " / <span id=\"totalnum\">" + TOTAL + "</span> SCANNED";
+  desig.textContent = alertMode ? "COLORWAY:ERROR" : "COLORWAY:PRIMARY";
+  tickCount();
+});
+
+/* ---- START ---- */
+tickCount();
+if(!REDUCED){
+  setInterval(tickUnits,260);
+  setInterval(tickCount,700);
+}else{
+  setInterval(tickCount,1200); // keep counters alive, skip the flicker texture
+}
+</script>
+</body>
+</html>

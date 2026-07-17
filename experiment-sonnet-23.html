@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPERIMENT-23 · SPARSE THRESHOLD TREE</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;}
+body{
+  color:var(--green-map); font-family:var(--mono); text-transform:uppercase;
+  letter-spacing:.04em;
+}
+/* CRT pass */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+.corner{position:fixed;z-index:10;font-size:11px;line-height:1.3;}
+.corner.tl{top:14px;left:16px;color:var(--orange);}
+.corner.tl .k{color:var(--green-dim);}
+.corner.tl div{white-space:nowrap;}
+.corner.tr{top:14px;right:16px;text-align:right;}
+
+.stamp{border:1px solid var(--amber);padding:4px 10px;font-family:var(--cond);
+  font-weight:700;font-size:12px;color:var(--amber);letter-spacing:.05em;
+  text-shadow:0 0 4px currentColor,0 0 12px rgba(244,159,9,.4);}
+.stamp.blink{animation:blink 1s steps(2,jump-none) infinite;}
+.stamp.done{background:var(--mint);border-color:var(--mint);color:var(--bg);
+  text-shadow:none;animation:none;}
+@keyframes blink{50%{opacity:.18;}}
+
+.stage{position:fixed;inset:64px 0 88px 0;z-index:2;}
+svg{width:100%;height:100%;display:block;}
+
+/* skeleton dim until ignited; propagation front lights nodes+traces */
+.trace{stroke:var(--green-dim);stroke-width:1;}
+.trace.lit{stroke:var(--orange);filter:drop-shadow(0 0 3px var(--orange));}
+.bar{fill:none;stroke:var(--green-dim);stroke-width:1;opacity:.6;}
+.node.lit .bar{fill:var(--nc);stroke:var(--nc);opacity:1;
+  filter:drop-shadow(0 0 4px var(--nc));}
+.notch{fill:var(--orange);opacity:0;}
+.node.lit .notch{opacity:.95;}
+.lbl{font-family:var(--mono);font-size:9px;fill:var(--green-dim);}
+.node.lit .lbl{fill:var(--nc);}
+.axis{font-family:var(--mono);font-size:9px;fill:var(--green-dim);}
+
+/* threshold plate: rotated bordered plate w/ hazard-striped end caps
+   physically crosses the lattice — drawn from t=0, independent of data
+   state; a flash marks the moment the cascade crosses it. */
+.threshold{position:absolute;left:-8%;width:116%;top:42%;height:58px;
+  transform:rotate(-8deg);display:flex;z-index:6;pointer-events:none;}
+.threshold .cap{flex:0 0 60px;
+  background:repeating-linear-gradient(45deg,var(--crimson) 0 9px,#050505 9px 18px);}
+.threshold .body{flex:1;border-top:2px solid var(--red-hi);border-bottom:2px solid var(--red-hi);
+  background:rgba(194,12,12,.16);display:flex;align-items:center;justify-content:center;gap:16px;}
+.threshold .label{font-family:var(--cond);font-weight:700;font-size:clamp(17px,2.4vw,28px);
+  color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 12px rgba(226,40,15,.4);
+  letter-spacing:.03em;}
+.threshold .sub{font-size:9px;color:var(--red);letter-spacing:.08em;}
+.threshold.crossing{animation:plateFlash .5s steps(2,jump-none) 3;}
+@keyframes plateFlash{50%{opacity:.2;filter:brightness(2);}}
+
+.tag{position:fixed;left:5%;bottom:110px;z-index:6;font-size:10px;
+  color:var(--amber-dim);letter-spacing:.06em;}
+.tag .jp{font-family:var(--jp);font-size:17px;font-weight:800;display:block;color:inherit;}
+.tag.hot{color:var(--red-hi);text-shadow:0 0 4px currentColor,0 0 10px rgba(226,40,15,.4);}
+
+.rail{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;gap:10px;
+  padding:14px 16px;border-top:1px solid var(--green-dim);background:rgba(10,10,10,.6);}
+button{background:transparent;border:1px solid var(--orange);color:var(--orange);
+  font-family:var(--cond);font-weight:700;letter-spacing:.05em;padding:8px 16px;
+  cursor:pointer;font-size:12px;text-transform:uppercase;}
+button:hover{background:var(--orange);color:var(--bg);}
+button:focus-visible{outline:2px solid var(--mint-hi);outline-offset:2px;}
+.rail .note{margin-left:auto;align-self:center;font-size:10px;color:var(--green-dim);}
+
+@media (prefers-reduced-motion: reduce){
+  .stamp.blink{animation:none;}
+  .threshold.crossing{animation:none;opacity:1;}
+}
+</style>
+</head>
+<body>
+
+<div class="corner tl">
+  <div><span class="k">STATION:</span>KESTREL·4</div>
+  <div><span class="k">CORE:</span><span id="mCore">VEGA·1</span></div>
+  <div><span class="k">PROC:</span>LATTICE·SYNC</div>
+  <div><span class="k">THRESH:</span>CUTOFF·IX</div>
+  <div><span class="k">NODES:</span>014</div>
+</div>
+
+<div class="corner tr">
+  <div class="stamp blink" id="stamp"><span id="stampTxt">点検中 / INSPECTING</span></div>
+</div>
+
+<div class="stage">
+  <svg id="svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+  <div class="threshold" id="plate">
+    <div class="cap"></div>
+    <div class="body">
+      <div class="label">CUTOFF·IX</div>
+      <div class="sub">PROC INTEGRITY LIMIT</div>
+    </div>
+    <div class="cap"></div>
+  </div>
+</div>
+
+<div class="tag" id="tag"><span class="jp">過負荷</span>OVERLOAD</div>
+
+<div class="rail" role="group" aria-label="lattice controls">
+  <button id="btnReinit" type="button">Reinitiate</button>
+  <button id="btnCore" type="button">Cycle Core</button>
+  <span class="note">SPARSE LATTICE · MANUAL OVERRIDE AVAILABLE</span>
+</div>
+
+<script>
+"use strict";
+/* zero-size viewport guard — must run before anything reads geometry */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---------- helpers ---------- */
+const SVGNS="http://www.w3.org/2000/svg";
+function el(n,a,parent){
+  const e=document.createElementNS(SVGNS,n);
+  for(const k in a) e.setAttribute(k,a[k]);
+  parent.appendChild(e);
+  return e;
+}
+
+/* ---------- state ---------- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const CORES = ["VEGA·1","ALTAIR·2","DENEB·3"];
+const PREFIX = {"VEGA·1":"V","ALTAIR·2":"A","DENEB·3":"D"};
+let coreIdx = 0;
+
+/* Hand-placed sparse tree: fewer nodes, generous black space between them
+   (per the sparse variant — a dense lattice would pack 3x as many bars).
+   Mint branch left/center; a separate red column stands apart on the right,
+   the plate above crosses the gap between them. */
+const NODES = [
+  {x:70, y:300,parent:-1,group:"mint",suf:"014"},
+  {x:210,y:170,parent:0, group:"mint",suf:"021"},
+  {x:210,y:430,parent:0, group:"mint",suf:"033"},
+  {x:360,y:100,parent:1, group:"mint",suf:"101"},
+  {x:360,y:250,parent:1, group:"mint",suf:"114"},
+  {x:360,y:410,parent:2, group:"mint",suf:"127"},
+  {x:360,y:520,parent:2, group:"mint",suf:"138"},
+  {x:520,y:180,parent:4, group:"mint",suf:"201"},
+  {x:520,y:460,parent:5, group:"mint",suf:"214"},
+  {x:770,y:80, parent:-1,group:"red", suf:"771"},
+  {x:770,y:190,parent:9, group:"red", suf:"782"},
+  {x:770,y:300,parent:10,group:"red", suf:"793"},
+  {x:770,y:410,parent:11,group:"red", suf:"804"},
+  {x:770,y:520,parent:12,group:"red", suf:"815"}
+];
+const LAST_MINT = 8; /* index where propagation nears the threshold plate */
+
+const svg = document.getElementById("svg");
+const nodeEls = [];
+const traceEls = [];
+const labelEls = [];
+
+const stampEl = document.getElementById("stamp");
+const stampTxt = document.getElementById("stampTxt");
+const plateEl = document.getElementById("plate");
+const tagEl = document.getElementById("tag");
+const mCore = document.getElementById("mCore");
+
+let igniteTimer = null;
+let gen = 0;
+
+/* ---------- build ---------- */
+function buildLattice(){
+  svg.textContent = "";
+  nodeEls.length = 0; traceEls.length = 0; labelEls.length = 0;
+
+  /* traces under bars */
+  NODES.forEach((n,i)=>{
+    if(n.parent>=0){
+      const p = NODES[n.parent];
+      traceEls[i] = el("line",{x1:p.x,y1:p.y,x2:n.x,y2:n.y,class:"trace"},svg);
+    } else {
+      traceEls[i] = null;
+    }
+  });
+
+  /* chevron bars: skewed parallelograms standing in for 45deg bars */
+  NODES.forEach((n,i)=>{
+    const g = el("g",{class:"node "+n.group,
+      style:`--nc:${n.group==="mint"?"var(--mint)":"var(--red)"}`,
+      transform:`translate(${n.x},${n.y})`},svg);
+    el("polygon",{points:"-30,-13 22,-13 30,13 -22,13",class:"bar"},g);
+    el("rect",{x:-38,y:-4,width:8,height:8,class:"notch"},g);
+    const prefix = n.group==="mint" ? PREFIX[CORES[coreIdx]] : "X";
+    const t = el("text",{x:0,y:30,class:"lbl","text-anchor":"middle"},g);
+    t.textContent = prefix+"-"+n.suf;
+    nodeEls[i] = g;
+    labelEls[i] = t;
+  });
+
+  /* left-edge axis numerals — circuitry dressing, not functional data */
+  for(let i=0;i<10;i++){
+    const t = el("text",{x:10,y:60+i*52,class:"axis"},svg);
+    t.textContent = 80+i;
+  }
+}
+
+function relabelMint(){
+  const prefix = PREFIX[CORES[coreIdx]];
+  NODES.forEach((n,i)=>{ if(n.group==="mint") labelEls[i].textContent = prefix+"-"+n.suf; });
+}
+
+/* ---------- ignition schedule ---------- */
+/* a flat action queue driven by one setInterval tick — mechanical, no easing.
+   the plate/tag actions are inserted at the seam where mint work gives way
+   to the red column, so the interrupt lands exactly where data crosses it. */
+function buildSchedule(){
+  const s = [];
+  NODES.forEach((n,i)=>{
+    if(n.parent>=0) s.push({t:"trace",i});
+    s.push({t:"bar",i});
+    if(i===LAST_MINT){
+      s.push({t:"plate"});
+      s.push({t:"taghot"});
+      s.push({t:"pause"});
+      s.push({t:"pause"});
+      s.push({t:"tagcold"});
+    }
+  });
+  return s;
+}
+
+function applyAction(a){
+  switch(a.t){
+    case "trace": if(traceEls[a.i]) traceEls[a.i].classList.add("lit"); break;
+    case "bar": nodeEls[a.i].classList.add("lit"); break;
+    case "plate": plateEl.classList.add("crossing"); break;
+    case "taghot": tagEl.classList.add("hot"); break;
+    case "tagcold": tagEl.classList.remove("hot"); break;
+    case "pause": break;
+  }
+}
+
+function finalizeAll(schedule){
+  schedule.forEach(applyAction);
+  tagEl.classList.remove("hot");
+  markComplete();
+}
+
+function markComplete(){
+  stampEl.classList.remove("blink");
+  stampEl.classList.add("done");
+  stampTxt.textContent = "承認 / CLEARED";
+}
+
+/* reinitiate: repeating-trigger guard via generation id so a stale interval
+   or stale auto-restart timeout can never double-run against a fresh reset */
+function resetLattice(){
+  gen++;
+  const myGen = gen;
+  if(igniteTimer){ clearInterval(igniteTimer); igniteTimer = null; }
+  plateEl.classList.remove("crossing");
+  tagEl.classList.remove("hot");
+  stampEl.classList.remove("done");
+  stampEl.classList.add("blink");
+  stampTxt.textContent = "点検中 / INSPECTING";
+  document.querySelectorAll(".node.lit").forEach(n=>n.classList.remove("lit"));
+  document.querySelectorAll(".trace.lit").forEach(n=>n.classList.remove("lit"));
+
+  const schedule = buildSchedule();
+
+  if(REDUCED){
+    finalizeAll(schedule);
+    return;
+  }
+
+  let step = 0;
+  igniteTimer = setInterval(()=>{
+    if(myGen!==gen){ clearInterval(igniteTimer); return; }
+    if(step>=schedule.length){
+      clearInterval(igniteTimer);
+      igniteTimer = null;
+      markComplete();
+      setTimeout(()=>{ if(myGen===gen) resetLattice(); },4000);
+      return;
+    }
+    applyAction(schedule[step]);
+    step++;
+  },150);
+}
+
+/* ---------- wiring ---------- */
+document.getElementById("btnReinit").addEventListener("click",()=>resetLattice());
+document.getElementById("btnCore").addEventListener("click",()=>{
+  coreIdx = (coreIdx+1) % CORES.length;
+  mCore.textContent = CORES[coreIdx];
+  relabelMint();
+  resetLattice();
+});
+
+/* ---- START ---- */
+buildLattice();
+resetLattice();
+</script>
+</body>
+</html>

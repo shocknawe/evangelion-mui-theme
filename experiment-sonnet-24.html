@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en"><!-- reopen -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-24 · EXTERNAL POWER STATE BOARD</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--orange);font-family:var(--mono);text-transform:uppercase;
+  overflow:hidden;display:flex;align-items:center;justify-content:center}
+
+/* CRT pass — every dark experiment gets this */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* Board is one recoloring unit: every child references --accent, so a mode
+   swap is a single attribute write, not a per-element repaint. Snap, not fade. */
+#board{
+  --accent:var(--mint);
+  position:relative;width:min(92vw,1180px);background:var(--bg);
+  border:2px solid var(--accent);
+  clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));
+  padding:26px 38px 22px;
+  box-shadow:0 0 40px color-mix(in srgb,var(--accent) 30%,transparent),
+             inset 0 0 30px color-mix(in srgb,var(--accent) 12%,transparent);
+}
+#board[data-mode="external"]{--accent:var(--orange)}
+#board[data-mode="backup"]{--accent:var(--blue)}
+#board.low{--accent:var(--red-hi)}
+#board.flicker{opacity:.5}
+
+#board i.bolt{position:absolute;width:6px;height:6px;border-radius:50%;background:#2a2a24}
+#board i.bolt:nth-child(1){top:9px;left:9px}#board i.bolt:nth-child(2){top:9px;right:34px}
+#board i.bolt:nth-child(3){bottom:9px;left:9px}
+
+.hazard{position:absolute;left:0;bottom:0;width:110px;height:48px;
+  background:repeating-linear-gradient(45deg,var(--crimson) 0 12px,#000 12px 24px);
+  clip-path:polygon(0 100%,0 0,100% 100%)}
+
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  border-bottom:3px double var(--teal);padding-bottom:10px;margin-bottom:22px}
+.head h1{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.2em;
+  color:var(--accent);text-shadow:0 0 4px currentColor,0 0 12px color-mix(in srgb,var(--accent) 40%,transparent)}
+.desig{font-size:10px;letter-spacing:.16em;color:var(--teal);margin-top:5px}
+.meta{font-size:11px;line-height:1.32;color:var(--accent);text-align:right;white-space:nowrap;opacity:.9}
+
+.main{display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap}
+.readout{display:flex;flex-direction:column;gap:8px}
+.digits{display:flex;align-items:flex-end;gap:5px}
+.digits svg{filter:drop-shadow(0 0 5px var(--accent)) drop-shadow(0 0 16px color-mix(in srgb,var(--accent) 55%,transparent))}
+.digits polygon.on{fill:var(--accent)}
+.digits polygon.off{fill:color-mix(in srgb,var(--accent) 8%,black)}
+.dot{width:11px;height:11px;background:var(--accent);align-self:flex-end;margin:0 1px 3px;
+  box-shadow:0 0 6px var(--accent)}
+.unit{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--accent);opacity:.85}
+
+.plates{display:flex;flex-direction:column;gap:8px}
+.plate{border:2px solid var(--accent);padding:4px 18px;text-align:center;opacity:.28;min-width:150px}
+.plate.active{opacity:1;background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.plate .jp{font-family:var(--jp);font-weight:800;font-size:19px;letter-spacing:.3em;
+  color:var(--accent);text-shadow:0 0 5px currentColor}
+.plate .en{font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.28em;color:var(--accent)}
+
+.reserve{margin-top:20px;display:flex;flex-direction:column;gap:6px}
+.reserve-label{font-size:11px;letter-spacing:.14em;color:var(--accent)}
+.segbar{display:flex;gap:3px}
+.segbar i{flex:1;height:10px;border:1px solid var(--accent);border-radius:2px;background:transparent}
+.segbar i.lit{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+.stamp{position:absolute;right:38px;bottom:96px;border:3px solid var(--red-hi);color:var(--red-hi);
+  background:var(--bg);padding:6px 18px;font-family:var(--cond);font-weight:700;font-size:13px;
+  letter-spacing:.14em;display:none;text-shadow:0 0 6px currentColor;
+  animation:blink 1s steps(1) infinite;transform:rotate(-4deg)}
+.stamp .jpv{font-family:var(--jp);margin-right:10px;letter-spacing:.2em}
+.stamp.show{display:block}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.moderail{display:flex;gap:10px;margin-top:22px;border-top:2px solid var(--accent);padding-top:14px}
+.mode{flex:1;border:2px solid var(--accent);background:transparent;color:var(--accent);
+  font:700 14px/1 var(--cond);letter-spacing:.14em;text-transform:uppercase;padding:11px 0;cursor:pointer}
+.mode.active{background:var(--accent);color:var(--bg)}
+.mode.util{border-color:var(--mint);color:var(--mint)}
+.mode:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){
+  .stamp{animation:none}
+  #board.flicker{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<div class="board" id="board" data-mode="internal">
+  <i class="bolt"></i><i class="bolt"></i><i class="bolt"></i>
+  <div class="hazard"></div>
+
+  <header class="head">
+    <div>
+      <h1>KESTREL·4 POWER DISTRIBUTION BOARD</h1>
+      <div class="desig">DESIGNATION: PDB·07 — SOURCE ARBITRATION</div>
+    </div>
+    <div class="meta">
+      SOURCE:<span id="m-source">INTERNAL</span><br>
+      UNIT:UNIT-07<br>
+      CYCLE:<span id="m-cycle">0000</span><br>
+      TIME:<span id="m-time">00:00:00</span>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="readout">
+      <div class="digits" id="digits"></div>
+      <div class="unit" id="unit-label">OUTPUT — MEGAWATT</div>
+    </div>
+
+    <div class="plates" role="group" aria-label="Active power source indicator">
+      <div class="plate active" id="pl-internal"><div class="jp">内部</div><div class="en">Internal</div></div>
+      <div class="plate" id="pl-external"><div class="jp">外部</div><div class="en">External</div></div>
+      <div class="plate" id="pl-backup"><div class="jp">予備</div><div class="en">Backup</div></div>
+    </div>
+  </div>
+
+  <div class="reserve">
+    <span class="reserve-label">RESERVE CHARGE <span id="reserve-pct">100.0</span>%</span>
+    <div class="segbar" id="segbar"></div>
+  </div>
+
+  <div class="stamp" id="lowstamp" aria-live="polite"><span class="jpv">警戒</span>RESERVE LOW</div>
+
+  <div class="moderail" role="group" aria-label="Power source select">
+    <button class="mode active" data-mode="internal">Internal</button>
+    <button class="mode" data-mode="external">External</button>
+    <button class="mode" data-mode="backup">Backup</button>
+    <button class="mode util" id="recharge">Recharge</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers: 7-seg digit built from inline SVG polygons (no fonts) ---- */
+const NS="http://www.w3.org/2000/svg";
+const SEGMAP={0:"abcdef",1:"bc",2:"abged",3:"abgcd",4:"fgbc",5:"afgcd",6:"afgedc",7:"abc",8:"abcdefg",9:"abcfgd"};
+const SEGPTS={
+  a:"6,0 34,0 30,6 10,6", b:"36,2 40,6 38,28 32,26 34,8",
+  c:"34,34 36,36 34,58 30,62 28,38", d:"6,58 28,58 24,64 2,64",
+  e:"2,36 8,38 6,58 0,62 0,40", f:"4,2 10,8 8,26 2,30 2,8",
+  g:"8,29 32,29 34,32 30,35 6,35 4,32"
+};
+const digitsEl=document.getElementById("digits");
+const DIGW=Math.min(innerWidth*.09,110);
+
+function makeDigit(){
+  const svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("width",DIGW);svg.setAttribute("height",DIGW*1.55);
+  svg.setAttribute("viewBox","0 0 44 64");
+  for(const k of "abcdefg"){
+    const p=document.createElementNS(NS,"polygon");
+    p.setAttribute("points",SEGPTS[k]);
+    p.setAttribute("data-seg",k);
+    p.setAttribute("class","off");
+    p.setAttribute("transform","skewX(-6)");
+    svg.appendChild(p);
+  }
+  digitsEl.appendChild(svg);
+  return svg;
+}
+function makeDot(){
+  const d=document.createElement("span");d.className="dot";digitsEl.appendChild(d);return d;
+}
+function renderDigit(svg,val){
+  const lit=SEGMAP[val]||"";
+  for(const p of svg.children){
+    p.setAttribute("class",lit.includes(p.getAttribute("data-seg"))?"on":"off");
+  }
+}
+
+/* ---- state ---- */
+const board=document.getElementById("board");
+const unitLabel=document.getElementById("unit-label");
+const metaSource=document.getElementById("m-source");
+const metaCycle=document.getElementById("m-cycle");
+const metaTime=document.getElementById("m-time");
+const reservePct=document.getElementById("reserve-pct");
+const segbar=document.getElementById("segbar");
+const lowstamp=document.getElementById("lowstamp");
+const plates={internal:document.getElementById("pl-internal"),
+              external:document.getElementById("pl-external"),
+              backup:document.getElementById("pl-backup")};
+const modeButtons=document.querySelectorAll(".mode[data-mode]");
+const rechargeBtn=document.getElementById("recharge");
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const d0=makeDigit(),d1=makeDigit(),d2=makeDigit(),dot=makeDot(),d3=makeDigit();
+for(let i=0;i<10;i++){segbar.appendChild(document.createElement("i"));}
+const segCells=segbar.children;
+
+let mode="internal";
+let internalVal=860.0, externalVal=940.0, backupVal=1000;   /* backupVal: tenths-of-percent, 0-1000 */
+let low=false, cycle=0;
+
+/* ---- render ---- */
+function currentValue(){
+  if(mode==="internal") return internalVal;
+  if(mode==="external") return externalVal;
+  return backupVal/10;
+}
+function renderDigits(){
+  const v=Math.max(0,Math.min(999.9,currentValue()));
+  const str=String(Math.round(v*10)).padStart(4,"0");
+  renderDigit(d0,+str[0]);renderDigit(d1,+str[1]);renderDigit(d2,+str[2]);renderDigit(d3,+str[3]);
+}
+function renderReserve(){
+  const pct=backupVal/10;
+  reservePct.textContent=pct.toFixed(1);
+  const lit=Math.round(pct/10);
+  for(let i=0;i<10;i++) segCells[i].classList.toggle("lit",i<lit);
+}
+function renderMeta(){
+  metaSource.textContent=mode.toUpperCase();
+  metaCycle.textContent=String(cycle).padStart(4,"0");
+  const t=new Date();
+  metaTime.textContent=[t.getHours(),t.getMinutes(),t.getSeconds()].map(n=>String(n).padStart(2,"0")).join(":");
+}
+
+/* State snap: one attribute write recolors border, glow, digits, plates and
+   rail together (all reference --accent). Optional 2-3 frame flicker first. */
+function setMode(next){
+  mode=next;
+  board.dataset.mode=mode;
+  modeButtons.forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+  Object.entries(plates).forEach(([k,el])=>el.classList.toggle("active",k===mode));
+  unitLabel.textContent = mode==="backup" ? "RESERVE — CHARGE PERCENT" : "OUTPUT — MEGAWATT";
+  if(!REDUCED){
+    board.classList.add("flicker");
+    setTimeout(()=>board.classList.remove("flicker"),90);
+  }
+  renderDigits();renderReserve();renderMeta();
+}
+
+/* ---- wiring ---- */
+modeButtons.forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode)));
+rechargeBtn.addEventListener("click",()=>{
+  backupVal=1000; low=false;
+  board.classList.remove("low"); lowstamp.classList.remove("show");
+  renderReserve();
+});
+
+/* ---- ticking: 1s mechanical steps, data stays alive even off-mode ---- */
+setInterval(()=>{
+  cycle++;
+  if(mode==="internal"){
+    internalVal=Math.max(760,Math.min(960,internalVal+(Math.random()*16-8)));
+  }else if(mode==="external"){
+    externalVal=Math.max(905,Math.min(975,externalVal+(Math.random()*6-3)));
+  }else{
+    backupVal=Math.max(0,backupVal-3);
+    if(backupVal<=150 && !low){                 /* repeating-trigger guard: fires once */
+      low=true; board.classList.add("low"); lowstamp.classList.add("show");
+    }
+  }
+  renderDigits();renderReserve();renderMeta();
+},1000);
+
+/* ---- START ---- */
+setMode("internal");
+</script>
+</body>
+</html>

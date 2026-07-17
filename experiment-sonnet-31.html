@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXPERIMENT-31 · STATUS READOUT MINI</title>
+<style>
+:root{
+  --bg:#0A0A0A; --mint:#52F29A; --mint-hi:#7CF4AB; --green-map:#3C9C6C; --green-dim:#246C3C;
+  --paper:#EDF8D6; --red:#C20C0C; --red-hi:#E2280F; --crimson:#E60225; --orange:#F26400;
+  --amber:#F49F09; --amber-dim:#9C3C24; --teal:#0C6C80; --blue:#5090D0; --blueprint:#B4B4B4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --cond:"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+  --jp:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);color:var(--green-map);
+  text-transform:uppercase;letter-spacing:.04em;
+  position:relative;overflow-x:hidden;padding:26px 16px;
+}
+/* CRT pass */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+@keyframes blink{50%{opacity:0}}
+
+/* corner-pinned metadata + stamps, per DESIGN-SYSTEM corner anchoring rule */
+.meta-corner{position:fixed;top:14px;left:16px;font:11px/1.35 var(--mono);color:var(--orange);z-index:5}
+.meta-corner b{color:var(--mint)}
+.link-indicator{position:fixed;top:14px;right:16px;font:11px/1.3 var(--mono);color:var(--mint);
+  display:flex;gap:6px;align-items:center;z-index:5}
+.link-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);
+  box-shadow:0 0 4px var(--mint),0 0 10px var(--mint);animation:blink 1s steps(1) infinite}
+.corner-stamp{position:fixed;bottom:16px;right:16px;border:1px solid var(--orange);color:var(--orange);
+  padding:4px 8px;font:11px/1.3 var(--mono);text-align:right;z-index:5}
+@media (prefers-reduced-motion:reduce){.link-dot{animation:none}}
+
+.stage{width:min(980px,94vw);display:flex;flex-direction:column;align-items:center;gap:18px}
+.title{font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.06em;color:var(--paper)}
+.title-rule{width:min(520px,90vw);height:2px;background:var(--teal);position:relative;margin-top:2px}
+.title-rule::after{content:"";position:absolute;left:0;right:0;top:5px;height:2px;background:var(--teal);opacity:.55}
+
+.readout-row{display:flex;gap:20px;align-items:stretch;flex-wrap:wrap;justify-content:center}
+
+/* hero panel: chamfered bezel per chrome-border rule */
+.screen-bezel{
+  background:#050505;border:2px solid var(--orange);padding:3px;width:min(560px,88vw);
+  box-shadow:0 0 6px rgba(242,100,0,.4),inset 0 0 10px rgba(242,100,0,.15);
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+}
+.screen{
+  background:var(--bg);border-top:2px solid var(--green-dim);border-bottom:2px solid var(--green-dim);
+  padding:20px 18px;min-height:250px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;position:relative;
+}
+.instr{font:12px/1.3 var(--mono);color:var(--green-map);letter-spacing:.08em;text-align:center}
+/* bimodal scale: giant single word vs tiny captions */
+.giant{
+  font-family:var(--cond);font-weight:700;font-size:clamp(40px,11vw,92px);
+  color:var(--mint);line-height:1;text-align:center;letter-spacing:.02em;
+  text-shadow:0 0 4px currentColor,0 0 16px rgba(82,242,154,.45);
+}
+.giant.amber{color:var(--amber);text-shadow:0 0 4px currentColor,0 0 16px rgba(244,159,9,.45)}
+.giant.hidden-frame{visibility:hidden}
+
+.stamp-row{min-height:28px;display:flex;align-items:center;justify-content:center}
+.stamp{border:1px solid currentColor;padding:2px 8px;font:11px/1.3 var(--mono);display:flex;gap:7px;align-items:center}
+.stamp .jp{font-family:var(--jp);font-weight:800;font-size:14px}
+.stamp.blink{animation:blink 1s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.stamp.blink{animation:none}}
+
+/* hardware indicator: teal bezel per "rare accent — hardware bezels" rule */
+.hw-panel{
+  background:#050505;border:2px solid var(--teal);width:168px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:12px;
+  box-shadow:0 0 6px rgba(12,108,128,.5),inset 0 0 8px rgba(12,108,128,.2);
+}
+.hw-title{font:11px/1.2 var(--mono);color:var(--blueprint);letter-spacing:.06em;
+  border-bottom:1px solid var(--green-dim);padding-bottom:6px}
+.track-wrap{position:relative;height:150px;display:flex;justify-content:center;margin-top:4px}
+.track-label{position:absolute;font:10px/1 var(--mono);color:var(--green-map);left:50%;transform:translateX(-50%)}
+.track-label.top{top:-4px}
+.track-label.bot{bottom:-4px}
+.track{width:2px;height:100%;background:var(--green-dim)}
+.marker{
+  position:absolute;left:50%;transform:translate(-50%,-50%);width:0;height:0;
+  border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--red-hi);
+  filter:drop-shadow(0 0 4px var(--red-hi));animation:blink 1s steps(1) infinite;top:92%;
+}
+@media (prefers-reduced-motion:reduce){.marker{animation:none}}
+
+.led-list{display:flex;flex-direction:column;gap:7px}
+.led-row{display:flex;align-items:center;gap:7px;font:10px/1.2 var(--mono);color:var(--green-map)}
+.led-dot{width:7px;height:7px;border-radius:2px;background:#1a1a1a;border:1px solid var(--green-dim);flex:none}
+.led-dot.on{background:var(--mint);border-color:var(--mint);box-shadow:0 0 4px var(--mint)}
+.led-dot.blink{background:var(--amber);border-color:var(--amber);box-shadow:0 0 4px var(--amber);animation:blink .5s steps(1) infinite}
+.led-dot.halt{background:var(--red-hi);border-color:var(--red-hi);box-shadow:0 0 4px var(--red-hi)}
+@media (prefers-reduced-motion:reduce){.led-dot.blink{animation:none}}
+
+.controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+button{
+  font-family:var(--mono);background:var(--bg);color:var(--mint);border:1px solid var(--mint);
+  padding:9px 18px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+}
+button:hover{background:rgba(82,242,154,.08)}
+button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+button.halt{color:var(--red-hi);border-color:var(--red-hi)}
+button.halt:hover{background:rgba(226,40,15,.08)}
+
+.footer-rule{width:min(700px,92vw);border-top:1px solid var(--green-dim);padding-top:8px;
+  font:10px/1.3 var(--mono);color:var(--green-map);text-align:center;letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<div class="meta-corner" aria-hidden="true">
+KESTREL·4<br>
+CTRL:<b>ALTAIR·2</b><br>
+CODE:104<br>
+FILE:SPAR_DRV<br>
+EX_MODE:AUTO<br>
+PRIORITY:B++<br>
+UPTIME:<span id="clock" data-s="0">00:00:00</span>
+</div>
+<div class="link-indicator" aria-hidden="true"><span class="link-dot"></span>TELEMETRY LIVE</div>
+<div class="corner-stamp" aria-hidden="true">COLLECTOR SPAR<br>MOUNT·2</div>
+
+<div class="stage">
+  <div class="title">KESTREL·4 // COLLECTOR SPAR · MOUNT-2</div>
+  <div class="title-rule"></div>
+
+  <div class="readout-row">
+    <div class="screen-bezel">
+      <div class="screen" role="status" aria-live="polite" aria-label="Spar drive status readout">
+        <div class="instr" id="instrTop">MOUNT · SAFE POSITION</div>
+        <div class="giant" id="giant">STOWED</div>
+        <div class="stamp-row" id="stampRow"></div>
+        <div class="instr" id="instrBottom">ARC INTERLOCK ENGAGED</div>
+      </div>
+    </div>
+
+    <div class="hw-panel" aria-hidden="true">
+      <div class="hw-title">SPAR DRIVE ASSEMBLY</div>
+      <div class="track-wrap">
+        <span class="track-label top">EXT</span>
+        <div class="track"></div>
+        <div class="marker" id="marker"></div>
+        <span class="track-label bot">STOW</span>
+      </div>
+      <div class="led-list">
+        <div class="led-row"><span class="led-dot" id="ledLock"></span>MOUNT LOCK</div>
+        <div class="led-row"><span class="led-dot" id="ledDrive"></span>SPAR DRIVE</div>
+        <div class="led-row"><span class="led-dot" id="ledArc"></span>ARC INTERLOCK</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls" role="group" aria-label="Spar drive controls">
+    <button id="btnCycle" type="button">CYCLE STATE ▸</button>
+    <button id="btnHalt" class="halt" type="button">EMERGENCY HALT</button>
+  </div>
+
+  <div class="footer-rule">KESTREL·4 EXTERNAL ARRAY SUBSYSTEM // ACKNOWLEDGE REQUIRED ON DRIVE FAULT</div>
+</div>
+
+<script>
+"use strict";
+/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
+if(innerWidth<2||innerHeight<2){
+  const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
+}
+
+/* ---- helpers ---- */
+const $=id=>document.getElementById(id);
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- state ----
+   giant-word state machine, mirrors 2-states.gif's bimodal readout but for
+   a solar collector spar mount instead of a hatch/airlock. */
+const TRACK_TOP=8;   // percent from top = fully deployed (EXT) end of rail
+const TRACK_BOT=92;  // percent from top = stowed (STOW) end of rail
+const STATES=[
+  {name:"STOWED",cls:"",instrTop:"MOUNT · SAFE POSITION",instrBottom:"ARC INTERLOCK ENGAGED",
+   stamp:null,pos:TRACK_BOT,leds:{lock:"on",drive:"",arc:"on"}},
+  {name:"DEPLOYING",cls:"amber",instrTop:"DRIVE ACTIVE · DO NOT INTERRUPT",instrBottom:"EXTENDING TO FULL SPAN",
+   stamp:{jp:"点検中",en:"IN PROGRESS",blink:true},pos:TRACK_TOP,leds:{lock:"",drive:"blink",arc:""}},
+  {name:"LOCKED",cls:"",instrTop:"MOUNT · FULL EXTENSION",instrBottom:"COLLECTOR ARRAY ONLINE",
+   stamp:{jp:"承認",en:"CONFIRMED",blink:false},pos:TRACK_TOP,leds:{lock:"on",drive:"",arc:"on"}},
+  {name:"RETRACTING",cls:"amber",instrTop:"DRIVE ACTIVE · REVERSE FEED",instrBottom:"RETURNING TO MOUNT",
+   stamp:{jp:"点検中",en:"IN PROGRESS",blink:true},pos:TRACK_BOT,leds:{lock:"",drive:"blink",arc:""}},
+];
+let idx=0;
+let moveTimer=null;   // repeating-trigger guard for the stepped rail animation
+let haltTimer=null;   // repeating-trigger guard for the halt-then-recover sequence
+
+/* ---- render helpers ---- */
+function setLed(el,mode){
+  el.classList.remove("on","blink","halt");
+  if(mode)el.classList.add(mode);
+}
+
+function moveMarker(target){
+  /* stepped mechanical travel — never an eased tween */
+  if(moveTimer){clearInterval(moveTimer);moveTimer=null;}
+  const marker=$("marker");
+  const current=parseFloat(marker.style.top)||TRACK_BOT;
+  if(REDUCED||current===target){marker.style.top=target+"%";return;}
+  const steps=10;
+  const step=(target-current)/steps;
+  let n=0;
+  moveTimer=setInterval(()=>{
+    n++;
+    marker.style.top=(n>=steps?target:current+step*n)+"%";
+    if(n>=steps){clearInterval(moveTimer);moveTimer=null;}
+  },110);
+}
+
+function flicker(el){
+  /* 2-3 frame flicker before a state word settles */
+  if(REDUCED)return;
+  let n=0;
+  const f=setInterval(()=>{
+    el.style.visibility=(n%2===0)?"hidden":"visible";
+    n++;
+    if(n>=4){clearInterval(f);el.style.visibility="visible";}
+  },60);
+}
+
+function render(state){
+  const giant=$("giant");
+  giant.textContent=state.name;
+  giant.className="giant"+(state.cls?" "+state.cls:"");
+  flicker(giant);
+  $("instrTop").textContent=state.instrTop;
+  $("instrBottom").textContent=state.instrBottom;
+
+  const row=$("stampRow");
+  row.innerHTML="";
+  if(state.stamp){
+    const box=document.createElement("div");
+    box.className="stamp"+(state.stamp.blink?" blink":"");
+    box.style.color=state.stamp.blink?"var(--amber)":"var(--mint)";
+    box.innerHTML='<span class="jp">'+state.stamp.jp+'</span><span>'+state.stamp.en+'</span>';
+    row.appendChild(box);
+  }
+
+  moveMarker(state.pos);
+  setLed($("ledLock"),state.leds.lock);
+  setLed($("ledDrive"),state.leds.drive);
+  setLed($("ledArc"),state.leds.arc);
+}
+
+function cycle(){
+  if(haltTimer){clearTimeout(haltTimer);haltTimer=null;}
+  idx=(idx+1)%STATES.length;
+  render(STATES[idx]);
+}
+
+function haltNow(){
+  if(haltTimer){clearTimeout(haltTimer);haltTimer=null;}
+  const giant=$("giant");
+  giant.textContent="HALTED";
+  giant.className="giant amber";
+  flicker(giant);
+  $("instrTop").textContent="MANUAL STOP · DRIVE ISOLATED";
+  $("instrBottom").textContent="AWAIT OPERATOR RESET";
+  $("stampRow").innerHTML='<div class="stamp blink" style="color:var(--red-hi)">'
+    +'<span class="jp">警戒</span><span>CAUTION</span></div>';
+  setLed($("ledLock"),"halt");
+  setLed($("ledDrive"),"halt");
+  setLed($("ledArc"),"halt");
+  if(moveTimer){clearInterval(moveTimer);moveTimer=null;}
+  haltTimer=setTimeout(()=>{
+    idx=0;
+    render(STATES[idx]);
+    haltTimer=null;
+  },2200);
+}
+
+function tickClock(){
+  /* keep data ticking even when the readout is otherwise idle */
+  const el=$("clock");
+  const s=parseInt(el.dataset.s,10)+1;
+  el.dataset.s=s;
+  const hh=String(Math.floor(s/3600)).padStart(2,"0");
+  const mm=String(Math.floor((s%3600)/60)).padStart(2,"0");
+  const ss=String(s%60).padStart(2,"0");
+  el.textContent=hh+":"+mm+":"+ss;
+}
+
+/* ---- wiring ---- */
+$("btnCycle").addEventListener("click",cycle);
+$("btnHalt").addEventListener("click",haltNow);
+
+/* ---- START ---- */
+render(STATES[0]);
+setInterval(tickClock,1000);
+</script>
+</body>
+</html>
