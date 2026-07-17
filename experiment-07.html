@@ -113,11 +113,15 @@ if(innerWidth<2||innerHeight<2){
    Mode rail changes burn rate; zero state flips the wall red. */
 
 const SEGMAP={0:"abcdef",1:"bc",2:"abged",3:"abgcd",4:"fgbc",5:"afgcd",6:"afgedc",7:"abc",8:"abcdefg",9:"abcfgd"};
+/* proper hexagonal LED segments in a 46x64 box, italic slant via skew */
 const SEGPTS={
-  a:"6,0 34,0 30,6 10,6", b:"36,2 40,6 38,28 32,26 34,8",
-  c:"34,34 36,36 34,58 30,62 28,38", d:"6,58 28,58 24,64 2,64",
-  e:"2,36 8,38 6,58 0,62 0,40", f:"4,2 10,8 8,26 2,30 2,8",
-  g:"8,29 32,29 34,32 30,35 6,35 4,32"
+  a:"7,4 10.5,0.5 29.5,0.5 33,4 29.5,7.5 10.5,7.5",
+  b:"36,7 39.5,10.5 39.5,27.5 36,31 32.5,27.5 32.5,10.5",
+  c:"36,33 39.5,36.5 39.5,53.5 36,57 32.5,53.5 32.5,36.5",
+  d:"7,60 10.5,56.5 29.5,56.5 33,60 29.5,63.5 10.5,63.5",
+  e:"4,33 7.5,36.5 7.5,53.5 4,57 0.5,53.5 0.5,36.5",
+  f:"4,7 7.5,10.5 7.5,27.5 4,31 0.5,27.5 0.5,10.5",
+  g:"7,32 10.5,28.5 29.5,28.5 33,32 29.5,35.5 10.5,35.5"
 };
 const NS="http://www.w3.org/2000/svg";
 const segrow=document.getElementById("segrow");
@@ -126,12 +130,12 @@ const DIGW=Math.min(innerWidth*.11,150);
 function makeDigit(){
   const svg=document.createElementNS(NS,"svg");
   svg.setAttribute("width",DIGW);svg.setAttribute("height",DIGW*1.6);
-  svg.setAttribute("viewBox","0 0 44 64");
+  svg.setAttribute("viewBox","0 0 46 64");
   for(const k of "abcdefg"){
     const p=document.createElementNS(NS,"polygon");
     p.setAttribute("points",SEGPTS[k]);
     p.setAttribute("data-seg",k);
-    p.setAttribute("transform","skewX(-6)");
+    p.setAttribute("transform","translate(6,0) skewX(-6)");
     svg.appendChild(p);
   }
   segrow.appendChild(svg);
@@ -164,15 +168,19 @@ function render(){
 }
 render();
 
+/* 100ms burn quantum — RACING visibly chews seconds; render only on change */
 setInterval(()=>{
   if(external) return;                      /* dark digits = safe, hold state */
+  acc+=burn*.1;
+  let changed=false;
+  while(acc>=1&&remaining>0){remaining--;acc--;changed=true;}
+  if(remaining<=0&&!zero){zero=true;board.classList.add("zero");changed=true;}
+  if(changed) render();
+},100);
+setInterval(()=>{
+  if(external) return;
   colonOn=!colonOn;
-  const vis=(REDUCED||zero)?1:(colonOn?1:0);
-  c1.style.opacity=c2.style.opacity=vis;
-  acc+=burn*.5;
-  while(acc>=1&&remaining>0){remaining--;acc--;}
-  if(remaining<=0&&!zero){zero=true;board.classList.add("zero");}
-  render();
+  c1.style.opacity=c2.style.opacity=(REDUCED||zero)?1:(colonOn?1:0);
 },500);
 
 document.querySelectorAll(".mode").forEach(btn=>{
