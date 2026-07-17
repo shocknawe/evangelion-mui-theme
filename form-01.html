@@ -298,6 +298,35 @@ if(innerWidth<2||innerHeight<2){
 const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $=id=>document.getElementById(id);
 
+/* ---------- custom dropdown: open/select/close, mouse + keyboard ---------- */
+(function(){
+  const dd=$("dd"),btn=$("ddbtn"),list=$("ddlist"),val=$("ddvalue"),tag=$("ddtag"),hidden=$("section");
+  const items=[...list.querySelectorAll("li")];
+  let idx=Math.max(0,items.findIndex(li=>li.getAttribute("aria-selected")==="true"));
+  const paint=()=>items.forEach((li,i)=>li.classList.toggle("active",i===idx));
+  const open=()=>{dd.classList.add("open");btn.setAttribute("aria-expanded","true");paint();list.focus();};
+  const close=()=>{dd.classList.remove("open");btn.setAttribute("aria-expanded","false");};
+  const choose=i=>{
+    items.forEach(li=>li.setAttribute("aria-selected","false"));
+    items[i].setAttribute("aria-selected","true");idx=i;
+    val.innerHTML=items[i].dataset.v+'<span class="jp">'+items[i].dataset.jp+'</span>';
+    if(tag)tag.textContent="DESK "+(i+1)+"/"+items.length;
+    hidden.value=items[i].dataset.v;
+  };
+  btn.addEventListener("click",()=>dd.classList.contains("open")?close():open());
+  items.forEach((li,i)=>li.addEventListener("click",()=>{choose(i);close();btn.focus();}));
+  list.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();idx=(idx+1)%items.length;paint();}
+    else if(e.key==="ArrowUp"){e.preventDefault();idx=(idx-1+items.length)%items.length;paint();}
+    else if(e.key==="Enter"||e.key===" "){e.preventDefault();choose(idx);close();btn.focus();}
+    else if(e.key==="Escape"){e.preventDefault();close();btn.focus();}
+  });
+  btn.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"||e.key==="Enter"||e.key===" "){e.preventDefault();open();}
+  });
+  document.addEventListener("click",e=>{if(!dd.contains(e.target))close();});
+})();
+
 /* ---------- character telemetry ---------- */
 const just=$("just"),counter=$("counter"),charcount=$("charcount");
 function tickCount(){
