@@ -94,18 +94,22 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .lg-active{border-color:var(--mint);color:var(--mint)}
 .lg-review{border-color:var(--blue);color:var(--blue)}
 .lg-idle{border-color:var(--green-dim);color:var(--green-map)}
-.agent{border:1px solid var(--green-dim);padding:8px 10px;margin-bottom:7px;
-  display:flex;flex-direction:column;gap:5px}
-.agent .a-row{display:flex;justify-content:space-between;align-items:baseline}
-.agent .a-name{font-family:var(--cond);font-weight:700;font-size:15px;color:var(--paper)}
-.agent .a-task{font-size:9px;letter-spacing:.1em}
-.agent[data-s="ACTIVE"]{border-color:var(--mint)}
-.agent[data-s="ACTIVE"] .a-task{color:var(--mint)}
-.agent[data-s="REVIEWING"]{border-color:var(--blue)}
-.agent[data-s="REVIEWING"] .a-task{color:var(--blue)}
-.agent[data-s="IDLE"]{border-color:var(--green-dim);opacity:.55}
-.agent[data-s="IDLE"] .a-task{color:var(--green-map)}
-.agent .stamp{align-self:flex-start;font-size:9px;padding:1px 7px}
+/* agents: sonnet-37 boxed card grammar, 3-col grid, click to view console */
+.agentgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.agent{font-family:var(--mono);text-transform:uppercase;cursor:pointer;text-align:left;width:100%;
+  background:var(--bg);border:1px solid var(--green-dim);color:var(--mint);
+  padding:9px 11px;display:flex;flex-direction:column;gap:7px;position:relative;transition:none}
+.agent:focus-visible{outline:2px dashed var(--amber);outline-offset:2px}
+.agent .a-row{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.agent .a-name{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.02em}
+.agent .a-task{font-size:9px;letter-spacing:.06em;opacity:.85}
+.agent .stamp{align-self:flex-start;border:1px solid currentColor;padding:1px 6px;font-size:9px;letter-spacing:.06em}
+.agent[data-s="ACTIVE"]{border-color:var(--mint);color:var(--mint)}
+.agent[data-s="REVIEWING"]{border-color:var(--blue);color:var(--blue)}
+.agent[data-s="IDLE"]{border-color:var(--green-dim);color:var(--green-map)}
+/* selected = the console currently shown (aria-pressed) */
+.agent[aria-pressed="true"]{border-width:2px;box-shadow:inset 0 0 12px color-mix(in srgb,currentColor 16%,transparent)}
+.agent.flicker{visibility:hidden}
 
 /* ============ work column ============ */
 .work{grid-area:work;padding:14px 20px;overflow-y:auto;position:relative;z-index:1;
@@ -176,6 +180,13 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .gatebar .verdict.ok{color:var(--mint)}
 .gatebar .verdict.no{color:var(--red-hi)}
 
+/* scroll style (experiment-sonnet-20): themed amber scrollbars */
+.left,.work,.term{scrollbar-width:thin;scrollbar-color:var(--amber-dim) rgba(242,100,0,.05)}
+.left::-webkit-scrollbar,.work::-webkit-scrollbar,.term::-webkit-scrollbar{width:9px;height:9px}
+.left::-webkit-scrollbar-track,.work::-webkit-scrollbar-track,.term::-webkit-scrollbar-track{background:rgba(242,100,0,.05)}
+.left::-webkit-scrollbar-thumb,.work::-webkit-scrollbar-thumb,.term::-webkit-scrollbar-thumb{background:var(--amber-dim);border:1px solid var(--green-dim)}
+.left::-webkit-scrollbar-thumb:hover,.work::-webkit-scrollbar-thumb:hover,.term::-webkit-scrollbar-thumb:hover{background:var(--amber)}
+
 @media (prefers-reduced-motion:reduce){
   .blink,.cursor,.btn.approve,.step.now .node{animation:none}
 }
@@ -224,15 +235,6 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
         <div class="rtext">Avoid direct database writes from edge agents; route through the central Sync Gate.</div>
       </div>
     </section>
-    <section>
-      <div class="zone-title">ACTIVE AGENTS · 部隊</div>
-      <div class="legend" role="img" aria-label="Agent status key">
-        <span class="lg lg-active"><span class="jp">稼働</span><span class="cap">ACTIVE</span></span>
-        <span class="lg lg-review"><span class="jp">審査</span><span class="cap">REVIEW</span></span>
-        <span class="lg lg-idle"><span class="jp">待機</span><span class="cap">IDLE</span></span>
-      </div>
-      <div id="agents"></div>
-    </section>
   </aside>
 
   <!-- ================= work column ================= -->
@@ -262,10 +264,21 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
       </div>
     </section>
 
-    <!-- stdout terminal + human gate -->
-    <section class="stdout" aria-label="Project stdout">
+    <!-- active agents + their console (moved here, together) -->
+    <section aria-label="Active agents">
+      <div class="zone-title">ACTIVE AGENTS · 部隊 <span style="float:right;color:var(--green-map)">SELECT TO VIEW CONSOLE</span></div>
+      <div class="legend" role="img" aria-label="Agent status key">
+        <span class="lg lg-active"><span class="jp">稼働</span><span class="cap">ACTIVE</span></span>
+        <span class="lg lg-review"><span class="jp">審査</span><span class="cap">REVIEW</span></span>
+        <span class="lg lg-idle"><span class="jp">待機</span><span class="cap">IDLE</span></span>
+      </div>
+      <div class="agentgrid" id="agents" role="group" aria-label="Agents — select one to view its console"></div>
+    </section>
+
+    <!-- stdout terminal for the selected agent + human gate -->
+    <section class="stdout" aria-label="Agent console">
       <div class="termbar">
-        <span>STDOUT // PROJECT_NEURAL_PIPELINE</span>
+        <span id="termtitle">STDOUT // AGENT</span>
         <span class="conn" id="connstate">CONNECTED: OK</span>
       </div>
       <div class="term" id="term" role="log" aria-live="polite"></div>
@@ -398,40 +411,48 @@ function drawWave(){
   wt+=.18;
 }
 
-/* ---------- agents (sonnet-37 card grammar) ---------- */
+/* ---------- agents (sonnet-37 boxed cards) + per-agent consoles ---------- */
+const nowts=()=>{const d=new Date();return [d.getHours(),d.getMinutes(),d.getSeconds()].map(pad2).join(":");};
+let sel=0;
 const AGENTS=[
-  {name:"AGENT·ORION",task:"REFACTORING_AUTH_FLOW",s:"ACTIVE"},
-  {name:"AGENT·LYRA",task:"REVIEWING_PR_#442",s:"REVIEWING"},
-  {name:"AGENT·KAEL",task:"IDLE / STANDBY",s:"IDLE"},
+  {name:"AGENT·ORION", s:"ACTIVE", task:"REFACTOR AUTH FLOW",
+   seed:[["info","Reading auth middleware /api/v3/session."],["warn","N+1 query found in token refresh."]],
+   pool:[["git",'commit -m "fix: batch token lookups"'],["info","Auth suite green — 214 tests."],["info","Rate limiter tuned to 60 rpm."]]},
+  {name:"AGENT·LYRA", s:"REVIEWING", task:"REVIEW PR·442",
+   seed:[["info","Opened PR-442 — optimization pack."],["git","running eslint + typecheck…"]],
+   pool:[["info","3 review comments posted."],["warn","Coverage dropped 1.2% on pool.ts."],["info","Holding for human gate on merge."]]},
+  {name:"AGENT·VEGA", s:"ACTIVE", task:"INDEX VECTOR STORE",
+   seed:[["info","Scrubbing vector index shard 4/8."],["info","2,482 nodes verified stable."]],
+   pool:[["git","push origin chore/index-rebuild"],["info","Recall latency 48ms p95."],["info","Shard 6/8 rebuilt."]]},
+  {name:"AGENT·CYGNUS", s:"IDLE", task:"STANDBY",
+   seed:[["info","Heartbeat OK — awaiting dispatch."]],
+   pool:[["info","Heartbeat OK."]]},
+  {name:"AGENT·DRACO", s:"ACTIVE", task:"PORT CI RUNNERS", latest:true,
+   seed:[["info","Porting GitHub Actions → Bun runners."],["info","Bun runner warm — cold start 118ms."]],
+   pool:[["warn","Retry storm on relay K-22 suppressed."],["git","rebase feature/ci-migration onto main"],["info","Pipeline green on bun-1.1."]]},
 ];
 const agentsEl=$("agents");
 AGENTS.forEach((a,i)=>{
-  const el=document.createElement("div");
-  el.className="agent";el.dataset.s=a.s;el.id="agent-"+i;
-  el.innerHTML='<div class="a-row"><span class="a-name">'+a.name+'</span>'+
-    '<span class="stamp">'+a.s+'</span></div><div class="a-task">'+a.task+'</div>';
+  a.task0=a.task;
+  a.log=a.seed.map(([tag,msg])=>({ts:nowts(),tag,msg}));
+  const el=document.createElement("button");
+  el.type="button";el.className="agent";el.dataset.s=a.s;el.id="agent-"+i;el.setAttribute("aria-pressed","false");
+  el.innerHTML='<div class="a-row"><span class="a-name">'+a.name+'</span><span class="stamp">'+a.s+'</span></div>'+
+    '<div class="a-task">'+a.task+'</div>';
+  el.addEventListener("click",()=>setSel(i));
   agentsEl.appendChild(el);
 });
-const AGENT_TASKS={
-  ACTIVE:["REFACTORING_AUTH_FLOW","PORTING_CI_RUNNERS","INDEXING_VECTOR_STORE"],
-  REVIEWING:["REVIEWING_PR_#442","AUDITING_MERGE_QUEUE"],
-  IDLE:["IDLE / STANDBY"]};
 function tickAgents(){
   const i=Math.floor(Math.random()*AGENTS.length);
   const a=AGENTS[i],el=$("agent-"+i);
   const roll=Math.random();
   const next= roll<.6?"ACTIVE":roll<.85?"REVIEWING":"IDLE";
   if(next===a.s)return;
-  a.s=next;
-  const apply=()=>{
-    el.dataset.s=next;
-    el.querySelector(".stamp").textContent=next;
-    el.querySelector(".a-task").textContent=
-      AGENT_TASKS[next][Math.floor(Math.random()*AGENT_TASKS[next].length)];
-  };
+  const apply=()=>{a.s=next;el.dataset.s=next;el.querySelector(".stamp").textContent=next;
+    el.querySelector(".a-task").textContent=next==="IDLE"?"STANDBY":a.task0;};
   if(REDUCED){apply();return;}
-  el.style.visibility="hidden";
-  setTimeout(()=>{el.style.visibility="";apply();},60);
+  el.classList.add("flicker");
+  setTimeout(()=>{el.classList.remove("flicker");apply();},60);
 }
 
 /* ---------- OODA steppers ---------- */
@@ -457,34 +478,37 @@ function buildBar(id,pct){
   [...host.children].forEach((s,i)=>s.classList.toggle("on",i<Math.round(pct/100*20)));
 }
 
-/* ---------- stdout terminal ---------- */
+/* ---------- stdout terminal: per-agent buffers, selectable console ---------- */
 const term=$("term");
-function tlog(tag,msg,dim){
-  const d=new Date();
-  const row=document.createElement("div");
-  row.className="trow"+(dim?" dimrow":"");
-  row.innerHTML='<span class="ts">'+[d.getHours(),d.getMinutes(),d.getSeconds()].map(pad2).join(":")+'</span>'+
-    '<span class="tag '+tag+'">['+tag.toUpperCase()+']</span><span class="msg">'+msg+'</span>';
+function appendRow(ts,tag,msg){
+  const row=document.createElement("div");row.className="trow";
+  row.innerHTML='<span class="ts">'+ts+'</span><span class="tag '+tag+'">['+tag.toUpperCase()+']</span><span class="msg">'+msg+'</span>';
   term.appendChild(row);
-  while(term.children.length>40)term.removeChild(term.firstChild);
-  term.scrollTop=term.scrollHeight;
+  while(term.children.length>44)term.removeChild(term.firstChild);
 }
-const FEED=[
-  ["info","Agent_Orion detected bottleneck in /api/v3/ingest."],
-  ["info","Reading CLAUDE.md for existing performance constraints."],
-  ["warn","Memory usage approaching threshold (82%). Initiating GC."],
-  ["git",'commit -m "chore: optimize connection pooling logic"'],
-  ["git","push origin feature/latency-optimization"],
-  ["info","Vector index scrub complete. 2,482 nodes stable."],
-  ["info","Bun runner warm — cold start 118ms."],
-  ["warn","Retry storm on relay K-22 suppressed."],
-  ["git","rebase feature/ci-migration onto main"],
-  ["info","Loop tracker: EXECUTE phase verified twice."],
-];
-let feedIdx=0;
+function pushLog(idx,tag,msg){
+  const a=AGENTS[idx],ts=nowts();
+  a.log.push({ts,tag,msg});if(a.log.length>44)a.log.shift();
+  if(idx===sel){appendRow(ts,tag,msg);term.scrollTop=term.scrollHeight;}
+}
+function tlog(tag,msg){pushLog(sel,tag,msg);}   /* system events → the open console */
+function renderTerm(){
+  term.innerHTML="";
+  AGENTS[sel].log.forEach(e=>appendRow(e.ts,e.tag,e.msg));
+  term.scrollTop=term.scrollHeight;
+  $("termtitle").textContent="STDOUT // "+AGENTS[sel].name;
+}
+function setSel(i){
+  sel=i;
+  [...agentsEl.children].forEach((c,x)=>c.setAttribute("aria-pressed",x===i?"true":"false"));
+  renderTerm();
+}
 function tickFeed(){
-  const f=FEED[feedIdx%FEED.length];feedIdx++;
-  tlog(f[0],f[1],Math.random()<.3);
+  const cand=AGENTS.map((a,i)=>i).filter(i=>AGENTS[i].s!=="IDLE");
+  if(!cand.length)return;
+  const i=cand[Math.floor(Math.random()*cand.length)];
+  const p=AGENTS[i].pool[Math.floor(Math.random()*AGENTS[i].pool.length)];
+  pushLog(i,p[0],p[1]);
 }
 
 /* ---------- human gate ---------- */
@@ -497,8 +521,9 @@ function decideGate(ok){
   v.className="verdict "+(ok?"ok":"no");
   v.textContent= ok?"承認 · MERGED TO MAIN":"否認 · RETURNED TO AGENT";
   $("gatebar").appendChild(v);
-  tlog("gate", ok?"Human approval granted — merging PR-442 to main.":"Merge denied — PR-442 returned to Agent_Lyra.");
-  if(ok)setTimeout(()=>tlog("git","merge PR-442 → main (fast-forward)"),900);
+  setSel(1);   /* surface AGENT·LYRA — owner of PR-442 */
+  pushLog(1,"gate", ok?"Human approval granted — merging PR-442 to main.":"Merge denied — PR-442 returned to Agent_Lyra.");
+  if(ok)setTimeout(()=>pushLog(1,"git","merge PR-442 → main (fast-forward)"),900);
 }
 $("gate-approve").addEventListener("click",()=>decideGate(true));
 $("gate-deny").addEventListener("click",()=>decideGate(false));
@@ -523,8 +548,8 @@ buildStepper("stepper-884",0);   /* OBSERVE current */
 buildBar("bar-882",62);buildBar("bar-884",8);
 sizeWave();
 tickChip();tickHealth();tickUp();
-["Session attached — PRJ-402 Neural Pipeline v3.",
- "Loop synchronizer online: 2 executing, 1 waiting."].forEach((m,i)=>setTimeout(()=>tlog("info",m),i*140));
+sel=AGENTS.findIndex(a=>a.latest);if(sel<0)sel=AGENTS.length-1;
+setSel(sel);                     /* default: latest agent's console */
 setInterval(tickChip,500);
 setInterval(tickUp,1000);
 setInterval(tickHealth,1400);
