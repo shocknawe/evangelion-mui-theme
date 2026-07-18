@@ -15,17 +15,14 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000}
-body{
-  font-family:var(--mono);color:var(--mint);text-transform:uppercase;letter-spacing:.03em;
-  overflow:hidden;
-}
+body{font-family:var(--mono);color:var(--mint);text-transform:uppercase;letter-spacing:.03em;overflow:hidden}
 button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
   background:
     repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
     radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
 
-/* ============ one chamfered frame, zones divided by rules ============ */
+/* ============ one chamfered frame — header full width, sidebar below ============ */
 .frame{
   position:relative;margin:14px;height:calc(100vh - 28px);background:var(--bg);
   border:3px solid var(--orange);
@@ -33,11 +30,10 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
   box-shadow:0 0 10px rgba(242,100,0,.4),inset 0 0 12px rgba(242,100,0,.14);
   display:grid;
   grid-template-columns:198px 1fr 292px;
-  grid-template-rows:78px 1fr 148px;
+  grid-template-rows:100px 1fr;
   grid-template-areas:
-    "side head head"
-    "side main rail"
-    "side foot foot";
+    "head head head"
+    "side main rail";
 }
 .frame::before{content:"";position:absolute;inset:6px;border:1px solid var(--orange);
   opacity:.4;pointer-events:none;z-index:0}
@@ -46,91 +42,84 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
   letter-spacing:.12em;border-bottom:1px solid var(--green-dim);padding-bottom:4px;margin-bottom:8px}
 .tiny{font-size:10px;letter-spacing:.08em;color:var(--green-map);line-height:1.35}
 
-/* stamps: text boxed in its own color */
 .stamp{display:inline-block;border:1px solid currentColor;padding:2px 8px;border-radius:2px;
   font-size:11px;line-height:1.4;white-space:nowrap}
-.stamp.fill{background:currentColor}
-.stamp.fill>span{color:var(--bg);display:block}
 .blink{animation:blink 1s steps(1) infinite}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* ============ sidebar ============ */
+/* ============ sidebar (below the header) ============ */
 .side{grid-area:side;border-right:1px solid var(--orange);padding:16px 14px;
-  display:flex;flex-direction:column;gap:8px;position:relative;z-index:1}
-.logo .sys{font-family:var(--cond);font-weight:700;font-size:22px;color:var(--paper);
-  letter-spacing:.04em;text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.35)}
-.logo .ver{font-size:9px;color:var(--green-map);letter-spacing:.14em;margin-top:2px}
-.logo{border-bottom:2px solid var(--teal);padding-bottom:10px;margin-bottom:6px;position:relative}
-.logo::after{content:"";position:absolute;left:0;right:0;bottom:-5px;border-top:2px solid var(--teal);opacity:.5}
-
-.nav{display:flex;flex-direction:column;gap:5px;flex:1}
-.nav button{
-  display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--green-dim);
-  color:var(--mint);padding:7px 9px;cursor:pointer;font-size:11px;text-align:left;
-}
-.nav button .jp{font-family:var(--jp);font-weight:800;font-size:14px;text-transform:none;width:30px;
-  letter-spacing:.15em}
+  display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;min-height:0}
+/* stacked, boxed nav: kanji on top line, english below */
+.nav{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow-y:auto}
+.nav button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--bg);
+  border:1px solid var(--green-dim);color:var(--mint);padding:7px 10px;cursor:pointer;text-align:left}
+.nav button .jp{font-family:var(--jp);font-weight:800;font-size:16px;line-height:1;text-transform:none;letter-spacing:.14em}
+.nav button .en{font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.12em;opacity:.85}
 .nav button[aria-current="true"]{background:var(--mint);border-color:var(--mint);color:var(--bg);font-weight:700}
+.nav button[aria-current="true"] .en{opacity:1}
 .nav button:not([aria-current="true"]):hover{border-color:var(--mint)}
 .nav button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
-.initbtn{
-  border:2px solid var(--orange);background:var(--orange);color:var(--bg);font-family:var(--cond);
+.initbtn{border:2px solid var(--orange);background:var(--orange);color:var(--bg);font-family:var(--cond);
   font-weight:700;font-size:13px;letter-spacing:.14em;padding:10px 4px;cursor:pointer;
-  animation:modeblink 1s steps(1) infinite;
-}
+  animation:modeblink 1s steps(1) infinite}
 @keyframes modeblink{0%,74%{background:var(--orange);color:var(--bg)}75%,100%{background:var(--bg);color:var(--orange)}}
 .initbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
 .side .foot-links{display:flex;gap:10px;font-size:10px;color:var(--green-map);margin-top:8px}
 
-/* ============ header ============ */
-.head{grid-area:head;display:flex;align-items:center;justify-content:space-between;gap:18px;
-  padding:12px 20px;border-bottom:1px solid var(--orange);position:relative;z-index:1}
-.head .eyebrow{font-size:10px;letter-spacing:.22em;color:var(--amber)}
-.head h1{font-family:var(--cond);font-weight:700;font-size:26px;color:var(--paper);
-  letter-spacing:.02em;text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.3);margin-top:2px}
-.head-right{display:flex;align-items:center;gap:16px}
-.sysstamp{color:var(--mint);text-shadow:0 0 4px currentColor}
+/* ============ header (sonnet-18 kanji-left masthead) ============ */
+.head{grid-area:head;display:flex;align-items:center;gap:16px;
+  padding:10px 20px;border-bottom:1px solid var(--orange);position:relative;z-index:1}
+.mon-stamp{border:1px solid var(--orange);color:var(--orange);font-family:var(--jp);font-weight:800;
+  font-size:26px;line-height:1;padding:7px 9px;text-align:center;flex:none;text-transform:none;
+  letter-spacing:.1em;text-shadow:0 0 4px currentColor}
+.mon-stamp small{display:block;font-family:var(--cond);font-weight:700;font-size:8px;
+  letter-spacing:.16em;margin-top:4px;text-transform:uppercase}
+.ttl h1{font-family:var(--cond);font-weight:700;font-size:24px;color:var(--paper);
+  letter-spacing:.02em;text-shadow:0 0 4px currentColor,0 0 12px rgba(82,242,154,.3)}
+.ttl .eyebrow{font-size:10px;letter-spacing:.2em;color:var(--amber);margin-top:3px}
+.sysstamp{color:var(--mint);text-shadow:0 0 4px currentColor;flex:none}
 .sysstamp.caution{color:var(--amber)}
-/* black-on-mint 7-seg timestamp chip */
-.timewrap{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.timechip{display:flex;align-items:center;gap:2px;background:var(--paper);
-  padding:5px 9px 4px;border-radius:2px;
-  box-shadow:0 0 10px rgba(237,248,214,.4),inset 0 0 4px rgba(10,10,10,.15)}
-.timechip .tc-colon{display:flex;flex-direction:column;gap:5px;margin:0 2px}
-.timechip .tc-colon i{width:3px;height:3px;background:#0A0A0A;display:block}
-.timechip .ampm{font-weight:700;font-size:10px;color:#0A0A0A;margin-left:5px;letter-spacing:.08em}
+
+/* RESERVE POWER card (exp-01 panel grammar) holding the stylized orange clock */
+.respanel{margin-left:auto;flex:none;display:flex;align-items:center;gap:24px}
+/* system-health mini columns (from dashboard-02, sonnet-12 grammar) */
+.health{display:flex;gap:5px;align-items:flex-end;height:40px}
+.hcol{width:9px;display:flex;flex-direction:column-reverse;gap:2px}
+.hcol i{height:4px;border-radius:1px;background:var(--green-dim);opacity:.35}
+.hcol i.on{opacity:1;background:var(--mint);box-shadow:0 0 4px rgba(82,242,154,.5)}
+.hcol i.on.hot{background:var(--amber);box-shadow:0 0 4px rgba(244,159,9,.5)}
+.clockstack{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+/* stylized orange 7-seg clock (experiment-01 countdown grammar) */
+.timechip{display:flex;align-items:center;gap:4px;padding:2px 0}
+.timechip svg{filter:drop-shadow(0 0 3px rgba(242,100,0,.85)) drop-shadow(0 0 8px rgba(242,100,0,.4))}
+.timechip .tc-colon{display:flex;flex-direction:column;gap:6px;margin:0 1px}
+.timechip .tc-colon i{width:4px;height:4px;background:var(--orange);display:block;box-shadow:0 0 4px var(--orange)}
 .dateline{font-size:10px;color:var(--amber);letter-spacing:.14em}
 
 /* ============ main column ============ */
 .main{grid-area:main;padding:14px 20px;overflow-y:auto;position:relative;z-index:1;
   display:flex;flex-direction:column;gap:16px;min-height:0}
 
-/* legend row — status key for everything below */
 .legend{display:flex;gap:8px;flex-wrap:wrap}
-.lg{border:1px solid;padding:2px 9px;display:flex;flex-direction:column;align-items:center;
-  min-width:54px;border-radius:2px}
-.lg .jp{font-family:var(--jp);font-weight:800;font-size:13px;line-height:1.2;text-transform:none;
-  letter-spacing:.2em;text-indent:.2em}
+.lg{border:1px solid;padding:2px 9px;display:flex;flex-direction:column;align-items:center;min-width:54px;border-radius:2px}
+.lg .jp{font-family:var(--jp);font-weight:800;font-size:13px;line-height:1.2;text-transform:none;letter-spacing:.2em;text-indent:.2em}
 .lg .cap{font-size:8px;letter-spacing:.1em}
 .lg-nominal{border-color:var(--mint);color:var(--mint)}
 .lg-caution{border-color:var(--amber);color:var(--amber)}
 .lg-pending{border-color:var(--blue);color:var(--blue)}
 .lg-blocked{border-color:var(--red-hi);background:var(--red-hi);color:#000}
 
-/* hero: giant kanji negative-space card + init readout */
-.hero{display:flex;align-items:center;gap:26px;border:1px solid var(--green-dim);padding:16px 22px;
-  min-height:132px}
+.hero{display:flex;align-items:center;gap:26px;border:1px solid var(--green-dim);padding:16px 22px;min-height:132px}
 .hero .jpgiant{font-family:var(--jp);font-weight:800;font-size:72px;line-height:1;color:var(--mint);
   text-transform:none;letter-spacing:.06em;text-shadow:0 0 6px rgba(82,242,154,.5),0 0 26px rgba(82,242,154,.25)}
 .hero .jpcap{font-size:10px;letter-spacing:.24em;color:var(--green-map);margin-top:6px;text-align:center}
 .hero .vitals{display:flex;gap:34px;margin-left:auto}
 .vital .k{font-size:10px;color:var(--green-map);letter-spacing:.14em}
-.vital .v{font-family:var(--cond);font-weight:700;font-size:27px;color:var(--paper);margin-top:3px;
-  letter-spacing:.02em}
+.vital .v{font-family:var(--cond);font-weight:700;font-size:27px;color:var(--paper);margin-top:3px;letter-spacing:.02em}
 .vital .v.mint{color:var(--mint);text-shadow:0 0 5px rgba(82,242,154,.5)}
 
-/* primary objective — the one mint-bordered chamfered focal panel */
 .objective{border:2px solid var(--mint);padding:14px 18px;position:relative;
   clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
   box-shadow:0 0 8px rgba(82,242,154,.25),inset 0 0 10px rgba(82,242,154,.08)}
@@ -138,29 +127,23 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .obj-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:4px}
 .obj-head h2{font-family:var(--cond);font-weight:700;font-size:21px;color:var(--paper);letter-spacing:.02em}
 .obj-id{color:var(--orange)}
-/* segmented progress meter + review-gate threshold */
 .meterwrap{position:relative;margin:13px 0 4px;padding-top:2px}
 .hmeter{display:flex;gap:3px;height:18px}
 .hmeter .seg{flex:1;border-radius:2px;background:var(--green-dim);opacity:.35}
 .hmeter .seg.on{opacity:1;background:var(--mint);box-shadow:0 0 5px rgba(82,242,154,.45)}
-.gate-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--amber);
-  box-shadow:0 0 6px rgba(244,159,9,.6)}
-.gate-line .stamp{position:absolute;top:-11px;left:50%;transform:translate(-50%,-100%);
-  color:var(--amber);background:var(--bg);font-size:9px;padding:1px 6px}
+.gate-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--amber);box-shadow:0 0 6px rgba(244,159,9,.6)}
+.gate-line .stamp{position:absolute;top:-11px;left:50%;transform:translate(-50%,-100%);color:var(--amber);background:var(--bg);font-size:9px;padding:1px 6px}
 .meter-read{display:flex;justify-content:space-between;font-size:10px;color:var(--green-map);margin-top:6px}
 .meter-read b{color:var(--mint);font-weight:400}
 .obj-copy{font-size:11px;line-height:1.6;color:var(--green-map);margin:10px 0 12px;max-width:64ch}
 .obj-copy b{color:var(--mint);font-weight:400}
 .btnrow{display:flex;gap:10px}
-.btn{border:1px solid var(--orange);background:var(--bg);color:var(--orange);padding:8px 16px;
-  font-size:11px;cursor:pointer}
+.btn{border:1px solid var(--orange);background:var(--bg);color:var(--orange);padding:8px 16px;font-size:11px;cursor:pointer}
 .btn:hover{background:var(--orange);color:var(--bg)}
 .btn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
-.btn.primary{border-color:var(--mint);color:var(--mint);font-weight:700;
-  animation:btnblink 1s steps(1) infinite}
+.btn.primary{border-color:var(--mint);color:var(--mint);font-weight:700;animation:btnblink 1s steps(1) infinite}
 @keyframes btnblink{0%,74%{background:var(--mint);color:var(--bg)}75%,100%{background:var(--bg);color:var(--mint)}}
 
-/* blocked-on-you gate rows */
 .gates .g-row{display:flex;align-items:center;gap:10px;border:1px solid var(--green-dim);
   border-left:3px solid var(--red-hi);padding:9px 12px;margin-bottom:7px}
 .g-row .gid{color:var(--amber);white-space:nowrap;font-size:11px}
@@ -178,8 +161,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 /* ============ right rail ============ */
 .rail{grid-area:rail;border-left:1px solid var(--orange);padding:14px 16px;overflow-y:auto;
   display:flex;flex-direction:column;gap:16px;position:relative;z-index:1}
-.r-item{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--green-dim);
-  padding:5px 0;font-size:11px}
+.r-item{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--green-dim);padding:5px 0;font-size:11px}
 .r-item .t{color:var(--paper);line-height:1.4}
 .r-item .t small{display:block;color:var(--green-map);font-size:9px;letter-spacing:.1em;margin-top:2px}
 .r-item .when{color:var(--amber);white-space:nowrap;font-size:10px}
@@ -191,41 +173,28 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .quiz .answer{font-size:11px;color:var(--mint);line-height:1.5;text-transform:none;margin-bottom:10px;display:none}
 .quiz.revealed .answer{display:block}
 
-/* ============ footer terminal (amber, dot-leader OK rows) ============ */
-.foot{grid-area:foot;border-top:1px solid var(--orange);padding:10px 20px 12px;position:relative;z-index:1;
-  display:flex;flex-direction:column;min-height:0}
-.foot .term{flex:1;overflow:hidden;font-size:11px;line-height:1.5;color:var(--amber-dim)}
-.term .row{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
-.term .row .lbl{color:var(--amber)}
-.term .row .dots{flex:1;border-bottom:1px dotted var(--amber-dim);height:0;margin-bottom:3px;min-width:16px}
-.term .row .val{color:var(--amber);font-weight:700}
-.term .row .val.warn{color:var(--red-hi);text-shadow:0 0 4px currentColor}
-.promptline{font-size:11px;color:var(--amber);padding-top:5px}
-.promptline .chev{color:var(--amber-dim);margin-right:6px}
-.cursor{display:inline-block;width:7px;height:11px;background:var(--amber);vertical-align:-1px;
-  animation:blink 1s steps(1) infinite}
+/* ============ scroll style (from experiment-sonnet-20) ============ */
+.main,.rail,.nav{scrollbar-width:thin;scrollbar-color:var(--amber-dim) rgba(242,100,0,.05)}
+.main::-webkit-scrollbar,.rail::-webkit-scrollbar,.nav::-webkit-scrollbar{width:9px;height:9px}
+.main::-webkit-scrollbar-track,.rail::-webkit-scrollbar-track,.nav::-webkit-scrollbar-track{background:rgba(242,100,0,.05)}
+.main::-webkit-scrollbar-thumb,.rail::-webkit-scrollbar-thumb,.nav::-webkit-scrollbar-thumb{background:var(--amber-dim);border:1px solid var(--green-dim)}
+.main::-webkit-scrollbar-thumb:hover,.rail::-webkit-scrollbar-thumb:hover,.nav::-webkit-scrollbar-thumb:hover{background:var(--amber)}
 
-/* ============ gate decision prompt (exp-02 grammar + response footer) ============ */
+/* ============ gate decision prompt ============ */
 .overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;background:var(--red-hi)}
 .overlay.show{display:flex}
 .ov-stripes{height:22px;flex:none;background:repeating-linear-gradient(-45deg,#000 0 14px,transparent 14px 28px)}
 .ov-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4vh}
-.ov-chip{position:absolute;border:3px solid #fff;color:#fff;font-family:var(--cond);font-weight:700;
-  font-size:22px;letter-spacing:.12em;padding:1px 14px}
+.ov-chip{position:absolute;border:3px solid #fff;color:#fff;font-family:var(--cond);font-weight:700;font-size:22px;letter-spacing:.12em;padding:1px 14px}
 .ov-chip.tl{top:36px;left:26px}.ov-chip.br{bottom:110px;right:26px}
-.ov-jp{font-family:var(--jp);font-weight:800;font-size:4.2vh;color:#000;border:3px solid #000;
-  padding:2px 24px;text-transform:none;letter-spacing:.5em;text-indent:.5em}
+.ov-jp{font-family:var(--jp);font-weight:800;font-size:4.2vh;color:#000;border:3px solid #000;padding:2px 24px;text-transform:none;letter-spacing:.5em;text-indent:.5em}
 .ov-band{background:#000;width:100%;text-align:center;padding:1vh 0}
-.ov-word{font-family:var(--cond);font-weight:700;font-size:11vw;line-height:1;color:var(--red-hi);
-  letter-spacing:0}
+.ov-word{font-family:var(--cond);font-weight:700;font-size:11vw;line-height:1;color:var(--red-hi);letter-spacing:0}
 .ov-item{font-size:13px;color:#000;letter-spacing:.2em;font-weight:700}
 .ov-item b{background:#000;color:var(--red-hi);padding:2px 10px;font-weight:700}
-/* response footer — the user answers here */
-.ov-rail{flex:none;display:flex;gap:10px;align-items:stretch;background:var(--bg);
-  border-top:2px solid var(--orange);padding:12px 16px}
+.ov-rail{flex:none;display:flex;gap:10px;align-items:stretch;background:var(--bg);border-top:2px solid var(--orange);padding:12px 16px}
 .ov-rail .tag{display:flex;align-items:center;font-size:10px;color:var(--amber);letter-spacing:.18em}
-.ov-rail button{flex:1;border:2px solid;background:var(--bg);font-family:var(--cond);font-weight:700;
-  font-size:15px;letter-spacing:.12em;padding:11px 4px;cursor:pointer}
+.ov-rail button{flex:1;border:2px solid;background:var(--bg);font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.12em;padding:11px 4px;cursor:pointer}
 .ov-rail button .jp{font-family:var(--jp);font-weight:800;text-transform:none;margin-right:8px;letter-spacing:.2em}
 .ov-approve{border-color:var(--mint);color:var(--mint)}
 .ov-approve:hover{background:var(--mint);color:var(--bg)}
@@ -236,7 +205,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .ov-rail button:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
 
 @media (prefers-reduced-motion:reduce){
-  .blink,.cursor,.initbtn,.btn.primary{animation:none}
+  .blink,.initbtn,.btn.primary{animation:none}
 }
 </style>
 </head>
@@ -244,38 +213,36 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 
 <div class="frame">
 
-  <!-- ================= sidebar ================= -->
-  <aside class="side" aria-label="Jairus OS navigation">
-    <div class="logo">
-      <div class="sys">JAIRUS·OS</div>
-      <div class="ver">V2.4.0-STABLE · KESTREL BUILD</div>
-    </div>
-    <nav class="nav" aria-label="Sections">
-      <button aria-current="true"><span class="jp">工学</span>ENGINEERING</button>
-      <button aria-current="false"><span class="jp">知識</span>KNOWLEDGE</button>
-      <button aria-current="false"><span class="jp">自動</span>AUTOMATION</button>
-      <button aria-current="false"><span class="jp">学習</span>LEARNING</button>
-      <button aria-current="false"><span class="jp">記録</span>CONTENT</button>
-      <button aria-current="false"><span class="jp">個人</span>PERSONAL</button>
-    </nav>
-    <button class="initbtn" id="initbtn">INITIALIZE PROTOCOL</button>
-    <div class="foot-links"><span>SETTINGS</span><span>SUPPORT</span></div>
-  </aside>
-
-  <!-- ================= header ================= -->
+  <!-- ================= header (full width) ================= -->
   <header class="head">
-    <div>
-      <div class="eyebrow">STATUS: MORNING INITIALIZATION · 朝礼</div>
+    <div class="mon-stamp">統制<small>COMMAND</small></div>
+    <div class="ttl">
       <h1>WELCOME BACK, OPERATOR.</h1>
+      <div class="eyebrow">STATUS: MORNING INITIALIZATION · 朝礼</div>
     </div>
-    <div class="head-right">
-      <span class="stamp sysstamp" id="sysstamp">SYS:NOMINAL</span>
-      <div class="timewrap">
+    <span class="stamp sysstamp" id="sysstamp">SYS:NOMINAL</span>
+    <div class="respanel" aria-label="Local time">
+      <div class="health" id="health" role="img" aria-label="System health columns"><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div></div>
+      <div class="clockstack">
         <span class="timechip" id="timechip" role="img" aria-label="Local time"></span>
         <span class="dateline" id="dateline">— — —</span>
       </div>
     </div>
   </header>
+
+  <!-- ================= sidebar (below header) ================= -->
+  <aside class="side" aria-label="Jairus OS navigation">
+    <nav class="nav" aria-label="Sections">
+      <button aria-current="true"><span class="jp">工学</span><span class="en">ENGINEERING</span></button>
+      <button aria-current="false"><span class="jp">知識</span><span class="en">KNOWLEDGE</span></button>
+      <button aria-current="false"><span class="jp">自動</span><span class="en">AUTOMATION</span></button>
+      <button aria-current="false"><span class="jp">学習</span><span class="en">LEARNING</span></button>
+      <button aria-current="false"><span class="jp">記録</span><span class="en">CONTENT</span></button>
+      <button aria-current="false"><span class="jp">個人</span><span class="en">PERSONAL</span></button>
+    </nav>
+    <button class="initbtn" id="initbtn">INITIALIZE PROTOCOL</button>
+    <div class="foot-links"><span>SETTINGS</span><span>SUPPORT</span></div>
+  </aside>
 
   <!-- ================= main ================= -->
   <main class="main">
@@ -352,13 +319,6 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
     </section>
   </aside>
 
-  <!-- ================= footer terminal ================= -->
-  <footer class="foot" aria-label="System log">
-    <div class="zone-title" style="margin-bottom:6px">SYSTEM LOG · BUS:MAINT</div>
-    <div class="term" id="term"></div>
-    <div class="promptline"><span class="chev">&gt;</span><span id="promptstate">LISTENING FOR COMMAND INPUT</span> <span class="cursor"></span></div>
-  </footer>
-
 </div>
 
 <!-- ================= gate decision prompt ================= -->
@@ -381,7 +341,6 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 
 <script>
 "use strict";
-/* if loaded in a hidden/zero-size viewport, re-init once it has real size */
 if(innerWidth<2||innerHeight<2){
   const _p=setInterval(()=>{if(innerWidth>1&&innerHeight>1){clearInterval(_p);location.reload();}},250);
 }
@@ -389,7 +348,7 @@ const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $=id=>document.getElementById(id);
 const pad2=n=>String(n).padStart(2,"0");
 
-/* ---------- 7-seg timestamp chip (black on mint) ---------- */
+/* ---------- stylized orange 7-seg clock (experiment-01) ---------- */
 const SVGNS="http://www.w3.org/2000/svg";
 const SEGMAP={0:"abcdef",1:"bc",2:"abged",3:"abgcd",4:"fgbc",5:"afgcd",6:"afgedc",7:"abc",8:"abcdefg",9:"abcfgd"};
 const SEGPTS={
@@ -402,8 +361,7 @@ const SEGPTS={
   g:"7,32 10.5,28.5 29.5,28.5 33,32 29.5,35.5 10.5,35.5"};
 function makeDigit(w,h,on,off){
   const svg=document.createElementNS(SVGNS,"svg");
-  svg.setAttribute("width",w);svg.setAttribute("height",h);
-  svg.setAttribute("viewBox","0 0 46 64");
+  svg.setAttribute("width",w);svg.setAttribute("height",h);svg.setAttribute("viewBox","0 0 46 64");
   svg.dataset.on=on;svg.dataset.off=off;
   for(const k of "abcdefg"){
     const p=document.createElementNS(SVGNS,"polygon");
@@ -421,20 +379,17 @@ function renderDigit(svg,val){
 const chip=$("timechip");
 const chipDigits=[];
 for(let i=0;i<6;i++){
-  const d=makeDigit(13,20,"#0A0A0A","rgba(10,10,10,.12)");
+  const d=makeDigit(22,32,"#F26400","rgba(242,100,0,.08)");   /* orange 7-seg — exp-01 countdown */
   chipDigits.push(d);chip.appendChild(d);
   if(i===1||i===3){
     const c=document.createElement("span");c.className="tc-colon";
     c.innerHTML="<i></i><i></i>";chip.appendChild(c);
   }
 }
-const ampm=document.createElement("span");ampm.className="ampm";chip.appendChild(ampm);
 let chipBlink=true;
 function tickChip(){
   const d=new Date();
-  let h=d.getHours();
-  ampm.textContent=h<12?"AM":"PM";h=h%12||12;
-  const str=pad2(h)+pad2(d.getMinutes())+pad2(d.getSeconds());
+  const str=pad2(d.getHours())+pad2(d.getMinutes())+pad2(d.getSeconds());   /* 24h */
   chipDigits.forEach((dg,i)=>renderDigit(dg,+str[i]));
   chipBlink=!chipBlink;
   chip.querySelectorAll(".tc-colon").forEach(c=>c.style.opacity=(chipBlink||REDUCED)?1:.25);
@@ -454,8 +409,7 @@ let mfill=0;
 const mtimer=setInterval(()=>{
   const targetSegs=Math.round(TARGET/100*MSEG);
   if(mfill>=targetSegs){clearInterval(mtimer);return;}
-  msegs[mfill].classList.add("on");
-  mfill++;
+  msegs[mfill].classList.add("on");mfill++;
   $("pct").textContent=Math.round(mfill/MSEG*100)+"%";
 },REDUCED?0:90);
 if(REDUCED){msegs.slice(0,Math.round(TARGET/100*MSEG)).forEach(s=>s.classList.add("on"));$("pct").textContent=TARGET+"%";}
@@ -471,7 +425,6 @@ const VERDICTS={approve:{label:"承認 APPROVED",cls:"v-approved"},
                 defer:{label:"保留 DEFERRED",cls:"v-deferred"}};
 const gatelist=$("gatelist");
 let activeGate=null,lastFocus=null;
-
 GATES.forEach((g,i)=>{
   const row=document.createElement("div");
   row.className="g-row";row.id="grow-"+i;
@@ -481,29 +434,20 @@ GATES.forEach((g,i)=>{
   gatelist.appendChild(row);
 });
 function pendingCount(){return GATES.filter(g=>!g.verdict).length;}
-function updateGateCount(){
-  $("gatecount").textContent=pendingCount();
-  logLine("GATES PENDING",String(pendingCount()));
-}
+function updateGateCount(){$("gatecount").textContent=pendingCount();logLine("GATES PENDING",String(pendingCount()));}
 gatelist.addEventListener("click",e=>{
   const b=e.target.closest(".review");
   if(!b)return;
-  activeGate=+b.dataset.gate;
-  lastFocus=b;
+  activeGate=+b.dataset.gate;lastFocus=b;
   $("ov-item").innerHTML="ITEM: <b>"+GATES[activeGate].id+" — "+GATES[activeGate].title+"</b>";
-  $("overlay").classList.add("show");
-  $("ov-approve").focus();
+  $("overlay").classList.add("show");$("ov-approve").focus();
 });
 function decide(kind){
   if(activeGate===null)return;
-  const g=GATES[activeGate];
-  g.verdict=kind;
-  const row=$("grow-"+activeGate);
-  const v=VERDICTS[kind];
+  const g=GATES[activeGate];g.verdict=kind;
+  const row=$("grow-"+activeGate);const v=VERDICTS[kind];
   row.querySelector(".review").remove();
-  const st=document.createElement("span");
-  st.className="stamp "+v.cls;st.textContent=v.label;
-  row.appendChild(st);
+  const st=document.createElement("span");st.className="stamp "+v.cls;st.textContent=v.label;row.appendChild(st);
   if(kind!=="defer")row.classList.add("decided");
   $("overlay").classList.remove("show");
   logLine(g.id+" "+kind.toUpperCase()+"D","LOGGED");
@@ -514,53 +458,51 @@ function decide(kind){
 $("ov-approve").addEventListener("click",()=>decide("approve"));
 $("ov-deny").addEventListener("click",()=>decide("deny"));
 $("ov-defer").addEventListener("click",()=>decide("defer"));
-addEventListener("keydown",e=>{
-  if(!$("overlay").classList.contains("show"))return;
-  if(e.key==="Escape")decide("defer");
-});
+addEventListener("keydown",e=>{if($("overlay").classList.contains("show")&&e.key==="Escape")decide("defer");});
 
-/* ---------- footer terminal ---------- */
+/* ---------- log sink (footer terminal removed) — gate/session events log silently ---------- */
 const term=$("term");
 function logLine(lbl,val,warn){
+  if(!term)return;
   const row=document.createElement("div");row.className="row";
   row.innerHTML='<span class="lbl">'+lbl+'</span><span class="dots"></span>'+
     '<span class="val'+(warn?" warn":"")+'">'+val+'</span>';
   term.appendChild(row);
-  while(term.children.length>5)term.removeChild(term.firstChild);
+  while(term.children.length>60)term.removeChild(term.firstChild);
+  term.scrollTop=term.scrollHeight;
 }
-const CHATTER=[
-  ["MEMORY VAULT SYNC","2482 NODES"],["WEATHER FEED · HUB 42","18C PARTLY CLOUDY"],
-  ["CI PIPELINE","GREEN"],["INBOX POLL","8 ITEMS"],["AGENT ORION HEARTBEAT","OK"],
-  ["CERT EXPIRY WATCH","14 DAYS"],["VECTOR INDEX SCRUB","OK"],["NOON SYNC WINDOW","T-MINUS ARMED"],
-];
-["OS KERNEL","MEMORY VAULT","AGENT MESH","LEARNING QUEUE"].forEach((l,i)=>
-  setTimeout(()=>logLine(l+" CHECK","OK"),i*130));
-setInterval(()=>{
-  const c=CHATTER[Math.floor(Math.random()*CHATTER.length)];
-  logLine(c[0],c[1],Math.random()<.05);
-},2600);
 
 /* ---------- small ticks ---------- */
 $("answerbtn").addEventListener("click",()=>{
-  const q=$("quiz");
-  const on=q.classList.toggle("revealed");
+  const q=$("quiz");const on=q.classList.toggle("revealed");
   $("answerbtn").textContent=on?"HIDE ANSWER":"SHOW ANSWER";
 });
 $("resumebtn").addEventListener("click",()=>logLine("SESSION JRS·902","RESUMED"));
-$("initbtn").addEventListener("click",()=>{
-  logLine("MORNING PROTOCOL","INITIALIZED");
-  $("promptstate").textContent="PROTOCOL RUNNING — LISTENING";
-});
-/* integrity flickers to CAUTION rarely, recovers */
+$("initbtn").addEventListener("click",()=>{logLine("MORNING PROTOCOL","INITIALIZED");});
 setInterval(()=>{
   const bad=Math.random()<.08;
   $("integrity").textContent=bad?"CAUTION":"NOMINAL";
   $("integrity").classList.toggle("mint",!bad);
   $("integrity").style.color=bad?"var(--amber)":"";
-  const st=$("sysstamp");
-  st.textContent=bad?"SYS:CAUTION":"SYS:NOMINAL";
-  st.classList.toggle("caution",bad);
+  const st=$("sysstamp");st.textContent=bad?"SYS:CAUTION":"SYS:NOMINAL";st.classList.toggle("caution",bad);
 },7000);
+
+/* ---------- system-health columns: live, stepped, biased-nominal ---------- */
+(function(){
+  const health=$("health");
+  if(!health)return;
+  const cols=[...health.querySelectorAll(".hcol")];
+  function paint(){
+    cols.forEach(col=>{
+      const cells=[...col.children];
+      const lit=3+Math.floor(Math.random()*3);        /* mostly 3–5 of 7 = nominal */
+      const hot=Math.random()<0.16;                    /* occasional amber peak */
+      cells.forEach((c,i)=>{c.className=i<lit?((hot&&i===lit-1)?"on hot":"on"):"";});
+    });
+  }
+  paint();
+  if(!REDUCED)setInterval(paint,700);                  /* discrete step, no easing */
+})();
 
 /* ---- START ---- */
 tickChip();tickDate();updateGateCount();
