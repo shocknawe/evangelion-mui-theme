@@ -63,7 +63,8 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 
 .initbtn{border:2px solid var(--orange);background:var(--orange);color:var(--bg);font-family:var(--cond);
   font-weight:700;font-size:13px;letter-spacing:.14em;padding:10px 4px;cursor:pointer;
-  animation:modeblink 1s steps(1) infinite}
+  box-shadow:0 0 12px rgba(242,100,0,.5)}
+.initbtn:hover{background:var(--bg);color:var(--orange)}
 @keyframes modeblink{0%,74%{background:var(--orange);color:var(--bg)}75%,100%{background:var(--bg);color:var(--orange)}}
 .initbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
 .side .foot-links{display:flex;gap:10px;font-size:10px;color:var(--green-map);margin-top:8px}
@@ -81,9 +82,13 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .ttl .eyebrow{font-size:10px;letter-spacing:.2em;color:var(--amber);margin-top:3px}
 .sysstamp{color:var(--mint);text-shadow:0 0 4px currentColor;flex:none}
 .sysstamp.caution{color:var(--amber)}
+/* corner metadata block — canonical NERV KEY:VALUE (REFERENCE-ANALYSIS §A6/§4) */
+.meta{margin-left:auto;flex:none;text-align:right;font-family:var(--mono);font-size:10px;line-height:1.35;
+  letter-spacing:.06em;color:var(--amber)}
+.meta b{color:var(--orange);font-weight:400}
 
 /* RESERVE POWER card (exp-01 panel grammar) holding the stylized orange clock */
-.respanel{margin-left:auto;flex:none;display:flex;align-items:center;gap:24px}
+.respanel{flex:none;display:flex;align-items:center;gap:24px}
 /* system-health mini columns (from dashboard-02, sonnet-12 grammar) */
 .health{display:flex;gap:5px;align-items:flex-end;height:40px}
 .hcol{width:9px;display:flex;flex-direction:column-reverse;gap:2px}
@@ -154,6 +159,10 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
 .g-row .stamp.v-approved{color:var(--mint)}
 .g-row .stamp.v-denied{color:var(--red-hi)}
 .g-row .stamp.v-deferred{color:var(--blue)}
+.g-row .gp{font-size:9px;padding:2px 7px;letter-spacing:.08em;flex:none}
+.g-row .gp-crit{color:var(--red-hi);border-color:var(--red-hi)}
+.g-row .gp-elev{color:var(--amber);border-color:var(--amber)}
+.g-row .gp-rout{color:var(--green-map);border-color:var(--green-map)}
 .g-row .review{border-color:var(--red-hi);color:var(--red-hi);padding:5px 12px;font-size:10px}
 .g-row .review:hover{background:var(--red-hi);color:var(--bg)}
 .g-row.decided{border-left-color:var(--green-dim)}
@@ -220,6 +229,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
       <h1>WELCOME BACK, OPERATOR.</h1>
       <div class="eyebrow">STATUS: MORNING INITIALIZATION · 朝礼</div>
     </div>
+    <div class="meta">CODE:<b>0902</b><br>FILE:<b>MORNING_BRIEF</b><br>EX_MODE:<b>MANUAL</b><br>PRIORITY:<b>AA-</b></div>
     <span class="stamp sysstamp" id="sysstamp">SYS:NOMINAL</span>
     <div class="respanel" aria-label="Local time">
       <div class="health" id="health" role="img" aria-label="System health columns"><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><div class="hcol"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div></div>
@@ -276,7 +286,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
         <div class="hmeter" id="hmeter"></div>
         <div class="gate-line" style="left:80%"><span class="stamp">REVIEW GATE · 80</span></div>
       </div>
-      <div class="meter-read"><span><b id="pct">0%</b> COMPLETE</span><span>SEGMENTS: DISCRETE · NO EASING</span></div>
+      <div class="meter-read"><span><b id="pct">0%</b> COMPLETE</span><span>REVIEW OPENS AT 80% · ETA NOON SYNC</span></div>
       <p class="obj-copy">CURRENT STATE: MODULARIZING THE INFERENCE ENGINE FOR DISTRIBUTED LOW-LATENCY
         NODES. FOCUS ON THE <b>COREDISPATCHER</b> INTERFACE LOGIC BEFORE NOON SYNC.</p>
       <div class="btnrow">
@@ -416,10 +426,11 @@ if(REDUCED){msegs.slice(0,Math.round(TARGET/100*MSEG)).forEach(s=>s.classList.ad
 
 /* ---------- gates: list + decision prompt ---------- */
 const GATES=[
-  {id:"GATE·04",title:"API SECURITY GATEWAY",sub:"ARCHITECTURE · 3 PRS WAITING"},
-  {id:"GATE·07",title:"INITIALIZATION PROTOCOL 03",sub:"START · READY FOR REVIEW"},
-  {id:"GATE·11",title:"MEMORY INGESTION SCHEMA",sub:"KNOWLEDGE · MIGRATION PLAN"},
+  {id:"GATE·04",title:"API SECURITY GATEWAY",sub:"ARCHITECTURE · 3 PRS WAITING",prio:"AAA"},
+  {id:"GATE·07",title:"INITIALIZATION PROTOCOL 03",sub:"START · READY FOR REVIEW",prio:"B++"},
+  {id:"GATE·11",title:"MEMORY INGESTION SCHEMA",sub:"KNOWLEDGE · MIGRATION PLAN",prio:"AA-"},
 ];
+const PRIOCLS={AAA:"crit","AA-":"elev","B++":"rout"};
 const VERDICTS={approve:{label:"承認 APPROVED",cls:"v-approved"},
                 deny:{label:"否認 DENIED",cls:"v-denied"},
                 defer:{label:"保留 DEFERRED",cls:"v-deferred"}};
@@ -430,6 +441,7 @@ GATES.forEach((g,i)=>{
   row.className="g-row";row.id="grow-"+i;
   row.innerHTML='<span class="gid">'+g.id+'</span><span class="gtitle">'+g.title+'</span>'+
     '<span class="dots"></span><span class="gsub">'+g.sub+'</span>'+
+    '<span class="stamp gp gp-'+PRIOCLS[g.prio]+'">'+g.prio+'</span>'+
     '<button class="btn review" data-gate="'+i+'">REVIEW</button>';
   gatelist.appendChild(row);
 });
