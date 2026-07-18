@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-18T00:00:00Z",
+  "title": "Design System: Jairus OS — NERV/MAGI Tactical Console",
+  "extensions": {
+    "colorMeta": {
+      "bg":         { "role": "neutral", "displayName": "Void", "canonical": "oklch(15.5% 0 0)", "tonalRamp": ["#050505","#0A0A0A","#141414","#1F1F1F","#2E2E2E","#454545","#6B6B6B","#9A9A9A"] },
+      "mint":       { "role": "primary", "displayName": "Phosphor Mint", "canonical": "oklch(85.6% 0.196 158)", "tonalRamp": ["#0C2A1C","#124430","#186045","#1F8A63","#2FB37F","#52F29A","#7CF4AB","#B6FAD3"] },
+      "mint-hi":    { "role": "primary", "displayName": "Phosphor Mint Hi", "canonical": "oklch(89.4% 0.16 158)", "tonalRamp": ["#123C2A","#1A5C40","#237C57","#2FA070","#4FC98F","#7CF4AB","#A6F8C8","#D4FCE6"] },
+      "green-map":  { "role": "primary", "displayName": "Map Green", "canonical": "oklch(64.7% 0.121 158)", "tonalRamp": ["#0A2417","#0F3A24","#164F33","#1F6B45","#2C8759","#3C9C6C","#5FB98A","#8FD3AE"] },
+      "green-dim":  { "role": "primary", "displayName": "Green Dim", "canonical": "oklch(48.6% 0.104 158)", "tonalRamp": ["#08180F","#0D2A1B","#123C26","#185033","#1F6642","#246C3C","#357F55","#57A377"] },
+      "paper":      { "role": "neutral", "displayName": "Paper", "canonical": "oklch(96.4% 0.06 118)", "tonalRamp": ["#3A3E2C","#565B40","#747A57","#949B72","#B7BE93","#D6DBB6","#EDF8D6","#F6FBE8"] },
+      "orange":     { "role": "secondary", "displayName": "Safety Orange", "canonical": "oklch(68.9% 0.203 44)", "tonalRamp": ["#2E1300","#4C1F00","#6E2E00","#933F00","#C25400","#F26400","#FF8A3C","#FFB989"] },
+      "amber":      { "role": "secondary", "displayName": "Terminal Amber", "canonical": "oklch(76.4% 0.166 71)", "tonalRamp": ["#33210A","#4E340F","#6C4A16","#8E641E","#C08628","#F49F09","#F7B94A","#FBD48C"] },
+      "amber-dim":  { "role": "secondary", "displayName": "Amber Dim", "canonical": "oklch(45.3% 0.11 40)", "tonalRamp": ["#1F0D07","#33150B","#4A1F11","#642A17","#82381F","#9C3C24","#B85C3E","#D5866A"] },
+      "red":        { "role": "danger", "displayName": "NERV Red", "canonical": "oklch(50.4% 0.214 29)", "tonalRamp": ["#2A0505","#450808","#620B0B","#8A0E0E","#A80A0A","#C20C0C","#E2280F","#F5715C"] },
+      "red-hi":     { "role": "danger", "displayName": "Red Hi", "canonical": "oklch(58.3% 0.221 32)", "tonalRamp": ["#310805","#4F0D08","#71130B","#98210E","#C0270F","#E2280F","#F0603C","#F79A83"] },
+      "crimson":    { "role": "danger", "displayName": "Crimson", "canonical": "oklch(53.6% 0.238 20)", "tonalRamp": ["#2C0209","#48050F","#670816","#8F0B1E","#B60825","#E60225","#F14E63","#F78D9B"] },
+      "teal":       { "role": "tertiary", "displayName": "Teal", "canonical": "oklch(48.3% 0.077 216)", "tonalRamp": ["#031A20","#052A33","#083E4A","#0C5464","#0C6C80","#1287A0","#38A9C2","#6FCADD"] },
+      "blue":       { "role": "tertiary", "displayName": "Deliberation Blue", "canonical": "oklch(64.1% 0.121 251)", "tonalRamp": ["#0A1E33","#102E4D","#173F6B","#20548E","#3A72B0","#5090D0","#7FADDD","#B0CDEB"] },
+      "blueprint":  { "role": "neutral", "displayName": "Blueprint Gray", "canonical": "oklch(76.8% 0 0)", "tonalRamp": ["#2E2E2E","#454545","#5E5E5E","#787878","#949494","#B4B4B4","#D2D2D2","#EDEDED"] }
+    },
+    "typographyMeta": {
+      "display":    { "displayName": "Display (Condensed)", "purpose": "Page/hero headlines and giant numerals. ALL CAPS, glowing." },
+      "headline":   { "displayName": "Headline (Condensed)", "purpose": "Card and section titles, primary objectives." },
+      "jp-display": { "displayName": "JP Display (Mincho)", "purpose": "Large kanji graphic in headers, alerts, mastheads. Always paired with an English caption." },
+      "body":       { "displayName": "Body / Data (Mono)", "purpose": "Monospace UI text, KEY:VALUE metadata, terminal rows." },
+      "label":      { "displayName": "Label (Mono)", "purpose": "Field labels, captions, legend text, eyebrows. Wide tracking, ALL CAPS." }
+    },
+    "shadows": [
+      { "name": "text-glow", "value": "0 0 4px currentColor, 0 0 12px color-mix(in srgb, currentColor 40%, transparent)", "purpose": "Luminance halo on headlines, active stamps, alarm text. Intensity graded red > orange > green. Not a drop shadow." },
+      { "name": "box-glow-orange", "value": "0 0 8px rgba(242,100,0,.4), inset 0 0 8px rgba(242,100,0,.14)", "purpose": "The 'elevation' of a chrome panel/frame — an emitted halo, never a cast shadow." },
+      { "name": "focus-glow-mint", "value": "0 0 8px rgba(82,242,154,.35), inset 0 0 6px rgba(82,242,154,.12)", "purpose": "Focused input ring; replaces the browser default outline." },
+      { "name": "seg-glow-mint", "value": "0 0 5px #52F29A, 0 0 12px rgba(82,242,154,.4)", "purpose": "Per-lit LED segment glow in meters and gauges (swap hue per zone)." }
+    ],
+    "motion": [
+      { "name": "blink", "value": "@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}} — 1s steps(1) infinite", "purpose": "In-progress signal on stamps, cursors, pending nodes. Urgent variant: .5s." },
+      { "name": "btnblink", "value": "@keyframes btnblink{0%,74%{fill}75%,100%{invert}} — 1s steps(1) infinite", "purpose": "Selected/primary-action button — the live action pulses between filled and outlined." },
+      { "name": "step-fill", "value": "setInterval 70–160ms, whole segments", "purpose": "Meter/gauge fills advance one discrete LED segment at a time, 8–15/sec. Never a tweened width." },
+      { "name": "teletype", "value": "setInterval ~130ms/row", "purpose": "Terminal and receipt rows enter in whole-row chunks, mechanically." },
+      { "name": "state-snap", "value": "0ms, optional visibility flicker 60→120ms", "purpose": "State changes are instant; an optional 2–3 frame hide/show flicker precedes the settle. Never a fade." },
+      { "name": "teardown", "value": "reverse cascade to black", "purpose": "Loaders/progress end by extinguishing segments in reverse, not by fading opacity." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion:reduce){ animation:none } + JS matchMedia guard", "purpose": "Kill blinks/strobe/marquee/flicker; render the final settled state." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "600px" },
+      { "name": "tablet", "value": "1000px" },
+      { "name": "desktop", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (blinking selected)",
+      "kind": "button",
+      "refersTo": "button-primary-active",
+      "description": "Primary action. Outlined at rest; the selected/live state inverts to a solid mint fill with black text and blinks to signal 'this is the action to take.'",
+      "html": "<button class=\"ds-btn-primary\">FILE GATE · 申請</button>",
+      "css": ".ds-btn-primary{font-family:'Arial Narrow','Avenir Next Condensed','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;border:2px solid #52F29A;color:#52F29A;background:#0A0A0A;cursor:pointer;border-radius:0;animation:ds-btnblink 1s steps(1) infinite}.ds-btn-primary:hover{background:#52F29A;color:#0A0A0A;box-shadow:0 0 12px rgba(82,242,154,.4)}.ds-btn-primary:focus-visible{outline:2px solid #EDF8D6;outline-offset:3px}@keyframes ds-btnblink{0%,74%{background:#52F29A;color:#0A0A0A}75%,100%{background:#0A0A0A;color:#52F29A}}@media(prefers-reduced-motion:reduce){.ds-btn-primary{animation:none;background:#52F29A;color:#0A0A0A}}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary/quiet action. Muted green-dim outline in the mono face.",
+      "html": "<button class=\"ds-btn-ghost\">RESET FORM</button>",
+      "css": ".ds-btn-ghost{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-weight:400;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:10px 18px;border:1px solid #246C3C;color:#3C9C6C;background:#0A0A0A;cursor:pointer;border-radius:0}.ds-btn-ghost:hover{background:#246C3C;color:#EDF8D6}.ds-btn-ghost:focus-visible{outline:2px solid #52F29A;outline-offset:2px}"
+    },
+    {
+      "name": "Status Stamp",
+      "kind": "chip",
+      "refersTo": "stamp",
+      "description": "Boxed status word. Outline = record, .blink = in-progress, .fill = active (inverse). Colorway via currentColor — set color to switch state hue.",
+      "html": "<span class=\"ds-stamp\" style=\"color:#52F29A\">NOMINAL</span> <span class=\"ds-stamp ds-blink\" style=\"color:#5090D0\">審査中</span> <span class=\"ds-stamp ds-fill\" style=\"color:#E2280F\"><span>OFFLINE</span></span>",
+      "css": ".ds-stamp{display:inline-block;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:11px;letter-spacing:.06em;line-height:1.4;padding:2px 9px;border:1px solid currentColor;border-radius:2px;white-space:nowrap}.ds-stamp.ds-fill{background:currentColor}.ds-stamp.ds-fill>span{color:#0A0A0A;display:block}.ds-blink{animation:ds-blink 1s steps(1) infinite}@keyframes ds-blink{0%,49%{opacity:1}50%,100%{opacity:0}}@media(prefers-reduced-motion:reduce){.ds-blink{animation:none}}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Tactical text field. Void bg, dim-green idle border, mint text/caret, uppercase; focus swaps the border to mint with a glow ring instead of a browser outline.",
+      "html": "<label class=\"ds-lbl\"><span class=\"ds-lbl-jp\">件名</span>GATE DESIGNATION</label><input class=\"ds-input\" type=\"text\" placeholder=\"API SECURITY GATEWAY\">",
+      "css": ".ds-lbl{display:flex;align-items:baseline;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.14em;color:#F26400;margin-bottom:6px;text-transform:uppercase}.ds-lbl-jp{font-family:'Hiragino Mincho ProN','Yu Mincho',serif;font-weight:800;font-size:13px}.ds-input{width:100%;background:#0A0A0A;border:1px solid #246C3C;color:#52F29A;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:14px;letter-spacing:.05em;padding:10px 12px;border-radius:0;caret-color:#52F29A;text-transform:uppercase}.ds-input::placeholder{color:#246C3C}.ds-input:hover{border-color:#3C9C6C}.ds-input:focus-visible{outline:none;border-color:#52F29A;box-shadow:0 0 8px rgba(82,242,154,.35),inset 0 0 6px rgba(82,242,154,.12)}"
+    },
+    {
+      "name": "Panel / Card",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Base surface. Void fill, 1–2px orange border, faint inset orange glow. Never elevated with a drop shadow. Titled with a zone-title.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-zone-title\">REACTOR OUTPUT · 炉心</div><div class=\"ds-panel-body\">CORE·A … NOMINAL</div></section>",
+      "css": ".ds-panel{background:#0A0A0A;border:1px solid #F26400;padding:16px;border-radius:0;box-shadow:inset 0 0 8px rgba(242,100,0,.1);color:#52F29A;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;text-transform:uppercase}.ds-zone-title{font-family:'Arial Narrow','Avenir Next Condensed',Arial,sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;color:#F26400;border-bottom:1px solid #246C3C;padding-bottom:4px;margin-bottom:8px}.ds-panel-body{font-size:12px;letter-spacing:.04em;color:#3C9C6C}"
+    },
+    {
+      "name": "Chamfered Focal Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Hero/focal panel — the one mint-bordered surface per screen. Two corners chamfered via clip-path; used for the primary objective / decision card.",
+      "html": "<section class=\"ds-focal\"><div class=\"ds-focal-eyebrow\">PRIMARY OBJECTIVE · 主目標</div><h2 class=\"ds-focal-title\">ARCHITECTURE REFACTOR: NEURAL PIPELINE V3</h2></section>",
+      "css": ".ds-focal{background:#0A0A0A;border:2px solid #52F29A;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);box-shadow:0 0 8px rgba(82,242,154,.25),inset 0 0 10px rgba(82,242,154,.08)}.ds-focal-eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em;color:#52F29A;text-transform:uppercase}.ds-focal-title{font-family:'Arial Narrow','Avenir Next Condensed',Arial,sans-serif;font-weight:700;font-size:21px;color:#EDF8D6;letter-spacing:.02em;text-transform:uppercase;margin:4px 0 0}"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "button-primary",
+      "description": "Stacked boxed nav item, kanji over English. Current = mint inversion (solid fill, black text). Hover = border shifts to mint.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item ds-current\"><span class=\"ds-nav-jp\">工学</span><span class=\"ds-nav-en\">ENGINEERING</span></button><button class=\"ds-nav-item\"><span class=\"ds-nav-jp\">記憶</span><span class=\"ds-nav-en\">KNOWLEDGE</span></button></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:6px}.ds-nav-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0A0A0A;border:1px solid #246C3C;color:#52F29A;padding:7px 10px;cursor:pointer;text-align:left;border-radius:0}.ds-nav-jp{font-family:'Hiragino Mincho ProN','Yu Mincho',serif;font-weight:800;font-size:16px;line-height:1;letter-spacing:.14em}.ds-nav-en{font-family:'Arial Narrow','Avenir Next Condensed',Arial,sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;opacity:.85;text-transform:uppercase}.ds-nav-item:hover{border-color:#52F29A}.ds-nav-item.ds-current{background:#52F29A;border-color:#52F29A;color:#0A0A0A}.ds-nav-item:focus-visible{outline:2px solid #F49F09;outline-offset:2px}"
+    },
+    {
+      "name": "Legend",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Status key: a row of small boxed kanji+EN swatches that defines every status color used below it. Place above any status-colored grid.",
+      "html": "<div class=\"ds-legend\"><span class=\"ds-lg\" style=\"color:#52F29A\"><b>正常</b><i>NOMINAL</i></span><span class=\"ds-lg\" style=\"color:#F49F09\"><b>注意</b><i>CAUTION</i></span><span class=\"ds-lg\" style=\"color:#5090D0\"><b>待機</b><i>PENDING</i></span><span class=\"ds-lg ds-lg-fill\" style=\"color:#E2280F\"><b>阻止</b><i>BLOCKED</i></span></div>",
+      "css": ".ds-legend{display:flex;gap:8px;flex-wrap:wrap;font-family:ui-monospace,Menlo,monospace}.ds-lg{display:flex;flex-direction:column;align-items:center;min-width:54px;padding:2px 9px;border:1px solid currentColor;border-radius:2px}.ds-lg b{font-family:'Hiragino Mincho ProN','Yu Mincho',serif;font-weight:800;font-size:13px;line-height:1.2;letter-spacing:.2em;text-indent:.2em}.ds-lg i{font-style:normal;font-size:8px;letter-spacing:.1em}.ds-lg-fill{background:#E2280F;color:#0A0A0A}"
+    },
+    {
+      "name": "Terminal / Log",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Signature output surface. Amber-on-black, two brightness levels, dash-rule section headers, dot-leader OK/FAIL status column, blinking cursor.",
+      "html": "<div class=\"ds-term\"><div class=\"ds-term-rule\">---- SYSTEM CONFIGURATION ----</div><div class=\"ds-term-row\"><span class=\"ds-term-lbl\">CONTROL BUS LINK</span><span class=\"ds-term-dots\"></span><span class=\"ds-term-ok\">OK</span></div><div class=\"ds-term-row\"><span class=\"ds-term-lbl\">PUMP·B DRIVE</span><span class=\"ds-term-dots\"></span><span class=\"ds-term-fail\">FAIL</span></div><div class=\"ds-term-prompt\">&gt; READY <span class=\"ds-term-cur\"></span></div></div>",
+      "css": ".ds-term{background:rgba(244,159,9,.02);border:1px solid #9C3C24;padding:12px 14px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#9C3C24;text-transform:uppercase}.ds-term-rule{color:#9C3C24}.ds-term-row{display:flex;align-items:baseline;gap:8px;white-space:nowrap}.ds-term-lbl{color:#F49F09}.ds-term-dots{flex:1;border-bottom:1px dotted #9C3C24;height:0;margin-bottom:4px}.ds-term-ok{color:#F49F09;font-weight:700}.ds-term-fail{color:#E2280F;font-weight:700;text-shadow:0 0 4px currentColor}.ds-term-prompt{color:#F49F09;margin-top:4px}.ds-term-cur{display:inline-block;width:8px;height:13px;background:#F49F09;vertical-align:-2px;animation:ds-blink 1s steps(1) infinite}@keyframes ds-blink{0%,49%{opacity:1}50%,100%{opacity:0}}@media(prefers-reduced-motion:reduce){.ds-term-cur{animation:none}}"
+    },
+    {
+      "name": "Segmented Meter + Threshold",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Discrete LED-segment gauge (never a continuous fill), colored per zone, with a drawn labeled threshold rule riding across.",
+      "html": "<div class=\"ds-meter\"><div class=\"ds-bar\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on warn\"></i><i></i><i></i></div><div class=\"ds-thresh\"><span>LIMIT · 70</span></div></div>",
+      "css": ".ds-meter{position:relative;height:150px;width:60px}.ds-bar{display:flex;flex-direction:column-reverse;gap:3px;height:100%}.ds-bar i{flex:1;border-radius:2px;background:#246C3C;opacity:.3}.ds-bar i.on{opacity:1;background:#52F29A;box-shadow:0 0 5px rgba(82,242,154,.45)}.ds-bar i.on.warn{background:#F49F09;box-shadow:0 0 5px rgba(244,159,9,.45)}.ds-bar i.on.hot{background:#E2280F;box-shadow:0 0 6px rgba(226,40,15,.55)}.ds-thresh{position:absolute;left:-6px;right:-6px;bottom:70%;height:2px;background:#F26400;box-shadow:0 0 6px rgba(242,100,0,.6)}.ds-thresh span{position:absolute;right:0;top:-10px;background:#0A0A0A;border:1px solid #F26400;color:#F26400;font-family:ui-monospace,Menlo,monospace;font-size:8px;padding:1px 5px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Phosphor Console",
+    "overview": "Everything luminous blooms on true black. This is not a dark theme — it is a CRT command deck. Information is drawn in glowing phosphor mint, cut with safety orange chrome and blood-red alarms. There is no elevation, no soft depth, no glass. Hierarchy is built from three materials only: border, glow, and hue. A panel is a stroked box on black; an active control is a solid block of color with the black content punched out of it. Motion is mechanical throughout — stepped segment fills, hard 1–2 Hz blinks, teletype rows, snap state changes. Nothing eases, nothing fades. The screens feel hand-cranked, like a machine reporting rather than an app animating. It rejects elevation surfaces, eased/spring motion, glass panels, humanist body type, and calm neutral palettes: familiarity is not the goal, a committed and internally-consistent tactical identity is.",
+    "keyCharacteristics": [
+      "True near-black (#0A0A0A) is the only surface; hierarchy from border + glow + hue, never elevation.",
+      "Color is state: mint nominal, orange chrome, blue pending, amber caution, red critical.",
+      "Figure/ground inversion marks activation — idle outline on black, active solid fill with black content.",
+      "Bimodal type: one giant element plus tiny dense captions; nothing mid-sized.",
+      "Bilingual by default: Mincho kanji graphic + small Latin caption.",
+      "Mechanical motion only: steps() and setInterval ticks, never eased curves.",
+      "A CRT scanline + vignette pass overlays every dark screen."
+    ],
+    "rules": [
+      { "name": "The Orange-Is-Chrome Rule", "body": "Safety Orange (#F26400) draws the machine and never carries meaning. Borders, rules, dividers, axes, section numbers, metadata keys — orange. A data value, a status, or a result is never orange. If orange is saying something, it's wrong.", "section": "colors" },
+      { "name": "The Color-Is-State Rule", "body": "A component's hue is its status, not its brand. The same panel renders mint/amber/blue/red to mean nominal/caution/pending/critical without moving a pixel. Parameterize by currentColor.", "section": "colors" },
+      { "name": "The No-Lowercase Rule", "body": "UI chrome is ALL CAPS — labels, buttons, headers, data, terminal. Lowercase only in genuine reading prose. A lowercase button or status is wrong.", "section": "typography" },
+      { "name": "The Bimodal-Scale Rule", "body": "Cluster type at the two ends: tiny (8–14px) and large (22px–hero). Mid-sized type reads generic. One giant element per screen, everything else small.", "section": "typography" },
+      { "name": "The Bilingual-Pairing Rule", "body": "A large Mincho kanji never appears alone in functional UI. It is the graphic; a small Latin caption beneath is the translation. Untranslated decorative kanji is forbidden.", "section": "typography" },
+      { "name": "The No-Elevation Rule", "body": "Prohibited: box-shadow as a drop shadow, lighter-gray raised surfaces, backdrop-filter glass. Depth is border + glow + hue. A surface lifted by a soft gray shadow gets a border instead.", "section": "elevation" },
+      { "name": "The Glow-On-Black-Only Rule", "body": "Glow renders on luminous elements against #0A0A0A. Content punched out of a filled control (black on mint) gets no glow — the fill carries the light, the content stays crisp.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep #0A0A0A as the only background and build hierarchy from border + glow + hue.",
+      "Do make color mean state — mint nominal, blue pending, amber caution, red critical — and parameterize by currentColor.",
+      "Do render active/selected states as figure/ground inversion: solid hue fill, black content, no glow on the content.",
+      "Do box every status word in a stamp; blink = in-progress, solid fill = recorded/active.",
+      "Do pair every large kanji with a small English caption.",
+      "Do keep motion mechanical — steps() and setInterval ticks, 150–250ms or stepped, with a prefers-reduced-motion alternative that renders the final state.",
+      "Do reserve Safety Orange (#F26400) for chrome only.",
+      "Do overlay the CRT scanline + vignette pass on every dark screen.",
+      "Do number a sequence only when it is one (form sections, the OODA loop, an ingestion pipeline)."
+    ],
+    "donts": [
+      "Don't use elevation for depth: no drop shadows, no lighter-gray raised surfaces, no glassmorphism / backdrop-filter panels.",
+      "Don't ease or spring anything — no cubic-bezier state transitions, no opacity fades for state, no bounce. Linear or steps() only.",
+      "Don't use border-left/right > 1px as a colored accent stripe. Use a full border, a background tint, or a leading stamp.",
+      "Don't use background-clip:text gradient text. Emphasis via weight, size, and glow on a single solid color.",
+      "Don't write UI chrome in lowercase or set labels/buttons/data in the Mincho display font.",
+      "Don't let Safety Orange carry a data value or a status.",
+      "Don't put glow on black-on-fill content.",
+      "Don't reach for a modal by default; when a modal is right, keep it to one focal job.",
+      "Don't ship a light warm-neutral variant as the default; the system is dark-only."
+    ]
+  }
+}
