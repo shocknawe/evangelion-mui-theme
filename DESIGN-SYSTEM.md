@@ -1,230 +1,282 @@
-# NERV / MAGI Design System
+# NERV/MAGI Tactical Design System — "Jairus OS"
 
-Extracted from the 23 reference GIFs in `references-chosen/` (NERV command-center, MAGI deliberation, terminal, map, timer, and alert screens from *Neon Genesis Evangelion*). Every hex value below was sampled programmatically from the frames — these are the actual on-screen colors, not approximations.
+A component + token system extracted from the reference GIFs (`references-chosen/`), the 34 experiments, and the shipped pages (`dashboard-0{1,2,3}`, `form-0{1,2}`, `landing-page-0{1,2}`, `wiki`). It is the buildable consolidation of two research docs: [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) (the original — sampled palette + per-GIF recipes) and [REFERENCE-ANALYSIS.md](REFERENCE-ANALYSIS.md) (the 23-GIF breakdown). Live gallery: **[design-system.html](design-system.html)**.
 
-The aesthetic in one sentence: **a black CRT void where information glows in phosphor mint, safety orange, and blood red — dense, all-caps, hard-edged, and bilingual (EN + JP), animated in abrupt steps rather than smooth easing.**
+**One-line identity:** a black CRT command console where information glows in phosphor mint, safety orange, and blood red — dense, all-caps, hard-edged, bilingual (EN + JP), animated in abrupt mechanical steps rather than smooth easing.
 
 ---
 
-## 1. Color
+## 1. Principles
 
-### 1.1 Core palette
+1. **Black is the canvas; light is the ink.** Everything sits on `#0A0A0A`. No elevation grays, no soft shadows-for-depth. Hierarchy comes from **border + glow + hue**, never a lighter surface.
+2. **Color is state; layout is constant.** The same component re-renders mint / amber / blue / red to mean nominal / caution / pending / critical without moving a pixel. Build every component colorway-parameterized.
+3. **Filled means active (figure/ground inversion).** Idle = 1px outline on black. Active/selected = solid fill of the semantic hue with **black (`--bg`) content punched out**, no glow on the content. The single most recognizable move in the system — it drives selected nav, checked radios/switches, the active mode button, and the OFFLINE stamp.
+4. **Everything important is boxed.** A status word = text inside a 1px border of its own color (`.stamp`). Blinking box = in progress; solid-fill inverse = recorded/active.
+5. **Bimodal type scale.** One giant element (kanji, numeral, headline) + tiny dense captions. Avoid mid-sizes — if everything is 16px it reads off-brand.
+6. **Bilingual pairing.** Big Mincho kanji is the graphic; a small Latin caption underneath is the translation (`内部` / INTERNAL). Kanji never appears untranslated in functional UI.
+7. **Structure encodes truth.** Numbered markers (01/02…) only where content is a real sequence (form sections, ingestion pipeline, OODA loop) — never as decoration.
+8. **Motion is mechanical.** `setInterval` ticks and CSS `steps()` only. Stepped fills, hard 1–2 Hz blinks, teletype rows, snap state changes (optionally a 2–3 frame flicker before settling). **Never** `ease`/`cubic-bezier`/spring/opacity-fade for state. Loaders end by reverse-cascade to black, not fade.
+9. **Diagonal energy where urgency lives.** Chamfered panel corners, 45° hazard chevrons, rotated warning plates — reserved for alerts and hero framing, not sprinkled everywhere.
+10. **CRT pass on every dark screen.** Scanlines + vignette via `body::after`. Part of the identity, not optional chrome.
+11. **Copy is direction, not mood.** Errors state what happened and how to fix it (`DESIGNATION REQUIRED — NAME THE DECISION YOU ARE FILING`), never apologize. Empty states invite action.
+12. **Restraint.** Spend boldness in one signature element per screen; keep everything around it disciplined. Respect `prefers-reduced-motion` — kill blinks/strobes/marquees, keep final states readable.
 
-| Token | Hex | Sampled from | Use |
-|---|---|---|---|
-| `bg.void` | `#0A0A0A` | universal background | App/screen background. True near-black, never gray. |
-| `green.phosphor` | `#52F29A` | council panels, loading bars | Primary "OK / active / data" color. The MAGI mint. |
-| `green.phosphorBright` | `#7CF4AB` | panel hot-spots | Hover/peak states, glow cores, filled panels. |
-| `green.map` | `#3C9C6C` | map linework | Secondary/dim green — wireframes, gridlines, inactive data. |
-| `green.mapDim` | `#246C3C` | map background lines | Tertiary green — dense background linework. |
-| `red.nerv` | `#C20C0C` | bar graphs, folder icons | Primary "danger / negative / opposing" data color. |
-| `red.bright` | `#E2280F` | DANGER prompt bg, bar peaks | Alert surfaces, flashing states. |
-| `red.crimson` | `#E60225` | EMERGENCY stripes | Warning-stripe red (slightly pink-shifted, h≈353). |
-| `orange.safety` | `#F26400` | timer digits, frame rules | Chrome color: borders, rules, wireframe boxes, 7-seg digits. |
-| `orange.amber` | `#F49F09` | terminal body text | Terminal/log body text (amber CRT). |
-| `teal.surface` | `#0C6C80` | header bars, laptop shell | Rare accent surface: header underline bars, hardware bezels. |
-| `blue.balthasar` | `#5090D0` | BALTHASAR panel | "Deliberating / pending" state fill. |
-| `mint.paper` | `#EDF8D6` | folder glyph fill | Near-white with green cast — max-brightness fill on dark. |
+---
 
-### 1.2 Semantic mapping (for a UI library / MUI palette)
+## 2. Design tokens
 
-| Semantic | Token | Notes |
-|---|---|---|
-| `primary` | `green.phosphor #52F29A` | Actions, success, "承認" (approved) |
-| `secondary` | `orange.safety #F26400` | Chrome, outlines, focus, labels |
-| `error` | `red.bright #E2280F` | "否定" (denied), DANGER |
-| `warning` | `orange.safety #F26400` / crimson stripes | CAUTION / EMERGENCY |
-| `info` | `blue.balthasar #5090D0` | Pending/processing states |
-| `text.primary` | `green.phosphor` or `orange.amber` | context-dependent (data vs. log) |
-| `background.default` | `#0A0A0A` | |
-| `background.paper` | `#0A0A0A` + 1px orange border | "Paper" is a wireframe box, not a lighter gray. |
+All tokens are CSS custom properties on `:root`. They are **identical across every shipped file** — the system's biggest consistency win (0 palette drift in audit).
 
-**Key rule:** surfaces are never elevated with lighter grays or shadows. Hierarchy comes from **borders, glow, and hue** — a panel is a stroked box on black, or a solid block of phosphor color with black text punched out of it.
-
-### 1.3 The inversion pattern
-
-The most distinctive color move in the set: **states flip figure and ground.**
-- Inactive MAGI node: black fill, 1px orange outline, no text.
-- Active node: solid `#52F29A` fill, **black** text.
-- Denied vote: solid `#C20C0C` fill with black kanji, boxed in red.
-- DANGER prompt: entire screen `#E2280F`, with a black band and red display text inside it.
-
-Emulate with a `filled` vs `outlined` variant pair where `filled` uses black (`#0A0A0A`) content on a saturated fill.
-
-### 1.4 Glow
-
-Everything luminous blooms slightly (CRT phosphor). Emulate with:
+### 2.1 Color
 
 ```css
-/* text */    text-shadow: 0 0 4px currentColor, 0 0 12px color-mix(in srgb, currentColor 40%, transparent);
-/* borders */ box-shadow: 0 0 6px 0 color-mix(in srgb, var(--edge) 50%, transparent), inset 0 0 6px 0 color-mix(in srgb, var(--edge) 25%, transparent);
+:root{
+  /* surface */
+  --bg:#0A0A0A;            /* the only background; true near-black, never gray */
+  /* primary / success / active data */
+  --mint:#52F29A;         --mint-hi:#7CF4AB;   /* hi = hover/peak/glow core */
+  --green-map:#3C9C6C;    /* secondary data, dim labels, captions */
+  --green-dim:#246C3C;    /* tertiary: idle borders, tracks, disabled */
+  --paper:#EDF8D6;        /* max-brightness fill: headlines, clock chip face */
+  /* chrome */
+  --orange:#F26400;       /* CHROME: borders, rules, dividers, markers, section idx */
+  /* terminal / log */
+  --amber:#F49F09;        --amber-dim:#9C3C24;  /* dim = 2nd brightness level */
+  /* danger */
+  --red:#C20C0C;          --red-hi:#E2280F;    --crimson:#E60225; /* stripes only */
+  /* accents */
+  --teal:#0C6C80;         /* header double-bars, hardware bezel */
+  --blue:#5090D0;         /* pending / deliberating / reviewing state */
+  --blueprint:#B4B4B4;    /* optional light "blueprint" theme bg only */
+}
 ```
 
-Glow is strongest on red elements (`LIFE` badge, bar segments), moderate on orange rules, subtle on green.
+**Semantic mapping**
 
----
+| Role | Token | Notes |
+|---|---|---|
+| primary / success / online | `--mint` (hover `--mint-hi`) | actions, nominal, approved (承認) |
+| chrome / structure / focus-accent | `--orange` | all borders, rules, dividers, section numbers |
+| info / pending / in-review | `--blue` | 待機 / 審査中 states |
+| warning / caution | `--amber` | 注意, elevated priority |
+| error / critical / denied | `--red-hi` (deep `--red`) | 否認, DANGER, offline |
+| hazard stripes | `--crimson` | `repeating-linear-gradient(-45deg,…)` only |
+| terminal text | `--amber` + `--amber-dim` | two brightness levels = two hierarchy levels |
+| body / data text | `--mint` / `--green-map` | context-dependent |
+| max-bright fill | `--paper` | headlines on black, clock face |
 
-## 2. Typography
+**Glow recipe** (intensity red > orange > green; never on black-on-fill content):
+```css
+text-shadow:0 0 4px currentColor, 0 0 12px <hue>@40%;
+box-shadow:0 0 6px <edge>@50%, inset 0 0 6px <edge>@25%;
+```
 
-Four distinct type roles appear in the references:
+### 2.2 Typography
 
-| Role | In the show | Web equivalent (Google Fonts) | Treatment |
-|---|---|---|---|
-| **Display / labels** | Helvetica-style condensed grotesque, all caps ("SOLENOID GRAPH PATTERN", "BALTHASAR·2", "DANGER") | **Oswald** or **Archivo Narrow**; Helvetica Neue Condensed Bold if licensed | ALL CAPS, bold, tracking 0 to −1%, often horizontally scaled ~85–90% |
-| **Terminal / data** | Bitmap monospace (amber DOS-style logs, `FILE:MAGI_SYS`) | **Share Tech Mono** (clean) or **VT323** (bitmap feel) | All caps, colon-separated key:value pairs, letter-spacing ~0.05em |
-| **Numerals / timers** | 7-segment LED ("2:53:10") | **DSEG7 Classic** (open font) | Italic/slanted variant, orange `#F26400` on black |
-| **JP display** | Matisse EB (Mincho) — the iconic Eva typeface ("危険", "非常事態", "決議") | **Shippori Mincho B1** (weight 800) or **Zen Old Mincho** | Large, bold serif kanji used as *graphic elements*, often boxed |
+| Role | Stack (token) | Treatment |
+|---|---|---|
+| **Display** | `--cond` → `"Arial Narrow","Avenir Next Condensed","Helvetica Neue",Arial,sans-serif` | ALL CAPS, 700, tracking .02–.14em. Headlines, section titles, buttons, big numerals. Web-font target: **Oswald / Archivo Narrow**. |
+| **Body / data / UI** | `--mono` → `ui-monospace,"SF Mono",Menlo,Consolas,monospace` | ALL CAPS for chrome; sentence-case allowed for long prose (article body, form hints). Tracking .03–.08em. Target: **Share Tech Mono / VT323**. |
+| **JP display** | `--jp` → `"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif` | Weight 800, `text-transform:none`, letter-spacing .1–.5em + matching `text-indent` to re-center. Target: **Shippori Mincho B1** (≈ Eva's Matisse EB). |
+| **Numerals / clock** | 7-segment SVG polygons (not a font) | See `.timechip`; orange glow (countdown) or black-on-mint (timestamp). |
 
-Observed conventions:
-- Virtually **no lowercase anywhere**. Labels, buttons, headers, body logs: all caps.
-- Names use an interpunct: `BALTHASAR·2`, `CASPER·3`, `MELCHIOR·1`.
-- Metadata blocks are typed key/value lists: `CODE:239` / `FILE:MAGI_SYS` / `EXTENTION:4088` / `EX_MODE:OFF` / `PRIORITY:AAA` — monospace, orange or red, left-aligned, tight leading (~1.15).
-- Headlines scale enormously relative to body (the "2" on the vote card, "OPEN", "DANGER" fill their containers). Type scale is bimodal: very small (10–12px labels) and very large (48px+ display), little in between.
-- English and Japanese are paired: kanji as the big graphic, English as a small caption underneath (`内部` over "INTERNAL").
+**Scale** (bimodal — cluster at the ends): `8 / 9 / 10 / 11 / 12 / 13 / 14` (labels & data) … `18 / 22 / 26 / 34 / 40 / 60 / 72+ / clamp() hero` (display). Leading 1.1–1.2 for chrome, 1.5–1.72 for prose. `font-variant-numeric:tabular-nums` on any changing number.
 
-Suggested scale: `12 / 14 / 16 / 24 / 40 / 64+` px with condensed display at the top end and mono at the bottom.
+**Conventions:** no lowercase in UI chrome; interpunct in IDs (`VEGA·1`, `GATE·04`, `ENG-402`); `KEY:VALUE` metadata blocks (`CODE:`, `FILE:`, `EXTENTION:` — the canonical misspelling, `EX_MODE:`, `PRIORITY:`).
 
----
+### 2.3 Spacing
 
-## 3. Shape: borders, radius, corners
+Base grid `4 / 8 / 16 / 24 / 32`. Component padding: panels 12–22px, cards 9–18px, chips 2–9px, meter segment gap 3px, frame margin 14px. **Density is the point** — screens are packed; whitespace is black space used for drama (the giant-kanji hero), not for breathing room between controls.
 
-### 3.1 Border radius
+### 2.4 Borders, radius, shape
 
-| Element | Radius |
+| Token | Value |
 |---|---|
-| Default (panels, boxed labels, buttons) | **0** — hard corners dominate |
-| Bar-graph segments, badge boxes (`LIFE`, `ALERT`) | **2–6px** (slightly rounded rect / stadium ends on segments) |
-| Everything else | 0 |
+| default radius | **0** |
+| chip / stamp / segment radius | 2–4px only |
+| hairline border | 1px (connectors, label boxes, idle states) |
+| standard border | 2px (panel outlines, callouts, active emphasis) |
+| frame border | 3px + `::before` inset 1px = the signature **double frame** |
+| chamfer (hero/frame/card) | `clip-path:polygon(0 0,calc(100% - Npx) 0,100% Npx,100% 100%,Npx 100%,0 calc(100% - Npx))`, N = 10 (chip) / 16–22 (card) / 26–30 (frame) |
+| header double-rule | paired 2–3px `--teal` bars |
 
-MUI mapping: `shape.borderRadius: 0`, with a `2px` radius reserved for small "indicator" chips and meter segments.
+### 2.5 Motion
 
-### 3.2 The signature shape: chamfered panels
+| Pattern | Spec |
+|---|---|
+| blink (in-progress) | `@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}` at `1s steps(1)` (urgent `.5s`) |
+| button "selected" blink | `@keyframes btnblink{0%,74%{fill}75%,100%{invert}}` at `1s steps(1)` |
+| segment fill | 8–15 steps/sec (interval 70–160ms), whole segments |
+| teletype | rows appear in chunks, ~110–160ms/row |
+| cascade / stagger | 30–80ms per unit, row-major |
+| state snap | instant, optional 2–3 frame flicker (`visibility:hidden` 60→120ms) before settling |
+| countdown | 1s tick, blinking colons |
+| teardown | reverse cascade to black (never opacity fade) |
+| canvas redraw | ≤12fps (83ms) for hand-cranked feel |
+| easing | `linear` or `steps()` **only** |
+| reduced-motion | media query **and** JS `matchMedia` check; kill blinks/strobe/marquee, render final states |
 
-MAGI nodes are not rectangles — they're **octagons/chamfer-cut hexagons** (Balthasar's panel is a rectangle with two corners cut at 45°, Casper/Melchior are irregular clipped polygons). This is the system's signature geometry.
+### 2.6 CRT pass (mandatory, dark screens)
 
 ```css
-clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
 ```
 
-Use chamfered corners (one or two per panel, cut size ~16–32px) on feature cards; keep ordinary components square.
-
-### 3.3 Border styles
-
-- Weight: **1–2px** for wireframe boxes; **3–4px** for emphasis frames.
-- Color: `orange.safety` for structural chrome; the content's own color for semantic boxes (red box around red text: `点検中`, `審議中`).
-- **Double borders** on modals/important frames: thin outer line + thicker inner line with a small gap (see `processing.gif` outer frame).
-- **Header bars:** kanji headers sit between paired horizontal rules or on top of double teal bars (`提訴`, `決議` with `#0C6C80` double underline).
-- Boxed text is everywhere: a label = text + 1px box drawn in the same color, padding ~2–6px.
-
 ---
 
-## 4. Spacing & layout
+## 3. Component catalog
 
-- **Density is the point.** Screens are packed; margins are small (8–16px). Whitespace is black space and it's used for drama (the vote card centers a small cluster in a large void), not for breathing room between controls.
-- Grid: loose 8px base works (`4 / 8 / 16 / 24 / 32`), but alignment is often diagonal/rotated — panels tilt 3–15°, hazard stripes run 45°, the loading "gene tree" bars run at ~45° chevrons.
-- Layouts are **diagrammatic**: nodes connected by 1–2px lines (MAGI trio joined by a Y of lines to a central "MAGI" label; loading screens are literal node-link trees). Connectors are part of the design language.
-- Data blocks anchor to corners (metadata top-left, status stamp top-right/bottom-right), center stage holds the single big figure.
+Grouped atoms → forms → data display → feedback → navigation → patterns. Each notes **provenance** (source file) and, where the user gave one, a **verdict**: ✅ user-confirmed "must have / like"; ⚠️ liked with a requested change (the gallery shows the refined version).
 
----
+### 3.1 Atoms
 
-## 5. Motion
-
-The animation grammar (from the GIFs) — abrupt, mechanical, frame-quantized:
-
-| Pattern | Where seen | Emulation |
+| Component | Provenance | Notes |
 |---|---|---|
-| **Stepped fills** — meters fill segment-by-segment, no tween | bar graph, loading trees, multi-item charging | `steps(n, end)` timing or discrete segment toggling; segments appear at ~10–15/sec |
-| **Hard blink** — on/off, no fade | ALERT badges, `点検中` stamp, cursor | `animation: blink 1s steps(2, jump-none) infinite` (~1–2 Hz) |
-| **State snap** — panels flip color in one frame | council vote (outline → filled green/red) | no transition, or `transition: none`; optionally 2–3 rapid flickers before settling |
-| **Typing/teletype** — text appears in chunks | terminal logs, DELETED cascade | typewriter reveal, whole-row chunks, not per-character smoothness |
-| **Cascade** — same element repeats/propagates across a grid | DELETED wall, folder-icon grid | staggered `animation-delay` in row-major order |
-| **Countdown** | 7-seg timers | 1s ticks, no easing |
+| **Stamp / chip** | universal | `.stamp` = 1px box, radius 2px. Variants: outline (default), `.blink` (in progress), `.fill` (inverse black-on-hue); colorway via `currentColor`. |
+| **Legend** ✅ | sonnet-37 | Row of small boxed kanji+EN swatches keying every status color below it. "Must have." |
+| **Button** ✅ | exp-01 | Ghost outline default; `.primary` = mint outline + **blinking selected state** (`btnblink`); `.alt` = orange. Hover fills. Focus-visible = paper/mint outline offset. "Selected state = blinking." |
+| **7-seg clock** ✅ | exp-01 | Inline SVG hex-segment digits. Two skins: **orange countdown** (glow) and **black-on-mint timestamp chip** (`.timechip` on `--paper`). "Clock is nice." |
+| **Metadata block** | universal | Mono `KEY:VALUE`, corner-pinned, `--orange` keys / `--amber` values, leading ~1.35. |
+| **Section divider** | form-02, lp | Numbered `01` orange tab + kanji + title + gradient rule — only for real sequences. |
+| **Kanji masthead stamp** | dashboard-01, sonnet-18 | Boxed Mincho glyph + tiny EN caption as a logo/monogram. |
 
-Durations: fast (100–300ms) for state snaps; loops at 0.5–1s periods. **Never use ease-in-out spring animations** — everything is linear or stepped. Respect `prefers-reduced-motion` by keeping the final states without blink loops.
+### 3.2 Form controls (the MUI-equivalent set)
 
----
+All share: `--bg` field, 1px `--green-dim` idle border → `--mint` glow on focus; `.field.error` = red border + `.err` message; labels are kanji+EN with `.req` red asterisk and right-aligned `.hint`.
 
-## 6. Component recipes (per reference GIF)
-
-| GIF | Component | Recipe |
+| Control | Provenance | Notes |
 |---|---|---|
-| `council*.gif` | **Status card / vote panel** | Chamfered polygon; states: idle = 1px orange outline on black; approved = solid `#52F29A` fill, black condensed-caps label; denied = solid `#C20C0C` + black kanji chip; pending = `#5090D0`. Nodes joined by 1px orange connectors to a central mono label. |
-| `processing.gif` | **Modal / deliberation card** | Black bg, double orange frame, kanji headers with teal double-bars top-left/top-right, mono metadata block, giant centered numeral on a mint panel, rotated empty outline panels, blinking red boxed stamp (`審議中`). |
-| `bar graph.gif` | **Segmented meter** | Vertical stack of glowing `#E2280F` rounded-rect segments (radius ~4px, gap ~4px) over black; orange axis with tick marks; a horizontal 2px yellow-orange **threshold line** with a boxed label (`SAFETY LINE ±0`); rounded-box `LIFE` badge with heavy red glow. |
-| `2-graphs.gif` | **Comparison chart panel** | Two mirrored panels (green vs red), condensed-caps title bar, `OBJECT:` mono subtitle, orange crosshair grid `+` marks, center axis with `FIELD NEGATIVE/POSITIVE` scale. |
-| `prompt.gif` | **Danger prompt** | Full-bleed `#E2280F`; full-width black band; "DANGER" in red condensed caps inside the band; white boxed `ALERT` labels in opposite corners; boxed kanji `危険` above/below. Flashes. |
-| `prompt-error.gif` / `prompt-warning.gif` | **Caution / emergency banner** | 45° hazard chevrons red/black; horizontal red bands; small mono `CAUTION` title; or black bg + crimson `#E60225` stripe field with orange `EMERGENCY` display text and boxed kanji `非常事態`. |
-| `terminal-prompt.gif` | **Terminal / log** | Black bg, amber `#F49F09` (dim `#9C3C24`) mono text, ALL CAPS, dot-leader tables, `OK` status column, section rules from dashes. |
-| `terminal-color.gif` | **Log with destructive state** | Same terminal + rows replaced by glowing red boxed `DELETED` stamps cascading across the buffer; boxed timestamp chip (`06:00AM`) black-on-mint. |
-| `map*.gif` | **Map / radar view** | Dense `#246C3C`/`#3C9C6C` linework on black (streets = rounded-diamond city blocks), orange `#F26400` crosshair target, red boxed callouts with mono ID text (`DDG·173 KONGO`), stamped kanji plate bottom-right (`作戦行動予定図` + EN caption). |
-| `loading-animation-*.gif` | **Loading / progress trees** | Node-link tree of 45° chevron bars; green = complete, red = failed/opposing; bars pop in stepped sequence; orange connector lines; mono IDs (`A0131`, `MT-01351`) at joints; red `BORDER-LINE` diagonal warning plate. |
-| `timer*.gif` | **Countdown display** | Black plate, orange 7-seg digits (`2:53:10`), blinking colons, kanji + EN caption plates (`内部 / INTERNAL`), mode row of boxed labels (`STOP SLOW NORMAL RACING`) with active one highlighted, hazard-stripe corner accent. |
-| `2-states.gif` | **Status readout** | Black inset screen; mint `#52F29A` glowing caps text; giant single-word state (`OPEN`) with small instruction lines above/below; header/footer rules. |
-| `folder*.gif` | **File/asset grid overlay** | Repeating grid of icon+label units: mint bars with binary/mono labels + red outlined folder glyphs; red variant for alert state; semi-transparent overlay over content. |
-| `multi-item-charging?.gif` | **Distribution/fan-out diagram** | The one light-mode screen: pale gray `#B4B4B4` bg, hairline red connectors fanning from a black label chip to columns of solid red cells. Use as an optional "print/blueprint" theme variant. |
-| `modal.gif` | **Backdrop wall** | Giant green data-texture wall (map/molecule) behind silhouetted UI — i.e., background imagery is data itself; use noisy green texture as hero backdrop. |
+| **Text input** | form-01 | uppercase, mint caret, placeholder `--green-dim` |
+| **Textarea + char telemetry** | form-01 | counter `000/280`, hot(amber)/over(red) thresholds |
+| **Custom dropdown (listbox)** ✅ | form-01/02 | native `<select>` popup **replaced** with ARIA combobox + `<ul role=listbox>`; kanji-paired options; active row = mint inversion; hidden input carries value; full keyboard (↑↓/Enter/Esc); mouse-close never steals focus |
+| **Radio priority chips** | form-01 | boxed stamp chips, checked = colorway inversion; per-priority hue (routine/elevated/critical) |
+| **Checkbox** (single + inline group) | form-02 | 18px box, mint ✓ on check |
+| **Switch** | form-02 | 52×24 track, thumb slides + glows, ON/OFF text reflects |
+| **Slider** (single) | form-02 | native range restyled; `--fill` gradient track, tall thin thumb, tabular readout |
+| **Dual-thumb range** | form-02 | two stacked ranges + fill span, ordered (no crossover) |
+| **Number stepper** | form-02 | −/+ orange buttons flanking a spinner-stripped number |
+| **Segmented toggle group** | form-02 | joined buttons, checked = mint inversion, optional sub-labels |
+| **Autocomplete tag input** | form-02 | chips + typeahead `role=listbox`, Enter adds / Backspace removes |
+| **Rating** (hazard blocks) | form-02 | 5 diagonal-hatch blocks lit by colorway; used for autonomy/risk |
+| **Date / time segments** | form-02 | mono numeric cells, auto-advance, `/` and `:` separators |
+| **File dropzone** | form-02 | dashed border, kanji drop glyph, drag state, file list w/ remove |
+| **Password + reveal / input adornment** | form-02 | prefix/suffix `.fix` cells + SHOW/HIDE toggle in a shared focus ring |
+| **Readiness / progress meter** | form-02 | live segmented completion meter as a form's signature |
+| **Actions + teletype receipt** | form-01/02 | blinking primary + ghost; submit prints a dot-leader receipt and flips the header state stamp |
+
+### 3.3 Data display
+
+| Component | Provenance | Verdict / refinement |
+|---|---|---|
+| **Segmented bar meter + threshold** ✅ | sonnet-12/15, dashboard | vertical/horizontal LED segments (never continuous fill), colored per zone; a labeled threshold rule rides across. "Like this bar graph." |
+| **Gauge trio** ✅ | sonnet-32, dashboard-03, lp-01 | radial arc / horizontal bar / vertical columns — three geometries, one grammar. "Like all 3 graph cards." |
+| **Negative-space stat card** ✅ | sonnet-15 | one big value/kanji with generous black space + small caption. "Use of negative space is nice." |
+| **Line / trend chart** ⚠️ | sonnet-18 | mirrored panels + canvas polyline. **Requested:** remove the excessive `+` grid marks, richer line. Gallery version: sparse baseline dots, glowing polyline **with gradient area fill + leading dot**. |
+| **Waveform separator** ⚠️ | exp-06 → dashboard-02 | braided sinusoid band as a section separator. **Requested:** remove tetris bricks, improve wave. Canonical = the refined dashboard-02 version (edge-tapered braid, no blocks). |
+| **Scan-lattice separator** ✅ | exp-04, lp-01 | rounded-diamond street grid + orange crosshair target, used as a landing divider. "Can be a separator between sections." |
+| **Terminal / log** ✅ | sonnet-20, exp-03 | amber-on-black, two brightness levels, dash-rule section headers, dot-leader `… OK/FAIL` status column, boxed CAUTION stamp exception, blinking cursor, teletype entry. "This is what I want the terminal to look like." |
+| **Marquee** ⚠️ | sonnet-28, lp-01 | stepped horizontal ticker between red rules. "Good marquee, a bit worse than the other alerts" → keep for ambient status; prefer the alert overlay for true alarms. |
+| **Roster/unit grid + legend** ✅ | sonnet-37 | small boxed status cards in a grid, keyed by a legend; click selects → telemetry rail; OFFLINE inverts. "Must have." |
+| **OODA / pipeline stepper** | dashboard-02, wiki | chamfered nodes joined by connectors; done=mint fill, now=blinking blue. Numbered because the loop is a real sequence. |
+
+### 3.4 Feedback
+
+| Component | Provenance | Verdict |
+|---|---|---|
+| **Alert overlay / Y-N prompt** ✅ | exp-02, dashboard-01 DECIDE | full-bleed red, hazard stripes, giant EN word in a black band, boxed JP stamps, corner ALERT chips, **response footer** where the user answers (APPROVE/DENY/DEFER). Kanji intentionally off-center per the reference. "Like the evacuate & impact… like the footer." |
+| **Modal (double-frame card)** ⚠️ | exp-10, form cards, sonnet-38 | chamfered double frame, kanji+EN header, teal rule, metadata, focal content. sonnet-38 "too busy" → cap modals at one focal job, push secondary data to a rail. |
+| **Receipt / confirmation** | form-01/02 | dot-leader teletype rows appended after submit; last row is a mint fill state. |
+| **Inline validation** | forms | `.field.error` red border + directive `.err` copy. |
+
+### 3.5 Navigation
+
+| Component | Provenance | Verdict |
+|---|---|---|
+| **Sidebar nav** ✅ | dashboard-01, sonnet-34, wiki | stacked boxed items, kanji-on-top / EN-below, current = mint inversion. Left+right rails (wiki/sonnet-34). "Like the left and right sidebar." |
+| **Filter rail** ✅ | sonnet-35, dashboard-03 | scope buttons that **dim** non-matching rows (grayscale + opacity) rather than removing them. "Like the filter functionality." |
+| **Breadcrumb** | wiki | `A › B › here`, orange separators, mint current. |
+| **TOC scroll-spy** | wiki | sticky right-rail list, active section highlighted via IntersectionObserver. |
+| **Top nav + clock** | lp-01 | sticky orange-ruled bar, diamond brand mark, blinking-colon clock, integrity stat chip. |
+| **Wikilink + preview card** | wiki | `[[LINK]]` inline buttons with hover/focus popcards; the knowledge-view signature. |
+
+### 3.6 Structural patterns
+
+| Pattern | Provenance | Notes |
+|---|---|---|
+| **Frame shell** | dashboard-0{1,2,3}, sonnet-34 | one chamfered double-frame per screen; internal zones divided by 1px rules, **not** separate floating panels. `grid-template-areas` layout. |
+| **Panel / card** | exp-01, universal | black fill + 1–2px orange border + faint inset glow; hero cards chamfer 1–2 corners. Never elevation. |
+| **Dashboard tile** | dashboard-03 | titled zone (`.zone-title` orange, green-dim underline) holding a meter/list/feed. |
+| **Hazard alarm frame** | sonnet-34, dashboard-03 | `frame[data-mode=alert]` swaps border to red + hazard strip when any child is critical. |
 
 ---
 
-## 7. MUI theme skeleton
+## 4. Audit summary
 
-```ts
-import { createTheme } from '@mui/material/styles';
+**Files reviewed:** 8 pages + 34 experiments + 23 references · **Palette drift:** 0 (tokens identical everywhere) · **Score: 92/100.**
 
-export const nervTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    background: { default: '#0A0A0A', paper: '#0A0A0A' },
-    primary:   { main: '#52F29A', light: '#7CF4AB', dark: '#3C9C6C', contrastText: '#0A0A0A' },
-    secondary: { main: '#F26400', contrastText: '#0A0A0A' },
-    error:     { main: '#E2280F', dark: '#C20C0C', contrastText: '#0A0A0A' },
-    warning:   { main: '#F26400', dark: '#E60225', contrastText: '#0A0A0A' },
-    info:      { main: '#5090D0', contrastText: '#0A0A0A' },
-    success:   { main: '#52F29A', contrastText: '#0A0A0A' },
-    text: { primary: '#52F29A', secondary: '#F49F09', disabled: '#246C3C' },
-    divider: '#F26400',
-  },
-  shape: { borderRadius: 0 },
-  typography: {
-    fontFamily: '"Share Tech Mono", monospace',
-    h1: { fontFamily: '"Oswald", sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '-0.01em' },
-    // h2–h6 likewise; body/caption stay mono, uppercase for labels
-    button: { fontFamily: '"Oswald", sans-serif', fontWeight: 600, textTransform: 'uppercase' },
-  },
-  transitions: {
-    // state snaps: near-zero durations
-    duration: { shortest: 50, shorter: 80, short: 100, standard: 120, complex: 150, enteringScreen: 100, leavingScreen: 80 },
-    easing: { easeInOut: 'steps(3, end)', easeOut: 'linear', easeIn: 'linear', sharp: 'linear' },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          border: '1px solid #F26400',
-          boxShadow: '0 0 6px rgba(242,100,0,0.4), inset 0 0 6px rgba(242,100,0,0.15)',
-        },
-      },
-    },
-    MuiButton: { styleOverrides: { root: { borderRadius: 0 } } },
-    MuiChip:   { styleOverrides: { root: { borderRadius: 2 } } },
-  },
-});
-```
+### Consistency wins
+- Token block copy-pasted verbatim across all files — zero hardcoded-hex drift in shipped pages.
+- `.stamp`, `.blink`, CRT pass, zero-size-viewport guard, and `prefers-reduced-motion` handling appear in every file.
+- form-01/02 controls already reuse one field/error/label grammar.
 
-Fonts to load: `Oswald` (or Archivo Narrow), `Share Tech Mono` (or VT323), `DSEG7 Classic`, `Shippori Mincho B1`.
+### Issues found → recommendations
+| Issue | Where | Recommendation |
+|---|---|---|
+| `.blink` name collision | wiki uses `.blink` for a *backlink card*; everywhere else `.blink` = the **animation**. | Rename backlink card to `.backlink`. |
+| Two clock implementations | dashboard-01 (orange 7-seg) vs dashboard-02/03 (black-on-mint chip) | Both are valid **skins** of one component — document as `timechip[data-skin]`, share the SVG factory. |
+| Line chart `+` grid too dense; line too plain | sonnet-18 | Ship the refined version (sparse marks + area-fill glow) — done in gallery. |
+| Wave "tetris bricks" | exp-06 | Removed in dashboard-02 refined wave — make that the canonical separator. |
+| Modal busyness | sonnet-38 | Cap modals at one focal job. |
+| Marquee vs alert overload | sonnet-28 | Marquee = ambient status only; true alarms use the overlay. |
+| Light "document" theme orphaned | sonnet-17 | User confirmed it clashes (reads dark-mode-only). Keep the system **dark-only** unless a `--blueprint` variant is formally specced. |
+
+### Priority actions
+1. Extract the shared shell (frame + sidebar + clock + terminal + tokens) into one `nerv.css` + `nerv.js` so pages stop copy-pasting ~200 lines each.
+2. Canonicalize the two clock skins and the refined wave/line-chart into that shared layer.
+3. Rename the wiki `.blink` backlink to remove the animation-name collision.
 
 ---
 
-## 8. Do / Don't
+## 5. Do / Don't
 
 | ✅ Do | ❌ Don't |
 |---|---|
-| Black background everywhere; hierarchy via border + glow + hue | Gray elevation surfaces, soft drop shadows |
-| ALL CAPS condensed labels, mono key:value metadata | Lowercase UI copy, humanist body text |
-| Solid color fills with black text for active states | Tinted/translucent hover states |
-| Hard corners; chamfer one or two corners on hero panels | Global 8–12px rounded corners, pill buttons |
-| Stepped/instant animation, hard blinks | Eased springs, fades, blurs |
-| Boxed text stamps (label inside a 1px same-color box) | Floating unboxed badges |
-| Pair kanji display type with small EN captions | Kanji as untranslated decoration in functional UI |
-| Diagonal energy: rotated plates, 45° chevrons, hazard stripes | Everything axis-aligned and static |
+| Black bg; hierarchy from border + glow + hue | Gray elevation surfaces, soft drop shadows |
+| ALL-CAPS condensed display + mono data | Lowercase UI chrome, humanist body for controls |
+| Solid hue fill + black content for active/selected | Tinted/translucent hover-active states |
+| Box every status word; blink = in-progress | Floating unboxed badges |
+| Pair kanji with a small EN caption | Untranslated kanji as decoration |
+| Stepped/instant motion, hard blinks | Eased springs, fades, blurred transitions |
+| Number only real sequences | Decorative 01/02/03 markers |
+| One signature element per screen | Maximalism everywhere (see sonnet-38) |
+| Respect reduced-motion; keep final states | Motion that hides information when stilled |
+| Reuse the token block verbatim | New hex values per component |
+
+---
+
+## 6. File provenance map
+
+| Deliverable pattern | Canonical source |
+|---|---|
+| tokens, CRT, stamp, blink | any shipped page (identical) |
+| frame shell + zones | `dashboard-03.html`, `experiment-sonnet-34.html` |
+| header + orange 7-seg clock | `dashboard-01.html`, `experiment-01.html` |
+| black-on-mint clock chip | `dashboard-02.html` |
+| full form-control set | `form-02.html` (superset of `form-01.html`) |
+| terminal | `experiment-sonnet-20.html` |
+| gauge trio | `experiment-sonnet-32.html`, `dashboard-03.html` |
+| segmented meter + threshold | `experiment-sonnet-12.html`, `dashboard-01.html` |
+| line/trend chart | `experiment-sonnet-18.html` (refine) |
+| wave separator | `dashboard-02.html` (refined exp-06) |
+| scan-lattice separator | `experiment-04.html`, `landing-page-01.html` |
+| roster grid + legend | `experiment-sonnet-37.html` |
+| filter rail | `experiment-sonnet-35.html` |
+| alert / Y-N prompt | `experiment-02.html`, `dashboard-01.html` |
+| marquee | `experiment-sonnet-28.html` |
+| sidebar (L/R rails) | `experiment-sonnet-34.html`, `wiki.html` |
+| wikilink + preview | `wiki.html` |
+
+Live, browsable render of all of the above: **[design-system.html](design-system.html)**.
