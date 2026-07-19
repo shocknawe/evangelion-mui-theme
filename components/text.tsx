@@ -301,3 +301,50 @@ export function SectionHeading({ index, children, note, sx }: SectionHeadingProp
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* DossierSheet — a spec/dossier block: teal-ruled heading · KEY/VALUE rows ·
+   signature footer, with an optional rotated watermark stamp. */
+
+export interface DossierSheetProps {
+  /** Heading (e.g. `JAIRUS_OS · CORE v2.4.0 — OPERATOR DOSSIER`). */
+  title: ReactNode;
+  /** Key/value spec rows. Values may be rich (bold via `<b>`). */
+  rows: Array<[ReactNode, ReactNode]>;
+  /** Rotated corner watermark (e.g. `PRELIMINARY`). */
+  watermark?: ReactNode;
+  /** Signature footer: two ruled lines + a stamp. */
+  signature?: { left: ReactNode; right: ReactNode; stamp: ReactNode };
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A dossier / deployment-spec block: a mint heading over a teal double-rule, a
+ * grid of KEY/VALUE rows on dashed separators, and an optional signature footer —
+ * plus an optional rotated red watermark (`PRELIMINARY`). The editorial "official
+ * document" surface.
+ */
+export function DossierSheet({ title, rows, watermark, signature, sx }: DossierSheetProps) {
+  return (
+    <Box sx={[(t) => ({ border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '26px 30px', position: 'relative', overflow: 'hidden' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+      {watermark && (
+        <Box component="span" sx={(t) => ({ position: 'absolute', top: 14, right: -2, transform: 'rotate(4deg)', border: `2px solid ${t.nerv.hue.redHi}`, color: t.nerv.hue.redHi, fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 13, p: '3px 12px', letterSpacing: '0.14em', opacity: 0.85 })}>{watermark}</Box>
+      )}
+      <Box sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 20, color: t.nerv.hue.mintHi, letterSpacing: '0.03em', borderBottom: `2px solid ${t.nerv.hue.teal}`, pb: 1.25, mb: 0.75 })}>{title}</Box>
+      <Box sx={(t) => ({ borderBottom: `2px solid ${t.nerv.hue.teal}`, width: '60%', height: 2, mb: 2.25 })} />
+      {rows.map(([k, v], i) => (
+        <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '170px 1fr', gap: 1.25, fontSize: 11, py: '7px', borderBottom: '1px dashed rgba(60,156,108,.25)', textTransform: 'none' }}>
+          <Box component="span" sx={(t) => ({ color: t.nerv.hue.orange, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 10, fontFamily: t.nerv.fonts.mono })}>{k}</Box>
+          <Box component="span" sx={(t) => ({ color: t.nerv.hue.mint, opacity: 0.85, fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } })}>{v}</Box>
+        </Box>
+      ))}
+      {signature && (
+        <Box sx={{ mt: 2.75, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2.5 }}>
+          <Box sx={(t) => ({ flex: 1, borderTop: `1px solid ${t.nerv.hue.greenMap}`, pt: 0.75, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono })}>{signature.left}</Box>
+          <Box sx={(t) => ({ flex: 1, borderTop: `1px solid ${t.nerv.hue.greenMap}`, pt: 0.75, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono })}>{signature.right}</Box>
+          <Box component="span" sx={(t) => ({ border: `1px solid ${t.nerv.hue.mint}`, color: t.nerv.hue.mint, fontSize: 10, p: '4px 10px', letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono })}>{signature.stamp}</Box>
+        </Box>
+      )}
+    </Box>
+  );
+}

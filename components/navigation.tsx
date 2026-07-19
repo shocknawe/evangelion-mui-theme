@@ -245,6 +245,41 @@ export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed
 }
 
 /* ------------------------------------------------------------------ */
+/* Brand — the diamond mark + wordmark + version lockup. */
+
+export interface BrandProps {
+  /** Wordmark (e.g. `JAIRUS_OS`). */
+  name: ReactNode;
+  /** Version / tag (orange chrome). */
+  version?: ReactNode;
+  /** `md` (nav bars) or `sm` (rails). @default 'md' */
+  size?: 'sm' | 'md';
+  /** Put the version on its own line under the wordmark. @default false (inline) */
+  stackVersion?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * The Jairus OS brand lockup: a glowing mint diamond mark, the wordmark in
+ * condensed caps, and an optional orange version tag (inline or stacked). The
+ * shared masthead mark for the site header and the app-shell rails.
+ */
+export function Brand({ name, version, size = 'md', stackVersion = false, sx }: BrandProps) {
+  const mk = size === 'sm' ? 15 : 16;
+  const word = size === 'sm' ? 18 : 20;
+  return (
+    <Box sx={[{ display: 'flex', flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
+        <Box sx={(t) => ({ width: mk, height: mk, flex: 'none', background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
+        <Box component="b" sx={(t) => ({ fontSize: word, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
+        {version && !stackVersion && <Box component="span" sx={(t) => ({ ml: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
+      </Box>
+      {version && stackVersion && <Box component="span" sx={(t) => ({ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', pl: '22px', mt: '2px' })}>{version}</Box>}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* SiteHeader — a sticky brand nav bar for landing / marketing pages. */
 
 export interface SiteHeaderLink {
@@ -299,11 +334,7 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
       ]}
     >
       <Box sx={{ maxWidth, mx: 'auto', px: 3, height: 60, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
-          <Box sx={(t) => ({ width: 16, height: 16, background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
-          <Box component="b" sx={(t) => ({ fontSize: 20, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
-          {version && <Box component="span" sx={(t) => ({ fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
-        </Box>
+        <Brand name={name} version={version} />
         {links.length > 0 && (
           <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', fontSize: 11, letterSpacing: '0.12em' }}>
             {links.map((l) => (

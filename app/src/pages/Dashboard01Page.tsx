@@ -20,6 +20,7 @@ import {
   StatusLegend,
   BilingualLabel,
   Stat,
+  Stamp,
   ProgressMeter,
   ZoneTitle,
   GateRow,
@@ -94,21 +95,7 @@ export function Dashboard01Page() {
         </Box>
       </Box>
       <MetadataBlock sx={{ ml: 'auto', textAlign: 'right' }} entries={{ CODE: '0902', FILE: 'MORNING_BRIEF', EX_MODE: 'MANUAL', PRIORITY: 'AA-' }} />
-      <Box
-        component="span"
-        sx={{
-          flex: 'none',
-          border: `1px solid ${caution ? t.nerv.hue.amber : t.nerv.hue.mint}`,
-          color: caution ? t.nerv.hue.amber : t.nerv.hue.mint,
-          borderRadius: `${t.nerv.radius.chip}px`,
-          p: '2px 8px',
-          fontSize: 11,
-          fontFamily: t.nerv.fonts.mono,
-          textShadow: '0 0 4px currentColor',
-        }}
-      >
-        {caution ? 'SYS:CAUTION' : 'SYS:NOMINAL'}
-      </Box>
+      <Stamp tone={caution ? 'amber' : 'mint'} glow>{caution ? 'SYS:CAUTION' : 'SYS:NOMINAL'}</Stamp>
       <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 3 }}>
         <HealthColumns />
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
@@ -202,7 +189,7 @@ export function Dashboard01Page() {
               <Typography variant="h2" sx={{ fontSize: 21, color: t.nerv.hue.paper, letterSpacing: '0.02em' }}>
                 ARCHITECTURE REFACTOR: NEURAL PIPELINE V3
               </Typography>
-              <Box component="span" sx={{ flex: 'none', border: `1px solid ${t.nerv.hue.orange}`, color: t.nerv.hue.orange, borderRadius: `${t.nerv.radius.chip}px`, p: '2px 8px', fontSize: 11, fontFamily: t.nerv.fonts.mono }}>JRS·902</Box>
+              <Stamp tone="orange">JRS·902</Stamp>
             </Box>
             <Box sx={{ my: 1.5 }}>
               <ProgressMeter value={68} threshold={{ pct: 80, label: 'REVIEW GATE · 80' }} readout="REVIEW OPENS AT 80% · ETA NOON SYNC" />

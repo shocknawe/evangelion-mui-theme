@@ -23,6 +23,8 @@ import {
   FilterChips,
   LogConsole,
   SevenSegClock,
+  Stamp,
+  AgentDot,
   useReducedMotion,
   pad2,
   type LogRow,
@@ -194,7 +196,6 @@ export function Dashboard03Page() {
   };
 
   /* ---- header ---- */
-  const engineTone = paused ? t.nerv.hue.amber : t.nerv.hue.mint;
   const header = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.25, height: '100%', p: '10px 22px' }}>
       <Box sx={{ minWidth: 0 }}>
@@ -205,20 +206,7 @@ export function Dashboard03Page() {
           AUTOMATION CENTRAL
         </Typography>
       </Box>
-      <Box
-        component="span"
-        sx={{
-          border: `1px solid ${engineTone}`,
-          color: engineTone,
-          borderRadius: `${t.nerv.radius.chip}px`,
-          p: '2px 8px',
-          fontSize: 11,
-          fontFamily: t.nerv.fonts.mono,
-          animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite`,
-        }}
-      >
-        ● {paused ? 'ENGINE PAUSED' : 'ENGINE ACTIVE'}
-      </Box>
+      <Stamp tone={paused ? 'amber' : 'mint'} blink>● {paused ? 'ENGINE PAUSED' : 'ENGINE ACTIVE'}</Stamp>
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Button variant="outlined" size="small" onClick={togglePause}>{paused ? 'RESUME ALL' : 'PAUSE ALL'}</Button>
         <Button variant="contained" className="nerv-live" size="small" onClick={forceReload}>FORCE RELOAD</Button>
@@ -257,12 +245,7 @@ export function Dashboard03Page() {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, px: '22px', height: '100%', fontSize: 10, letterSpacing: '0.1em', color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
       {[0, 1, 2].map((i) => {
         const on = busy === i;
-        return (
-          <Box key={i} component="span" sx={{ display: 'flex', alignItems: 'center', color: on ? t.nerv.hue.amber : 'inherit' }}>
-            <Box component="i" sx={{ width: 7, height: 7, borderRadius: '50%', background: on ? t.nerv.hue.amber : t.nerv.hue.mint, mr: '6px' }} />
-            AGENT·0{i + 1}: {on ? 'BUSY' : 'NOMINAL'}
-          </Box>
-        );
+        return <AgentDot key={i} busy={on}>AGENT·0{i + 1}: {on ? 'BUSY' : 'NOMINAL'}</AgentDot>;
       })}
       <Box sx={{ flex: 1 }} />
       <Box component="span">CPU: <Box component="b" sx={{ color: t.nerv.hue.mint, fontWeight: 400 }}>{cpu}</Box></Box>

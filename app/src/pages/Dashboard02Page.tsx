@@ -16,8 +16,8 @@ import {
   SevenSegClock,
   ZoneTitle,
   RecallNote,
-  StepFlow,
-  SegmentBar,
+  TaskCard,
+  Stamp,
   StatusLegend,
   AgentCard,
   LogConsole,
@@ -28,14 +28,6 @@ import {
   type LogTag,
 } from '@components';
 import { navigate } from '../lib/router';
-
-const OODA = [
-  { short: 'OBS', label: 'OBSERVE' },
-  { short: 'UND', label: 'UNDERSTAND' },
-  { short: 'DEC', label: 'DECIDE' },
-  { short: 'EXE', label: 'EXECUTE' },
-  { short: 'LRN', label: 'LEARN' },
-];
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const nowts = () => {
@@ -149,7 +141,7 @@ export function Dashboard02Page() {
           NEURAL PIPELINE V3
         </Typography>
       </Box>
-      <Box component="span" sx={{ border: `1px solid ${t.nerv.hue.mint}`, color: t.nerv.hue.mint, borderRadius: `${t.nerv.radius.chip}px`, p: '2px 8px', fontSize: 11, fontFamily: t.nerv.fonts.mono }}>[ ACTIVE_SPRINT ]</Box>
+      <Stamp tone="mint">[ ACTIVE_SPRINT ]</Stamp>
       <Box component="span" sx={{ fontSize: 10, letterSpacing: '0.12em', color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mint, fontWeight: 400 } }}>
         UPTIME <b>{uptimeStr}</b> · <b>98.2%</b>
       </Box>
@@ -203,7 +195,7 @@ export function Dashboard02Page() {
           <Box component="section">
             <ZoneTitle aside={<Box component="span" sx={{ color: t.nerv.hue.mint }}>{zoneAside}</Box>}>LOOP SYNCHRONIZER · 環</ZoneTitle>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Task
+              <TaskCard
                 id="TASK·882"
                 title="OPTIMIZE LATENCY — REFACTOR POSTGRES CONNECTION POOL LOGIC"
                 active={archApproved ? 3 : 2}
@@ -214,12 +206,12 @@ export function Dashboard02Page() {
                   </Button>
                 }
               />
-              <Task
+              <TaskCard
                 id="TASK·884"
                 title="CI/CD MIGRATION — PORT GITHUB ACTIONS TO BUN-BASED RUNNERS"
                 active={0}
                 pct={8}
-                action={<Box component="span" sx={{ border: `1px solid ${t.nerv.hue.amber}`, color: t.nerv.hue.amber, borderRadius: `${t.nerv.radius.chip}px`, p: '2px 8px', fontSize: 11, whiteSpace: 'nowrap', fontFamily: t.nerv.fonts.mono }}>[ GATE: START ]</Box>}
+                action={<Stamp tone="amber">[ GATE: START ]</Stamp>}
               />
             </Box>
           </Box>
@@ -260,23 +252,3 @@ export function Dashboard02Page() {
   );
 }
 
-/* A loop-synchronizer task card: id · title · action, an OODA stepper, and a
-   progress row. Local to this screen's composition. */
-function Task({ id, title, active, pct, action }: { id: string; title: string; active: number; pct: number; action: React.ReactNode }) {
-  const t = useTheme();
-  return (
-    <Box sx={{ border: `1px solid ${t.nerv.hue.greenDim}`, p: '10px 14px' }}>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
-        <Box component="span" sx={{ color: t.nerv.hue.amber, fontSize: 11, whiteSpace: 'nowrap', fontFamily: t.nerv.fonts.mono }}>{id}</Box>
-        <Box component="span" sx={{ color: t.nerv.hue.paper, fontSize: 13, fontFamily: t.nerv.fonts.mono }}>{title}</Box>
-        <Box sx={{ ml: 'auto' }}>{action}</Box>
-      </Box>
-      <StepFlow sx={{ mt: 1.5 }} active={active} steps={OODA} />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mt: 1.25, fontSize: 10, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
-        <span>PROGRESS</span>
-        <SegmentBar value={pct} />
-        <Box component="b" sx={{ color: t.nerv.hue.mint, fontWeight: 400 }}>{pct}%</Box>
-      </Box>
-    </Box>
-  );
-}

@@ -353,3 +353,42 @@ export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', s
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* TelemetryCard — a bordered telemetry panel (title/type header · body · foot). */
+
+export interface TelemetryCardProps {
+  /** Left header caption (e.g. `◐ VAULT RETENTION`). */
+  title: ReactNode;
+  /** Right header tag (e.g. `ARC` / `BAR` / `COL`). */
+  type?: ReactNode;
+  /** The gauge / body content. */
+  children: ReactNode;
+  /** Two-slot footer row (left, right) in dim green. */
+  foot?: [ReactNode, ReactNode];
+  /** Border hue. @default 'orange' */
+  tone?: Tone;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A bordered telemetry panel: an orange header (title left, type tag right) over
+ * a hairline rule, the gauge body, and an optional two-slot footer. The card
+ * shell for a landing-page metric — drop a {@link RadialGauge}, {@link SegmentBar},
+ * or {@link LedColumn} row inside.
+ */
+export function TelemetryCard({ title, type, children, foot, tone = 'orange', sx }: TelemetryCardProps) {
+  return (
+    <Box sx={[(t) => ({ border: `1px solid ${toneHue(t, tone)}`, background: t.nerv.hue.void, p: '18px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={(t) => ({ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.1em', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 1, mb: 2, fontFamily: t.nerv.fonts.mono })}>
+        <span>{title}</span>{type != null && <span>{type}</span>}
+      </Box>
+      {children}
+      {foot && (
+        <Box sx={(t) => ({ mt: 1.75, fontSize: 9, color: t.nerv.hue.greenMap, display: 'flex', justifyContent: 'space-between', fontFamily: t.nerv.fonts.mono })}>
+          <span>{foot[0]}</span><span>{foot[1]}</span>
+        </Box>
+      )}
+    </Box>
+  );
+}

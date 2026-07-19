@@ -46,6 +46,37 @@ function useNow() {
   return { now, tick };
 }
 
+/* ------------------------------------------------------------------ */
+/* DigitalClock — a plain mono HH:MM:SS readout with blinking colons. */
+
+export interface DigitalClockProps {
+  /** Text hue. @default 'orange' */
+  tone?: 'orange' | 'mint';
+  /** Font size (px). @default 20 */
+  size?: number;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A lightweight tabular-numeral wall clock (`HH:MM:SS`) with 1 Hz blinking
+ * colons — the header/nav clock. For the seven-segment skins use
+ * {@link SevenSegClock}.
+ */
+export function DigitalClock({ tone = 'orange', size = 20, sx }: DigitalClockProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const { now } = useNow();
+  const c = tone === 'mint' ? t.nerv.hue.mint : t.nerv.hue.orange;
+  const colon = (
+    <Box component="span" sx={{ animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }}>:</Box>
+  );
+  return (
+    <Box aria-label="system clock" sx={[{ fontVariantNumeric: 'tabular-nums', fontSize: size, color: c, textShadow: `0 0 6px ${tone === 'mint' ? 'rgba(82,242,154,.6)' : 'rgba(242,100,0,.7)'}`, letterSpacing: '0.06em', fontFamily: t.nerv.fonts.mono }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      {pad2(now.getHours())}{colon}{pad2(now.getMinutes())}{colon}{pad2(now.getSeconds())}
+    </Box>
+  );
+}
+
 export interface SevenSegClockProps {
   /** Which skins to render. @default 'both' */
   variant?: 'both' | 'chip' | 'countdown';

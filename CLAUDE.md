@@ -79,17 +79,20 @@ import { theme } from './theme';
 Reusable console-specific React components live in
 [`components/`](components/) — see [`components/README.md`](components/README.md).
 They pair with the theme (all read `theme.nerv.*`; none hardcode off-token) and
-cover the pieces MUI has no equivalent for — text (`BilingualLabel`,
-`MetadataBlock`, `SectionDivider`, `SectionHeading`, `FieldLabel`), layout
-(`ConsoleFrame`, `ZoneTitle`, `Monogram`, `Stat`, `GaugeCard`), status
-(`StatusLegend`, `Roster`, `StatTile`, `RailItem`, `GateRow`, `AgentCard`,
-`RecallNote`, `SinkRow`, `RoutineRow`, `ModuleCard`, `MemoryRow`), inputs (`ChipRadioGroup`,
-`NumberStepper`, `HazardRating`, `TagInput`, `DateSegments`), nav (`FilterChips`,
-`FilterRail`, `WikiLink`, `ConsoleNav`, `SiteHeader`), feedback (`HazardPrompt`,
-`GateDecisionDialog`, `ApprovalBar`), and data-viz (`SegmentedMeter`,
+cover the pieces MUI has no equivalent for — the `Stamp` atom, text
+(`BilingualLabel`, `MetadataBlock`, `SectionDivider`, `SectionHeading`,
+`DossierSheet`, `FieldLabel`), layout (`ConsoleFrame`, `ZoneTitle`, `Monogram`,
+`Stat`, `GaugeCard`, `TelemetryCard`), flow (`StepFlow`, `AgenticLoop`,
+`TaskCard`), status (`StatusLegend`, `Roster`, `StatTile`, `RailItem`, `GateRow`,
+`AgentCard`, `RecallNote`, `SinkRow`, `RoutineRow`, `ModuleCard`, `MemoryRow`,
+`AgentDot`), inputs (`ChipRadioGroup`, `NumberStepper`, `HazardRating`,
+`TagInput`, `DateSegments`), nav (`FilterChips`, `FilterRail`, `WikiLink`,
+`ConsoleNav`, `SiteHeader`, `Brand`), feedback (`HazardPrompt`,
+`GateDecisionDialog`, `ApprovalBar`, `YesNoGate`), and data-viz (`SegmentedMeter`,
 `RadialGauge`, `BarColumnGauge`, `ProgressMeter`, `SegmentBar`, `LedColumn`,
-`HealthColumns`, `Terminal`, `LogConsole`, `SevenSegClock`, `Marquee`,
-`LineChart`, `Waveform`, `ScanLattice`). The `app/` design-system page imports
+`MeterBar`, `HealthColumns`, `Terminal`, `LogConsole`, `SevenSegClock`,
+`DigitalClock`, `Marquee`, `LineChart`, `Waveform`, `ScanLattice`). The `app/`
+design-system page imports
 them from `@components` and doubles as live usage examples; `app/`'s
 `/dashboard-0{1,2,3}` and `/landing-0{1,2}` routes assemble them into full screens
 (ported from the matching `sample-layouts/*.html`). Prefer these (and stock MUI

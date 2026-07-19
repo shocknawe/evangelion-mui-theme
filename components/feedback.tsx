@@ -217,6 +217,69 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
 }
 
 /* ------------------------------------------------------------------ */
+/* YesNoGate — a large marketing Y/N decision with a response line. */
+
+export interface YesNoGateProps {
+  /** Yes button text. @default 'YES' */
+  yesLabel?: string;
+  /** No button text. @default 'NO' */
+  noLabel?: string;
+  /** Response shown after choosing YES. */
+  yesResponse?: React.ReactNode;
+  /** Response shown after choosing NO. */
+  noResponse?: React.ReactNode;
+  /** Fired with the chosen answer. */
+  onDecide?: (answer: 'yes' | 'no') => void;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A big Y/N call-to-action gate: a mint YES beside a red NO (each fills on hover
+ * or once chosen), with an aria-live response line beneath. Self-contained — pass
+ * the two response messages; it tracks the selection.
+ *
+ * @example
+ * <YesNoGate yesResponse="◉ ACCEPTED" noResponse="✕ DEFERRED" onDecide={track} />
+ */
+export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, sx }: YesNoGateProps) {
+  const [sel, setSel] = useState<'yes' | 'no' | null>(null);
+  const choose = (a: 'yes' | 'no') => { setSel(a); onDecide?.(a); };
+
+  const btn = (kind: 'yes' | 'no') => (t: Theme) => {
+    const c = kind === 'yes' ? t.nerv.hue.mint : t.nerv.hue.redHi;
+    const glow = kind === 'yes' ? 'rgba(82,242,154,.5)' : 'rgba(226,40,15,.5)';
+    const on = sel === kind;
+    return {
+      fontFamily: t.nerv.fonts.display,
+      fontWeight: 700,
+      fontSize: 22,
+      letterSpacing: '0.1em',
+      p: '14px 46px',
+      cursor: 'pointer',
+      background: on ? c : 'transparent',
+      color: on ? t.nerv.hue.void : c,
+      border: `2px solid ${c}`,
+      boxShadow: on ? `0 0 16px ${glow}` : 'none',
+      '&:hover': { background: c, color: t.nerv.hue.void, boxShadow: `0 0 16px ${glow}` },
+      '&:focus-visible': { outline: `2px solid ${t.nerv.hue.paper}`, outlineOffset: 3 },
+    };
+  };
+
+  return (
+    <Box sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box role="group" aria-label="decision" sx={{ display: 'flex', gap: 2 }}>
+        <Box component="button" type="button" aria-pressed={sel === 'yes'} onClick={() => choose('yes')} sx={btn('yes')}>{yesLabel}</Box>
+        <Box component="button" type="button" aria-pressed={sel === 'no'} onClick={() => choose('no')} sx={btn('no')}>{noLabel}</Box>
+      </Box>
+      <Box aria-live="polite" sx={(t) => ({ mt: 2.5, fontSize: 12, letterSpacing: '0.1em', minHeight: 18, color: sel === 'no' ? t.nerv.hue.redHi : t.nerv.hue.amber, fontFamily: t.nerv.fonts.mono })}>
+        {sel === 'yes' && yesResponse}
+        {sel === 'no' && noResponse}
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* ApprovalBar — an inline human-in-the-loop gate (approve / deny). */
 
 export interface ApprovalBarProps {

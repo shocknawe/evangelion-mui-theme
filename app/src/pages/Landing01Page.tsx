@@ -20,9 +20,13 @@ import {
   RadialGauge,
   SegmentBar,
   LedColumn,
+  TelemetryCard,
+  YesNoGate,
+  DigitalClock,
+  Stamp,
+  AgentDot,
   useReducedMotion,
   toneHue,
-  pad2,
   type TerminalRow,
   type Tone,
 } from '@components';
@@ -88,7 +92,6 @@ export function Landing01Page() {
   const [load, setLoad] = useState(42);
   const [cols, setCols] = useState<number[]>([4, 6, 5, 7, 6, 8]);
   const [tput, setTput] = useState('1.4K/S');
-  const [decision, setDecision] = useState<'y' | 'n' | null>(null);
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
 
@@ -113,10 +116,8 @@ export function Landing01Page() {
         links={NAV_LINKS}
         actions={
           <>
-            <Clock />
-            <Box component="span" sx={{ border: `1px solid ${t.nerv.hue.mint}`, color: t.nerv.hue.mint, fontSize: 10, p: '3px 8px', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-              ◉ INTEGRITY: NOMINAL
-            </Box>
+            <DigitalClock sx={{ display: { xs: 'none', sm: 'block' } }} />
+            <Stamp tone="mint">◉ INTEGRITY: NOMINAL</Stamp>
           </>
         }
       />
@@ -184,20 +185,20 @@ export function Landing01Page() {
       <Box component="section" id="telemetry" sx={{ ...WRAP, py: 8.25 }}>
         <SectionHeading index="02" note="LIVE · 1HZ">SYSTEM TELEMETRY</SectionHeading>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.25, mt: 3.5 }}>
-          <Gcard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
+          <TelemetryCard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 0.75 }}>
               <RadialGauge value={98.4} label="HELD" size={150} animated={false} />
             </Box>
             <GLabel>MEMORY HELD ACROSS 2,482 NODES</GLabel>
-          </Gcard>
+          </TelemetryCard>
 
-          <Gcard title="▮ ENGINE LOAD" type="BAR" foot={['CEILING 80%', loadState]}>
+          <TelemetryCard title="▮ ENGINE LOAD" type="BAR" foot={['CEILING 80%', loadState]}>
             <GVal>{Math.round(load)}%</GVal>
             <GLabel>AGENT COMPUTE · 4 CORES</GLabel>
             <SegmentBar value={load} tone={load > 80 ? 'amber' : 'mint'} segments={20} height={26} sx={{ my: 1 }} />
-          </Gcard>
+          </TelemetryCard>
 
-          <Gcard title="▊ THROUGHPUT" type="COL" foot={['WINDOW 6', 'RISING']}>
+          <TelemetryCard title="▊ THROUGHPUT" type="COL" foot={['WINDOW 6', 'RISING']}>
             <Box sx={{ display: 'flex', gap: 1, height: 120, alignItems: 'flex-end', my: 0.75 }}>
               {cols.map((v, i) => (
                 <LedColumn key={i} value={v * 10} segments={10} tone="mint" height={120} sx={{ flex: 1, width: 'auto', minWidth: 0 }} />
@@ -205,7 +206,7 @@ export function Landing01Page() {
             </Box>
             <GVal sx={{ fontSize: 24 }}>{tput}</GVal>
             <GLabel>TICKETS INGESTED PER CYCLE</GLabel>
-          </Gcard>
+          </TelemetryCard>
         </Box>
       </Box>
 
@@ -236,23 +237,20 @@ export function Landing01Page() {
           <Box component="p" sx={{ fontSize: 13, color: t.nerv.hue.mint, opacity: 0.75, textTransform: 'none', mt: 1.75, mb: 0, maxWidth: '52ch' }}>
             One operator. Every system. Approve the first gate and the console initializes — no card required for the pilot.
           </Box>
-          <Box role="group" aria-label="deploy decision" sx={{ display: 'flex', gap: 2, mt: 3.75 }}>
-            <YNButton kind="y" selected={decision === 'y'} onClick={() => setDecision('y')}>YES</YNButton>
-            <YNButton kind="n" selected={decision === 'n'} onClick={() => setDecision('n')}>NO</YNButton>
-          </Box>
-          <Box aria-live="polite" sx={{ mt: 2.5, fontSize: 12, letterSpacing: '0.1em', minHeight: 18, color: decision === 'n' ? t.nerv.hue.redHi : t.nerv.hue.amber }}>
-            {decision === 'y' && '◉ PROTOCOL ACCEPTED — INITIALIZING OPERATOR SESSION...'}
-            {decision === 'n' && '✕ DEPLOY DEFERRED — THE CONSOLE WILL BE HERE WHEN YOU RETURN, OPERATOR.'}
-          </Box>
+          <YesNoGate
+            sx={{ mt: 3.75 }}
+            yesResponse="◉ PROTOCOL ACCEPTED — INITIALIZING OPERATOR SESSION..."
+            noResponse="✕ DEPLOY DEFERRED — THE CONSOLE WILL BE HERE WHEN YOU RETURN, OPERATOR."
+          />
         </Box>
       </Box>
 
       {/* ============ FOOTER ============ */}
       <Box component="footer" sx={{ borderTop: `2px solid ${t.nerv.hue.orange}`, background: 'rgba(10,10,10,.96)' }}>
         <Box sx={{ ...WRAP, display: 'flex', flexWrap: 'wrap', gap: 2.25, alignItems: 'center', py: 1.5, fontSize: 10, color: t.nerv.hue.greenMap, letterSpacing: '0.08em' }}>
-          <Box component="span" sx={{ color: t.nerv.hue.mint }}>◉ AGENT_01: NOMINAL</Box>
-          <Box component="span" sx={{ color: t.nerv.hue.mint }}>◉ AGENT_02: NOMINAL</Box>
-          <Box component="span" sx={{ color: t.nerv.hue.amber }}>◉ AGENT_03: BUSY</Box>
+          <AgentDot>AGENT_01: NOMINAL</AgentDot>
+          <AgentDot>AGENT_02: NOMINAL</AgentDot>
+          <AgentDot busy>AGENT_03: BUSY</AgentDot>
           <Box component="span" sx={{ ml: 'auto' }}>CPU 12.4%</Box>
           <Box component="span">MEM 2.1GB/32GB</Box>
           <Box component="span" sx={{ color: t.nerv.hue.mint }}>SYNC_OK</Box>
@@ -263,32 +261,9 @@ export function Landing01Page() {
   );
 }
 
-/* ---- a live nav clock: HH:MM:SS with blinking colons ---- */
-function Clock() {
-  const t = useTheme();
-  const reduced = useReducedMotion();
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    if (reduced) return;
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, [reduced]);
-  const colon = (
-    <Box component="span" sx={{ animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }}>:</Box>
-  );
-  return (
-    <Box aria-label="system clock" sx={{ display: { xs: 'none', sm: 'block' }, fontVariantNumeric: 'tabular-nums', fontSize: 20, color: t.nerv.hue.orange, textShadow: '0 0 6px rgba(242,100,0,.7)', letterSpacing: '0.06em' }}>
-      {pad2(now.getHours())}{colon}{pad2(now.getMinutes())}{colon}{pad2(now.getSeconds())}
-    </Box>
-  );
-}
-
 /* ---- hero live command cluster (page-specific composition) ---- */
 function Cluster() {
   const t = useTheme();
-  const tag = (label: string, tone: Tone) => (
-    <Box component="span" sx={{ border: `1px solid ${toneHue(t, tone)}`, color: toneHue(t, tone), fontSize: 9, p: '1px 5px', letterSpacing: '0.08em' }}>{label}</Box>
-  );
   const bar = (pct: number) => (
     <Box sx={{ width: 74, height: 6, background: 'rgba(255,255,255,.06)', position: 'relative', overflow: 'hidden' }}>
       <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: t.nerv.hue.mint, boxShadow: `0 0 6px ${t.nerv.hue.mint}` }} />
@@ -315,9 +290,9 @@ function Cluster() {
         <Box component="span" sx={{ color: t.nerv.hue.mint }}>UPTIME 142:22:09</Box>
       </Box>
       <Box sx={rowSx}><Box component="span" sx={nameSx}>ENG-398 // CORE</Box>{bar(62)}{pct('62%')}</Box>
-      <Box sx={rowSx}><Box component="span" sx={nameSx}>MEMORY INGEST</Box>{tag('IMPL', 'amber')}{pct('88%')}{bar(88)}</Box>
-      <Box sx={rowSx}><Box component="span" sx={nameSx}>ARCH_GATE_04</Box>{tag('BLOCKED', 'red')}</Box>
-      <Box sx={{ ...rowSx, borderBottom: 0 }}><Box component="span" sx={nameSx}>VISUAL REGRESSION</Box>{tag('PASS', 'mint')}</Box>
+      <Box sx={rowSx}><Box component="span" sx={nameSx}>MEMORY INGEST</Box><Stamp tone="amber" size="sm">IMPL</Stamp>{pct('88%')}{bar(88)}</Box>
+      <Box sx={rowSx}><Box component="span" sx={nameSx}>ARCH_GATE_04</Box><Stamp tone="red" size="sm">BLOCKED</Stamp></Box>
+      <Box sx={{ ...rowSx, borderBottom: 0 }}><Box component="span" sx={nameSx}>VISUAL REGRESSION</Box><Stamp tone="mint" size="sm">PASS</Stamp></Box>
       <Box sx={{ mt: 1.75, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${t.nerv.hue.mint}`, p: '8px 10px' }}>
         <span>SYSTEM INTEGRITY</span>
         <Box component="b" sx={{ color: t.nerv.hue.mintHi, fontFamily: t.nerv.fonts.display, fontSize: 16 }}>NOMINAL</Box>
@@ -326,21 +301,7 @@ function Cluster() {
   );
 }
 
-/* ---- telemetry gauge card shell (page-specific composition) ---- */
-function Gcard({ title, type, children, foot }: { title: ReactNode; type: string; children: ReactNode; foot: [ReactNode, ReactNode] }) {
-  const t = useTheme();
-  return (
-    <Box sx={{ border: `1px solid ${t.nerv.hue.orange}`, background: t.nerv.hue.void, p: '18px' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.1em', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 1, mb: 2 }}>
-        <span>{title}</span><span>{type}</span>
-      </Box>
-      {children}
-      <Box sx={{ mt: 1.75, fontSize: 9, color: t.nerv.hue.greenMap, display: 'flex', justifyContent: 'space-between' }}>
-        <span>{foot[0]}</span><span>{foot[1]}</span>
-      </Box>
-    </Box>
-  );
-}
+/* ---- telemetry readouts (big value + small caption) local to this screen ---- */
 function GVal({ children, sx }: { children: ReactNode; sx?: object }) {
   const t = useTheme();
   return <Box sx={{ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 34, color: t.nerv.hue.mintHi, textShadow: '0 0 10px rgba(82,242,154,.35)', lineHeight: 1, ...sx }}>{children}</Box>;
@@ -361,34 +322,3 @@ function LegendSwatch({ tone, label }: { tone: Tone; label: string }) {
   );
 }
 
-/* ---- deploy Y/N button ---- */
-function YNButton({ kind, selected, onClick, children }: { kind: 'y' | 'n'; selected: boolean; onClick: () => void; children: ReactNode }) {
-  const t = useTheme();
-  const c = kind === 'y' ? t.nerv.hue.mint : t.nerv.hue.redHi;
-  const glow = kind === 'y' ? 'rgba(82,242,154,.5)' : 'rgba(226,40,15,.5)';
-  return (
-    <Box
-      component="button"
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      sx={{
-        fontFamily: t.nerv.fonts.display,
-        fontWeight: 700,
-        fontSize: 22,
-        letterSpacing: '0.1em',
-        p: '14px 46px',
-        cursor: 'pointer',
-        background: selected ? c : 'transparent',
-        color: selected ? t.nerv.hue.void : c,
-        border: `2px solid ${c}`,
-        boxShadow: selected ? `0 0 16px ${glow}` : 'none',
-        transition: 'none',
-        '&:hover': { background: c, color: t.nerv.hue.void, boxShadow: `0 0 16px ${glow}` },
-        '&:focus-visible': { outline: `2px solid ${t.nerv.hue.paper}`, outlineOffset: 3 },
-      }}
-    >
-      {children}
-    </Box>
-  );
-}

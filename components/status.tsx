@@ -716,6 +716,37 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
 }
 
 /* ------------------------------------------------------------------ */
+/* AgentDot — a status-bar agent readout: a state dot + label. */
+
+export interface AgentDotProps {
+  /** The readout text (e.g. `AGENT·01: NOMINAL`). */
+  children: React.ReactNode;
+  /** Busy — amber dot + amber text; otherwise a mint dot. @default false */
+  busy?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A single agent status readout for a footer / status bar: a small round state
+ * dot (mint nominal · amber busy) before its label, the whole thing tinted amber
+ * when busy.
+ */
+export function AgentDot({ children, busy = false, sx }: AgentDotProps) {
+  return (
+    <Box
+      component="span"
+      sx={[
+        (t) => ({ display: 'inline-flex', alignItems: 'center', color: busy ? t.nerv.hue.amber : 'inherit', fontFamily: t.nerv.fonts.mono, whiteSpace: 'nowrap' }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="i" sx={(t) => ({ width: 7, height: 7, borderRadius: '50%', flex: 'none', mr: '6px', background: busy ? t.nerv.hue.amber : t.nerv.hue.mint })} />
+      {children}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* MemoryRow — a queryable memory-vault entry (id · title · kind stamp). */
 
 export type MemoryKind = 'decision' | 'pattern' | 'mistake' | 'learning';

@@ -416,6 +416,46 @@ export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx
 }
 
 /* ------------------------------------------------------------------ */
+/* MeterBar — a labeled thin continuous vitals bar (label · value · fill). */
+
+export interface MeterBarProps {
+  /** Left label (e.g. `CPU`). */
+  label: React.ReactNode;
+  /** Right-aligned readout (e.g. `12.4%`). */
+  value?: React.ReactNode;
+  /** Fill percentage (0..100). */
+  pct: number;
+  /** Fill hue. @default 'mint' */
+  tone?: Tone;
+  /** Force the caution (amber) fill regardless of tone. @default false */
+  warn?: boolean;
+  /** Track height (px). @default 5 */
+  height?: number;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A compact vitals meter: a label + value row over a thin **continuous** glowing
+ * fill (not segmented — the quiet counterpart to {@link SegmentBar}, for a
+ * sidebar/cluster stat like CPU or memory). `warn` flips the fill to amber.
+ */
+export function MeterBar({ label, value, pct, tone = 'mint', warn = false, height = 5, sx }: MeterBarProps) {
+  const t = useTheme();
+  const c = warn ? t.nerv.hue.amber : toneHue(t, tone);
+  return (
+    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.mint, mb: '4px', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } }}>
+        <Box component="span">{label}</Box>
+        {value != null && <Box component="b">{value}</Box>}
+      </Box>
+      <Box sx={{ height, background: 'rgba(255,255,255,.06)', position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.max(0, Math.min(100, pct))}%`, background: c, boxShadow: `0 0 6px ${c}`, transition: 'width 300ms linear' }} />
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* LedColumn — a single vertical LED column that fills bottom-up. */
 
 export interface LedColumnProps {

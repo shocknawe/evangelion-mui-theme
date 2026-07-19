@@ -14,12 +14,18 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import {
   ConsoleNav,
+  Brand,
   SectionHeading,
   Waveform,
   LineChart,
   LedColumn,
+  MeterBar,
   FilterChips,
   MemoryRow,
+  AgenticLoop,
+  DossierSheet,
+  Stamp,
+  AgentDot,
   useReducedMotion,
   type MemoryKind,
 } from '@components';
@@ -74,7 +80,6 @@ export function Landing02Page() {
   const reduced = useReducedMotion();
   const [section, setSection] = useState('eng');
   const [filter, setFilter] = useState('ALL');
-  const [loopStep, setLoopStep] = useState(0);
   const [cpu, setCpu] = useState('12.4%');
   const [mem, setMem] = useState('2.1 / 32GB');
   const [memPct, setMemPct] = useState(7);
@@ -89,13 +94,6 @@ export function Landing02Page() {
     const item = NAV.find((n) => n.value === value);
     if (item) scrollTo(item.to);
   };
-
-  // Agentic loop ignition — one node lit at a time.
-  useEffect(() => {
-    if (reduced) return;
-    const id = setInterval(() => setLoopStep((s) => (s + 1) % LOOP.length), 900);
-    return () => clearInterval(id);
-  }, [reduced]);
 
   // Right-rail live vitals.
   useEffect(() => {
@@ -127,11 +125,7 @@ export function Landing02Page() {
         aria-label="module navigation"
         sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto', background: 'rgba(10,10,10,.96)', borderRight: `2px solid ${t.nerv.hue.orange}`, boxShadow: '2px 0 14px rgba(242,100,0,.15)', p: '18px 16px' }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-          <Box sx={{ width: 15, height: 15, background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' }} />
-          <Box component="b" sx={{ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 18, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)' }}>JAIRUS_OS</Box>
-        </Box>
-        <Box sx={{ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', mb: 3.25, pl: '22px' }}>v2.4.0-STABLE</Box>
+        <Brand name="JAIRUS_OS" version="v2.4.0-STABLE" size="sm" stackVersion sx={{ mb: 3.25 }} />
         <ConsoleNav variant="rail" ariaLabel="Systems" value={section} onChange={navTo} items={NAV.map(({ value, jp, en }) => ({ value, jp, en }))} />
         <Box sx={{ mt: 'auto' }}>
           <Button fullWidth onClick={openModal} sx={{ fontFamily: t.nerv.fonts.display, fontWeight: 700, letterSpacing: '0.12em', background: t.nerv.hue.mint, color: t.nerv.hue.void, border: 0, boxShadow: '0 0 12px rgba(82,242,154,.4)', '&:hover': { background: t.nerv.hue.mintHi } }}>+ NEW_GATE</Button>
@@ -163,29 +157,8 @@ export function Landing02Page() {
             </Box>
 
             {/* agentic loop */}
-            <Box id="loop" sx={{ mt: 6, border: `1px solid ${t.nerv.hue.greenDim}`, p: '26px 20px 20px', position: 'relative' }}>
-              <Box component="span" sx={{ position: 'absolute', top: -9, left: 16, background: t.nerv.hue.void, px: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' }}>ACTIVE_LOOP : AUTONOMOUS_LEARN</Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                {LOOP.map((n, i) => (
-                  <Box key={n.e} sx={{ display: 'contents' }}>
-                    {i > 0 && <Box component="span" sx={{ color: t.nerv.hue.orange, fontSize: 14, flex: '0 0 auto' }}>→</Box>}
-                    <Box
-                      sx={{
-                        flex: 1,
-                        textAlign: 'center',
-                        border: `1px solid ${loopStep === i ? t.nerv.hue.mint : t.nerv.hue.greenDim}`,
-                        boxShadow: loopStep === i ? '0 0 14px rgba(82,242,154,.4)' : 'none',
-                        p: '14px 6px',
-                        background: t.nerv.hue.void,
-                        transition: 'border-color 120ms linear, box-shadow 120ms linear',
-                      }}
-                    >
-                      <Box sx={{ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: 22, lineHeight: 1, textTransform: 'none', color: loopStep === i ? t.nerv.hue.mintHi : t.nerv.hue.greenMap, textShadow: loopStep === i ? '0 0 10px rgba(82,242,154,.5)' : 'none' }}>{n.k}</Box>
-                      <Box sx={{ fontSize: 9, letterSpacing: '0.08em', mt: '6px', color: t.nerv.hue.mint, opacity: loopStep === i ? 1 : 0.6 }}>{n.e}</Box>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
+            <Box id="loop" sx={{ mt: 6 }}>
+              <AgenticLoop caption="ACTIVE_LOOP : AUTONOMOUS_LEARN" steps={LOOP.map((n) => ({ jp: n.k, en: n.e }))} />
             </Box>
           </Box>
 
@@ -248,29 +221,19 @@ export function Landing02Page() {
           {/* DEPLOYMENT SPEC / DOSSIER */}
           <Box component="section" id="spec" sx={{ py: 5 }}>
             <SectionHeading index="04" sx={{ mb: 2.75 }}>DEPLOYMENT SPEC</SectionHeading>
-            <Box sx={{ border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '26px 30px', position: 'relative', overflow: 'hidden' }}>
-              <Box component="span" sx={{ position: 'absolute', top: 14, right: -2, transform: 'rotate(4deg)', border: `2px solid ${t.nerv.hue.redHi}`, color: t.nerv.hue.redHi, fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 13, p: '3px 12px', letterSpacing: '0.14em', opacity: 0.85 }}>PRELIMINARY</Box>
-              <Box sx={{ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 20, color: t.nerv.hue.mintHi, letterSpacing: '0.03em', borderBottom: `2px solid ${t.nerv.hue.teal}`, pb: 1.25, mb: 0.75 }}>JAIRUS_OS · CORE v2.4.0 — OPERATOR DOSSIER</Box>
-              <Box sx={{ borderBottom: `2px solid ${t.nerv.hue.teal}`, width: '60%', height: 2, mb: 2.25 }} />
-              {SPEC_ROWS.map(([k, v]) => (
-                <Box key={k} sx={{ display: 'grid', gridTemplateColumns: '170px 1fr', gap: 1.25, fontSize: 11, py: '7px', borderBottom: '1px dashed rgba(60,156,108,.25)', textTransform: 'none' }}>
-                  <Box component="span" sx={{ color: t.nerv.hue.orange, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 10 }}>{k}</Box>
-                  <Box component="span" sx={{ color: t.nerv.hue.mint, opacity: 0.85, '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } }}>{v}</Box>
-                </Box>
-              ))}
-              <Box sx={{ mt: 2.75, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2.5 }}>
-                <Box sx={{ flex: 1, borderTop: `1px solid ${t.nerv.hue.greenMap}`, pt: 0.75, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' }}>OPERATOR SIGNATURE</Box>
-                <Box sx={{ flex: 1, borderTop: `1px solid ${t.nerv.hue.greenMap}`, pt: 0.75, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' }}>DATE : OCT 24 202X</Box>
-                <Box component="span" sx={{ border: `1px solid ${t.nerv.hue.mint}`, color: t.nerv.hue.mint, fontSize: 10, p: '4px 10px', letterSpacing: '0.1em' }}>◉ NOMINAL</Box>
-              </Box>
-            </Box>
+            <DossierSheet
+              title="JAIRUS_OS · CORE v2.4.0 — OPERATOR DOSSIER"
+              watermark="PRELIMINARY"
+              rows={SPEC_ROWS}
+              signature={{ left: 'OPERATOR SIGNATURE', right: 'DATE : OCT 24 202X', stamp: '◉ NOMINAL' }}
+            />
           </Box>
 
           {/* FOOTER */}
           <Box component="footer" sx={{ borderTop: `2px solid ${t.nerv.hue.orange}`, mt: 5, py: '22px', pb: 5, fontSize: 10, color: t.nerv.hue.greenMap, display: 'flex', flexWrap: 'wrap', gap: 2, letterSpacing: '0.08em' }}>
-            <Box component="span" sx={{ color: t.nerv.hue.mint }}>◉ AGENT_01 NOMINAL</Box>
-            <Box component="span" sx={{ color: t.nerv.hue.mint }}>◉ AGENT_02 NOMINAL</Box>
-            <Box component="span" sx={{ color: t.nerv.hue.amber }}>◉ AGENT_03 BUSY</Box>
+            <AgentDot>AGENT_01 NOMINAL</AgentDot>
+            <AgentDot>AGENT_02 NOMINAL</AgentDot>
+            <AgentDot busy>AGENT_03 BUSY</AgentDot>
             <Box component="span" sx={{ ml: 'auto' }}>© JAIRUS_OS</Box>
             <Box component="span">KESTREL·4</Box>
             <Box component="span" sx={{ color: t.nerv.hue.mint }}>SYNC_OK</Box>
@@ -285,9 +248,9 @@ export function Landing02Page() {
         sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto', background: 'rgba(10,10,10,.96)', borderLeft: `2px solid ${t.nerv.hue.orange}`, boxShadow: '-2px 0 14px rgba(242,100,0,.15)', p: '18px 16px' }}
       >
         <RLabel>◉ SYSTEM STATUS</RLabel>
-        <Rmeter label="CPU" value={cpu} pct={cpuPct} />
-        <Rmeter label="MEMORY" value={mem} pct={memPct} />
-        <Rmeter label="VAULT LOAD" value="98.4%" pct={98} warn />
+        <MeterBar label="CPU" value={cpu} pct={cpuPct} sx={{ mb: 2 }} />
+        <MeterBar label="MEMORY" value={mem} pct={memPct} sx={{ mb: 2 }} />
+        <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn sx={{ mb: 2 }} />
         <RLabel>◉ GLOBAL MEMORY FEED</RLabel>
         <Box sx={{ fontSize: 10, lineHeight: 1.6, color: t.nerv.hue.amber, textTransform: 'none', letterSpacing: '0.02em', border: `1px solid ${t.nerv.hue.greenDim}`, p: '9px', mt: '6px', '& .t': { color: t.nerv.hue.amberDim }, '& .d': { color: t.nerv.hue.orange }, '& .m': { color: t.nerv.hue.redHi }, '& .g': { color: t.nerv.hue.mint } }}>
           <Box><span className="t">14:22</span> <span className="d">[DEC]</span> Bun runtime for local CI</Box>
@@ -316,7 +279,7 @@ export function Landing02Page() {
             <Box component="small" sx={{ display: 'block', fontFamily: t.nerv.fonts.display, fontSize: 12, color: t.nerv.hue.orange, textTransform: 'uppercase', letterSpacing: '0.14em', mt: 0.75 }}>ACCESS REQUEST</Box>
           </Box>
           <Box sx={{ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.08em', lineHeight: 1.5, my: 2 }}>GATE : ENROLLMENT_01<br />PRIORITY : AAA · EX_MODE : PILOT</Box>
-          <Box component="span" sx={{ display: 'inline-block', border: `1px solid ${t.nerv.hue.redHi}`, color: t.nerv.hue.redHi, fontSize: 9, p: '2px 7px', letterSpacing: '0.1em', mb: 1.75, animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }}>◉ AWAITING OPERATOR</Box>
+          <Stamp tone="red" size="sm" blink sx={{ mb: 1.75 }}>◉ AWAITING OPERATOR</Stamp>
           <Box sx={{ mb: 1.5 }}>
             <Box component="label" htmlFor="opmail" sx={{ display: 'block', fontSize: 9, color: t.nerv.hue.mint, letterSpacing: '0.1em', mb: '5px' }}>OPERATOR HANDLE</Box>
             <TextField id="opmail" fullWidth size="small" autoComplete="off" placeholder="operator@station" value={handle} onChange={(e) => setHandle(e.target.value)} sx={{ '& .MuiInputBase-input': { textTransform: 'none' } }} />
@@ -338,18 +301,3 @@ function RLabel({ children }: { children: ReactNode }) {
   return <Box sx={{ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', m: '6px 0 10px', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 0.75 }}>{children}</Box>;
 }
 
-/* ---- right-rail vitals meter (thin continuous bar) ---- */
-function Rmeter({ label, value, pct, warn = false }: { label: string; value: ReactNode; pct: number; warn?: boolean }) {
-  const t = useTheme();
-  const c = warn ? t.nerv.hue.amber : t.nerv.hue.mint;
-  return (
-    <Box sx={{ mb: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: t.nerv.hue.mint, mb: '4px', '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } }}>
-        <span>{label}</span><Box component="b">{value}</Box>
-      </Box>
-      <Box sx={{ height: 5, background: 'rgba(255,255,255,.06)', position: 'relative' }}>
-        <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, pct)}%`, background: c, boxShadow: `0 0 6px ${c}`, transition: 'width 300ms linear' }} />
-      </Box>
-    </Box>
-  );
-}

@@ -25,24 +25,28 @@ export { type Tone, toneHue } from './util';
 export { useReducedMotion, pad2 } from './hooks';
 
 // Text — bimodal / bilingual pairings
-export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel, SectionHeading } from './text';
-export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps, SectionHeadingProps } from './text';
+export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel, SectionHeading, DossierSheet } from './text';
+export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps, SectionHeadingProps, DossierSheetProps } from './text';
+
+// Atoms — the boxed stamp
+export { Stamp } from './chips';
+export type { StampProps } from './chips';
 
 // Layout & structure — the command shell and its scaffolding
-export { ConsoleFrame, ZoneTitle, Monogram, Stat, GaugeCard } from './layout';
-export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps, GaugeCardProps } from './layout';
+export { ConsoleFrame, ZoneTitle, Monogram, Stat, GaugeCard, TelemetryCard } from './layout';
+export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps, GaugeCardProps, TelemetryCardProps } from './layout';
 
 // Flow — step sequences
-export { StepFlow } from './flow';
-export type { StepFlowProps, StepFlowStep } from './flow';
+export { StepFlow, AgenticLoop, TaskCard } from './flow';
+export type { StepFlowProps, StepFlowStep, AgenticLoopProps, AgenticLoopStep, TaskCardProps } from './flow';
 
 // Status
-export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow, ModuleCard, MemoryRow } from './status';
+export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow, ModuleCard, MemoryRow, AgentDot } from './status';
 export type {
   StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
   RailItemProps, GateRowProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
   RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineStatus, ModuleCardProps,
-  MemoryRowProps, MemoryKind,
+  MemoryRowProps, MemoryKind, AgentDotProps,
 } from './status';
 
 // Console form controls
@@ -52,24 +56,24 @@ export type {
 } from './inputs';
 
 // Navigation
-export { FilterChips, FilterRail, WikiLink, ConsoleNav, SiteHeader } from './navigation';
-export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem, SiteHeaderProps, SiteHeaderLink } from './navigation';
+export { FilterChips, FilterRail, WikiLink, ConsoleNav, SiteHeader, Brand } from './navigation';
+export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem, SiteHeaderProps, SiteHeaderLink, BrandProps } from './navigation';
 
 // Feedback
-export { HazardPrompt, GateDecisionDialog, ApprovalBar } from './feedback';
-export type { HazardPromptProps, GateDecisionDialogProps, GateDecision, ApprovalBarProps } from './feedback';
+export { HazardPrompt, GateDecisionDialog, ApprovalBar, YesNoGate } from './feedback';
+export type { HazardPromptProps, GateDecisionDialogProps, GateDecision, ApprovalBarProps, YesNoGateProps } from './feedback';
 
 // Data-viz — meters & gauges
-export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar, LedColumn } from './meters';
+export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar, LedColumn, MeterBar } from './meters';
 export type {
-  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps, LedColumnProps,
+  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps, LedColumnProps, MeterBarProps,
 } from './meters';
 
 // Data-viz — terminal, clock, marquee, charts
 export { Terminal, LogConsole } from './terminal';
 export type { TerminalProps, TerminalRow, LogConsoleProps, LogRow, LogTag } from './terminal';
-export { SevenSegClock } from './clock';
-export type { SevenSegClockProps } from './clock';
+export { SevenSegClock, DigitalClock } from './clock';
+export type { SevenSegClockProps, DigitalClockProps } from './clock';
 export { Marquee } from './marquee';
 export type { MarqueeProps } from './marquee';
 export { LineChart, Waveform, ScanLattice } from './charts';
