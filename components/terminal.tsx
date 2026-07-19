@@ -4,9 +4,11 @@
  * reduced-motion prints the whole log at once.
  */
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type Tone, toneHue } from './util';
 
 /** A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`. */
 export type TerminalRow =
@@ -110,18 +112,25 @@ export type LogTag = 'info' | 'warn' | 'git' | 'gate';
 export interface LogRow {
   /** Timestamp string (e.g. `14:02:51`). */
   ts: string;
-  tag: LogTag;
-  msg: string;
+  /** Tag chip (`[INFO]` etc.). Omit for a tagless feed row colored by `tone`. */
+  tag?: LogTag;
+  /** Message color when the row has no `tag`. @default 'amber' */
+  tone?: Tone;
+  msg: ReactNode;
 }
 
 export interface LogConsoleProps {
   /** Header caption. @default 'STDOUT' */
-  title?: string;
+  title?: ReactNode;
   /** Rows, oldest→newest. The view auto-scrolls to the newest. */
   rows: LogRow[];
   /** Connection state shown at right. @default true */
   connected?: boolean;
-  /** Blinking cursor after the last row. @default true */
+  /** Overrides the connection label at right (e.g. `TAILING` / `PAUSED`). */
+  status?: ReactNode;
+  /** A prompt line under the body (e.g. `AUTOMATION>`); hosts the cursor. */
+  prompt?: ReactNode;
+  /** Blinking cursor after the last row (or in the prompt row). @default true */
   cursor?: boolean;
   sx?: SxProps<Theme>;
 }
@@ -139,7 +148,7 @@ const TAG_TONE: Record<LogTag, keyof Theme['nerv']['hue']> = {
  * connection status bar. Presentational — feed it `rows`; it auto-scrolls to the
  * newest and can host an approval bar beneath it.
  */
-export function LogConsole({ title = 'STDOUT', rows, connected = true, cursor = true, sx }: LogConsoleProps) {
+export function LogConsole({ title = 'STDOUT', rows, connected = true, status, prompt, cursor = true, sx }: LogConsoleProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -148,13 +157,20 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, cursor = 
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [rows]);
 
+  const blink = { animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` } as const;
+  const Cursor = () => <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', ...blink }} />;
+
   return (
     <Box sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.12em', border: `1px solid ${t.nerv.hue.amberDim}`, borderBottom: 'none', p: '6px 12px', fontFamily: t.nerv.fonts.mono }}>
         <span>{title}</span>
-        <Box component="span" sx={{ color: connected ? t.nerv.hue.mint : t.nerv.hue.redHi }}>
-          {connected ? 'CONNECTED: OK' : 'CONNECTION LOST'}
-        </Box>
+        {status !== undefined ? (
+          <Box component="span" sx={{ color: t.nerv.hue.mint }}>{status}</Box>
+        ) : (
+          <Box component="span" sx={{ color: connected ? t.nerv.hue.mint : t.nerv.hue.redHi }}>
+            {connected ? 'CONNECTED: OK' : 'CONNECTION LOST'}
+          </Box>
+        )}
       </Box>
       <Box
         ref={bodyRef}
@@ -165,16 +181,21 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, cursor = 
         {rows.map((r, i) => (
           <Box key={i} sx={{ display: 'flex', gap: 1.25, whiteSpace: 'nowrap' }}>
             <Box component="span" sx={{ color: t.nerv.hue.amberDim, flex: 'none' }}>{r.ts}</Box>
-            <Box component="span" sx={{ flex: 'none', fontWeight: 700, color: t.nerv.hue[TAG_TONE[r.tag]], textShadow: r.tag === 'warn' || r.tag === 'gate' ? '0 0 4px currentColor' : 'none' }}>
-              [{r.tag.toUpperCase()}]
-            </Box>
-            <Box component="span" sx={{ color: t.nerv.hue.amber, textTransform: 'none', whiteSpace: 'normal' }}>{r.msg}</Box>
+            {r.tag && (
+              <Box component="span" sx={{ flex: 'none', fontWeight: 700, color: t.nerv.hue[TAG_TONE[r.tag]], textShadow: r.tag === 'warn' || r.tag === 'gate' ? '0 0 4px currentColor' : 'none' }}>
+                [{r.tag.toUpperCase()}]
+              </Box>
+            )}
+            <Box component="span" sx={{ color: r.tag ? t.nerv.hue.amber : toneHue(t, r.tone ?? 'amber'), textTransform: 'none', whiteSpace: 'normal' }}>{r.msg}</Box>
           </Box>
         ))}
-        {cursor && (
-          <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
-        )}
+        {cursor && !prompt && <Cursor />}
       </Box>
+      {prompt && (
+        <Box sx={{ border: `1px solid ${t.nerv.hue.amberDim}`, borderTop: 'none', color: t.nerv.hue.amber, fontSize: 11, p: '6px 12px', fontFamily: t.nerv.fonts.mono }}>
+          {prompt} {cursor && <Cursor />}
+        </Box>
+      )}
     </Box>
   );
 }

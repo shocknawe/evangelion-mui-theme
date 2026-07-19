@@ -177,6 +177,7 @@ export function Shell({ children }: { children: ReactNode }) {
           {[
             { to: '/dashboard-01', label: '図 DASHBOARD-01 · MORNING BRIEF →' },
             { to: '/dashboard-02', label: '図 DASHBOARD-02 · PROJECT DEEP DIVE →' },
+            { to: '/dashboard-03', label: '図 DASHBOARD-03 · AUTOMATION CENTRAL →' },
           ].map((s) => (
             <Box
               key={s.to}

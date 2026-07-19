@@ -49,14 +49,21 @@ function useNow() {
 export interface SevenSegClockProps {
   /** Which skins to render. @default 'both' */
   variant?: 'both' | 'chip' | 'countdown';
+  /**
+   * Controlled 6-digit string (`HHMMSS`) to display instead of the wall clock —
+   * e.g. an elapsed/uptime counter. Drops the AM/PM tag. Colons fall after the
+   * 2nd and 4th digit.
+   */
+  digits?: string;
   sx?: SxProps<Theme>;
 }
 
 /**
  * The tactical clock. `chip` = a mint timestamp badge; `countdown` = the glowing
- * orange readout; `both` stacks them.
+ * orange readout; `both` stacks them. Pass `digits` to drive it from an arbitrary
+ * `HHMMSS` value (uptime, elapsed) rather than the current time.
  */
-export function SevenSegClock({ variant = 'both', sx }: SevenSegClockProps) {
+export function SevenSegClock({ variant = 'both', digits, sx }: SevenSegClockProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const { now, tick } = useNow();
@@ -65,8 +72,8 @@ export function SevenSegClock({ variant = 'both', sx }: SevenSegClockProps) {
   const h12 = pad2(h % 12 || 12);
   const mm = pad2(now.getMinutes());
   const ss = pad2(now.getSeconds());
-  const chipDigits = (h12 + mm + ss).split('').map(Number);
-  const cdDigits = (pad2(h) + mm + ss).split('').map(Number);
+  const chipDigits = (digits ?? h12 + mm + ss).split('').map(Number);
+  const cdDigits = (digits ?? pad2(h) + mm + ss).split('').map(Number);
   const colonOpacity = reduced || tick ? 1 : 0.25;
 
   const Colon = ({ dark }: { dark?: boolean }) => (
@@ -86,9 +93,11 @@ export function SevenSegClock({ variant = 'both', sx }: SevenSegClockProps) {
               {(i === 1 || i === 3) && <Colon dark />}
             </Box>
           ))}
-          <Box component="span" sx={{ fontWeight: 700, fontSize: 10, color: t.nerv.hue.void, ml: '5px', letterSpacing: '0.08em', fontFamily: t.nerv.fonts.mono }}>
-            {h < 12 ? 'AM' : 'PM'}
-          </Box>
+          {!digits && (
+            <Box component="span" sx={{ fontWeight: 700, fontSize: 10, color: t.nerv.hue.void, ml: '5px', letterSpacing: '0.08em', fontFamily: t.nerv.fonts.mono }}>
+              {h < 12 ? 'AM' : 'PM'}
+            </Box>
+          )}
         </Box>
       )}
 

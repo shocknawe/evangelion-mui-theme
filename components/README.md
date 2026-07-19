@@ -46,10 +46,11 @@ and settles to its final frame when the user prefers reduced motion.
 
 | Component | What it is | Key props |
 |---|---|---|
-| `ConsoleFrame` | The chamfered command shell: full-width header over a `sidebar · main · rail` grid, orange double-frame, independent scroll regions (stacks on mobile) | `header`, `sidebar`, `rail`, `children`, `sidebarWidth`, `railWidth`, `headerHeight` |
+| `ConsoleFrame` | The chamfered command shell: full-width header over a `sidebar · main · rail` grid, plus optional `band` / `footer` rows and an `alarm` state (red frame + hazard stripe); orange double-frame, independent scroll regions (stacks on mobile) | `header`, `band`, `sidebar`, `rail`, `footer`, `alarm`, `children`, `sidebarWidth`, `railWidth`, `headerHeight`, `footerHeight` |
 | `ZoneTitle` | Orange section label over a hairline rule, with optional amber meta | `children`, `aside` |
 | `Monogram` | Boxed bilingual monogram — glowing kanji over a caption | `jp`, `label`, `tone`, `size` |
 | `Stat` | Compact label/value vital (lighter than `StatTile`) | `label`, `value`, `tone` |
+| `GaugeCard` | Single-corner-chamfered card framing one gauge as a monitored channel (tinted by state) | `kind`, `name`, `children`, `readout`, `sub`, `tone` |
 
 ### Status
 
@@ -60,6 +61,8 @@ and settles to its final frame when the user prefers reduced motion.
 | `StatTile` | Negative-space KPI: tiny label, giant numeral, tiny footer | `label`, `value`, `footer`, `tone` |
 | `RailItem` | Reminder / inbox row: title · subtitle · due, with a `done` strike | `title`, `sub`, `when`, `done` |
 | `GateRow` | Decision-queue row: id · title · leader · priority · REVIEW/verdict | `id`, `title`, `sub`, `priority`, `verdict`, `onReview` |
+| `SinkRow` | Delivery-sink row: name · state · ping · LIVE/DOWN stamp (OFFLINE inverts) | `name`, `status`, `detail`, `ping`, `stampLabel` |
+| `RoutineRow` | Routine-manager row: id · name · kind · status stamp · RUN (dims when filtered) | `id`, `name`, `kind`, `status`, `dim`, `onRun` |
 
 ### Form controls
 
@@ -75,6 +78,7 @@ and settles to its final frame when the user prefers reduced motion.
 
 | Component | What it is | Key props |
 |---|---|---|
+| `FilterChips` | Just the scope-chip row (active = orange inversion) — pair with your own dimmed rows | `filters`, `value`, `onChange`, `ariaLabel` |
 | `FilterRail` | Filter chips that **dim** non-matching rows (never hide) | `filters`, `rows`, `value`/`defaultValue`, `onChange`, `allValue` |
 | `WikiLink` | `[[cross-reference]]` that inverts on hover | `children`, `href`, `onClick` |
 | `ConsoleNav` | Stacked boxed bilingual sidebar nav (current = mint inversion) | `items`, `value`, `onChange` |
@@ -93,6 +97,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `SegmentedMeter` | Vertical LED columns with a drawn threshold line | `values`/`defaultValues`, `segments`, `limitPct`, `columnLabels`, `animated` |
 | `RadialGauge` | Segmented arc with a big center readout | `value`, `label`, `segments`, `size`, `animated` |
 | `BarColumnGauge` | Horizontal LED bar over a column histogram | `columns`, `bar`, `animated` |
+| `LedColumn` | Single vertical LED column (fills bottom-up; goes red under `hotBelow`) | `value`, `segments`, `tone`, `hotBelow` |
 | `ProgressMeter` | Horizontal segmented progress bar with a drawn threshold/gate line | `value`, `segments`, `threshold`, `label`, `readout`, `animated` |
 | `HealthColumns` | Mini stepped system-health bars (biased-nominal) | `columns`, `cells`, `animated` |
 | `Terminal` | Amber diagnostic log with dot-leader checks + typewriter reveal | `rows`, `title`, `typewriter`, `speed` |
@@ -132,6 +137,12 @@ pattern), so you can extend without fighting the defaults:
 
 Live examples of every component render in the demo app
 ([`../app`](../app)): the design-system page (`/`) imports them all from
-`@components`, and the **`/dashboard-01`** route assembles them into a full
-"Morning Brief" console screen (header · sidebar · main · rail + the gate
-decision modal) — the layout ported from `sample-layouts/dashboard-01.html`.
+`@components`, and three full console screens assemble them, each ported from the
+matching `sample-layouts/` file:
+
+- **`/dashboard-01`** — "Morning Brief" (header · sidebar · main · rail + the gate
+  decision modal).
+- **`/dashboard-02`** — "Project Deep Dive" (agent consoles, OODA loop, approval bar).
+- **`/dashboard-03`** — "Automation Central" (a `GaugeCard` trigger bank, a live
+  `LogConsole` exec feed, `SinkRow` sinks, and a `FilterChips`-scoped `RoutineRow`
+  manager inside a `ConsoleFrame` with a footer status bar + retry-alarm state).

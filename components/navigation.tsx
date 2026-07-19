@@ -8,6 +8,57 @@ import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 
 /* ------------------------------------------------------------------ */
+/* FilterChips — a row of orange scope chips (active = solid inversion). */
+
+export interface FilterChipsProps {
+  /** Chip values. */
+  filters: string[];
+  /** The active chip. */
+  value: string;
+  onChange?: (value: string) => void;
+  /** Accessible name for the group. */
+  ariaLabel?: string;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A scope-filter chip row: orange outline chips where the active one inverts to a
+ * solid orange fill with black content. The chrome half of a filter — pair it
+ * with your own rows (dimming non-matches) or use {@link FilterRail} for the
+ * bundled list.
+ */
+export function FilterChips({ filters, value, onChange, ariaLabel, sx }: FilterChipsProps) {
+  return (
+    <Box role="group" aria-label={ariaLabel} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      {filters.map((k) => {
+        const on = value === k;
+        return (
+          <Box
+            key={k}
+            component="button"
+            aria-pressed={on}
+            onClick={() => onChange?.(k)}
+            sx={(t) => ({
+              border: `1px solid ${t.nerv.hue.orange}`,
+              background: on ? t.nerv.hue.orange : t.nerv.hue.void,
+              color: on ? t.nerv.hue.void : t.nerv.hue.orange,
+              fontWeight: on ? 700 : 400,
+              fontSize: 10,
+              p: '5px 11px',
+              cursor: 'pointer',
+              fontFamily: t.nerv.fonts.mono,
+              '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+            })}
+          >
+            {k}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* FilterRail — filter chips that DIM non-matching rows rather than hide them. */
 
 export interface FilterRow {
@@ -45,32 +96,7 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
 
   return (
     <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={{ display: 'flex', gap: '5px', mb: 1.25 }}>
-        {filters.map((k) => {
-          const on = active === k;
-          return (
-            <Box
-              key={k}
-              component="button"
-              aria-pressed={on}
-              onClick={() => setActive(k)}
-              sx={(t) => ({
-                border: `1px solid ${t.nerv.hue.orange}`,
-                background: on ? t.nerv.hue.orange : t.nerv.hue.void,
-                color: on ? t.nerv.hue.void : t.nerv.hue.orange,
-                fontWeight: on ? 700 : 400,
-                fontSize: 10,
-                p: '5px 11px',
-                cursor: 'pointer',
-                fontFamily: t.nerv.fonts.mono,
-                '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
-              })}
-            >
-              {k}
-            </Box>
-          );
-        })}
-      </Box>
+      <FilterChips filters={filters} value={active} onChange={setActive} sx={{ mb: 1.25 }} />
       {rows.map((r) => {
         const dim = active !== allValue && r.kind !== active;
         return (

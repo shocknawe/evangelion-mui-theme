@@ -414,3 +414,53 @@ export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* LedColumn — a single vertical LED column that fills bottom-up. */
+
+export interface LedColumnProps {
+  /** Fill percentage (0..100). */
+  value: number;
+  /** Number of stacked segments. @default 14 */
+  segments?: number;
+  /** Fill hue. @default 'amber' */
+  tone?: Tone;
+  /** Below this percentage the lit segments turn critical (red) — a low-level
+   *  warning (e.g. a freshness/fuel gauge draining). Omit to disable. */
+  hotBelow?: number;
+  /** Column height (px). @default 104 */
+  height?: number;
+  /** Column width (px). @default 44 */
+  width?: number;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A single vertical LED column that fills from the bottom — the vertical
+ * counterpart to {@link SegmentBar}. When `value` falls under `hotBelow`, the lit
+ * segments switch to the critical (red) hue, so a draining gauge reads as an
+ * alarm without a separate control.
+ */
+export function LedColumn({ value, segments = 14, tone = 'amber', hotBelow, height = 104, width = 44, sx }: LedColumnProps) {
+  const t = useTheme();
+  const lit = Math.round((value / 100) * segments);
+  const hot = hotBelow !== undefined && value < hotBelow;
+  const c = hot ? t.nerv.hue.redHi : toneHue(t, tone);
+  return (
+    <Box sx={[{ display: 'flex', flexDirection: 'column-reverse', gap: '3px', width, height }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      {Array.from({ length: segments }, (_, i) => (
+        <Box
+          key={i}
+          sx={{
+            flex: 1,
+            borderRadius: `${t.nerv.radius.chip}px`,
+            transition: 'opacity 120ms linear, background 120ms linear',
+            ...(i < lit
+              ? { background: c, opacity: 1, boxShadow: `0 0 ${hot ? 6 : 5}px color-mix(in srgb, ${c} ${hot ? 60 : 50}%, transparent)` }
+              : { background: t.nerv.hue.greenDim, opacity: 0.3 }),
+          }}
+        />
+      ))}
+    </Box>
+  );
+}

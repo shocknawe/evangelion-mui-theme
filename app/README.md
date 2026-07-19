@@ -39,10 +39,14 @@ Mounted dark-only, as the theme ships (see [`src/main.tsx`](src/main.tsx)):
 ```
 src/
   main.tsx                  ThemeProvider + CssBaseline (dark)
-  App.tsx                   route switch: / → design system · /dashboard-01 → dashboard
+  App.tsx                   route switch: / → design system · /dashboard-0{1,2,3} → screens
   pages/DesignSystemPage    the whole reference, one scrolling page (route /)
   pages/Dashboard01Page     "Morning Brief" console screen (route /dashboard-01),
                             ported from sample-layouts/dashboard-01.html
+  pages/Dashboard02Page     "Project Deep Dive" (route /dashboard-02),
+                            ported from sample-layouts/dashboard-02.html
+  pages/Dashboard03Page     "Automation Central" (route /dashboard-03),
+                            ported from sample-layouts/dashboard-03.html
   components/               Shell (rail + scroll-spy TOC), Masthead, Footer, primitives
   sections/                 Foundations · Atoms · FormControls · DataDisplay ·
                             Feedback · Navigation · Patterns
@@ -52,8 +56,8 @@ src/
 
 Routing is a ~30-line `pathname` router ([`lib/router.ts`](src/lib/router.ts)) —
 no dependency, and it stays off the URL hash so the design-system page keeps its
-`#section` scroll-spy TOC. The design-system rail links to `/dashboard-01`; the
-dashboard sidebar links back.
+`#section` scroll-spy TOC. The design-system rail links to each `/dashboard-0N`
+screen; every dashboard links back.
 
 MUI components do the heavy lifting (TextField, Select, Checkbox, Switch, Slider,
 ToggleButtonGroup, Chip, Alert, Dialog, Tabs, Pagination, Breadcrumbs, List,

@@ -81,16 +81,18 @@ Reusable console-specific React components live in
 They pair with the theme (all read `theme.nerv.*`; none hardcode off-token) and
 cover the pieces MUI has no equivalent for — text (`BilingualLabel`,
 `MetadataBlock`, `SectionDivider`, `FieldLabel`), layout (`ConsoleFrame`,
-`ZoneTitle`, `Monogram`, `Stat`), status (`StatusLegend`, `Roster`, `StatTile`,
-`RailItem`, `GateRow`), inputs (`ChipRadioGroup`, `NumberStepper`, `HazardRating`,
-`TagInput`, `DateSegments`), nav (`FilterRail`, `WikiLink`, `ConsoleNav`),
-feedback (`HazardPrompt`, `GateDecisionDialog`), and data-viz (`SegmentedMeter`,
-`RadialGauge`, `BarColumnGauge`, `ProgressMeter`, `HealthColumns`, `Terminal`,
+`ZoneTitle`, `Monogram`, `Stat`, `GaugeCard`), status (`StatusLegend`, `Roster`,
+`StatTile`, `RailItem`, `GateRow`, `AgentCard`, `RecallNote`, `SinkRow`,
+`RoutineRow`), inputs (`ChipRadioGroup`, `NumberStepper`, `HazardRating`,
+`TagInput`, `DateSegments`), nav (`FilterChips`, `FilterRail`, `WikiLink`,
+`ConsoleNav`), feedback (`HazardPrompt`, `GateDecisionDialog`, `ApprovalBar`), and
+data-viz (`SegmentedMeter`, `RadialGauge`, `BarColumnGauge`, `ProgressMeter`,
+`SegmentBar`, `LedColumn`, `HealthColumns`, `Terminal`, `LogConsole`,
 `SevenSegClock`, `Marquee`, `LineChart`, `Waveform`, `ScanLattice`). The `app/`
 design-system page imports them from `@components` and doubles as live usage
-examples; `app/`'s `/dashboard-01` route assembles them into a full screen (ported
-from `sample-layouts/dashboard-01.html`). Prefer these (and stock MUI carrying the
-theme) over reinventing a pattern inline with `sx`.
+examples; `app/`'s `/dashboard-0{1,2,3}` routes assemble them into full screens
+(ported from the matching `sample-layouts/*.html`). Prefer these (and stock MUI
+carrying the theme) over reinventing a pattern inline with `sx`.
 
 Typecheck the theme against MUI types (no deps installed at root) with the
 Zapac reference's toolchain if needed:

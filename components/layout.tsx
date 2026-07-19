@@ -21,6 +21,10 @@ export interface ConsoleFrameProps {
   sidebar?: ReactNode;
   /** Right column (rail). Omit to drop the column. */
   rail?: ReactNode;
+  /** Optional full-width status bar pinned to the bottom (agents, vitals). */
+  footer?: ReactNode;
+  /** Alarm state — recolors the frame red and shows a top hazard stripe. */
+  alarm?: boolean;
   /** The scrolling main column. */
   children: ReactNode;
   /** Sidebar width (px). @default 198 */
@@ -31,6 +35,8 @@ export interface ConsoleFrameProps {
   headerHeight?: number;
   /** Height of the optional band row (px). @default 96 */
   bandHeight?: number;
+  /** Height of the optional footer row (px). @default 44 */
+  footerHeight?: number;
   sx?: SxProps<Theme>;
 }
 
@@ -50,11 +56,14 @@ export function ConsoleFrame({
   band,
   sidebar,
   rail,
+  footer,
+  alarm = false,
   children,
   sidebarWidth = 198,
   railWidth = 292,
   headerHeight = 100,
   bandHeight = 96,
+  footerHeight = 44,
   sx,
 }: ConsoleFrameProps) {
   const cols = [sidebar ? `${sidebarWidth}px` : null, '1fr', rail ? `${railWidth}px` : null].filter(Boolean).join(' ');
@@ -62,9 +71,10 @@ export function ConsoleFrame({
   const midRow = [sidebar ? 'side' : null, 'main', rail ? 'rail' : null].filter(Boolean).join(' ');
   const headCols = spanRow('head');
   const bandCols = spanRow('band');
-  const mdRows = [`${headerHeight}px`, band ? `${bandHeight}px` : null, '1fr'].filter(Boolean).join(' ');
-  const mdAreas = [`"${headCols}"`, band ? `"${bandCols}"` : null, `"${midRow}"`].filter(Boolean).join(' ');
-  const xsAreas = ['"head"', band ? '"band"' : null, sidebar ? '"side"' : null, '"main"', rail ? '"rail"' : null]
+  const footCols = spanRow('foot');
+  const mdRows = [`${headerHeight}px`, band ? `${bandHeight}px` : null, '1fr', footer ? `${footerHeight}px` : null].filter(Boolean).join(' ');
+  const mdAreas = [`"${headCols}"`, band ? `"${bandCols}"` : null, `"${midRow}"`, footer ? `"${footCols}"` : null].filter(Boolean).join(' ');
+  const xsAreas = ['"head"', band ? '"band"' : null, sidebar ? '"side"' : null, '"main"', rail ? '"rail"' : null, footer ? '"foot"' : null]
     .filter(Boolean)
     .join(' ');
 
@@ -89,7 +99,7 @@ export function ConsoleFrame({
           height: { xs: 'auto', md: 'calc(100vh - 28px)' },
           minHeight: { xs: 'calc(100vh - 28px)', md: 0 },
           backgroundColor: t.nerv.hue.void,
-          border: `3px solid ${t.nerv.hue.orange}`,
+          border: `3px solid ${alarm ? t.nerv.hue.redHi : t.nerv.hue.orange}`,
           clipPath: t.nerv.chamfer(28),
           boxShadow: '0 0 10px rgba(242,100,0,.4), inset 0 0 12px rgba(242,100,0,.14)',
           overflow: { xs: 'visible', md: 'hidden' },
@@ -112,6 +122,20 @@ export function ConsoleFrame({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
+      {alarm && (
+        <Box
+          aria-hidden
+          sx={(t) => ({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 6,
+            zIndex: 2,
+            background: `repeating-linear-gradient(45deg, ${t.nerv.hue.crimson} 0 10px, ${t.nerv.hue.void} 10px 20px)`,
+          })}
+        />
+      )}
       <Box component="header" sx={(t) => ({ gridArea: 'head', position: 'relative', zIndex: 1, borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
         {header}
       </Box>
@@ -131,6 +155,11 @@ export function ConsoleFrame({
       {rail && (
         <Box component="aside" sx={(t) => ({ ...region, gridArea: 'rail', borderLeft: { md: `1px solid ${t.nerv.hue.orange}` }, borderTop: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
           {rail}
+        </Box>
+      )}
+      {footer && (
+        <Box component="footer" sx={(t) => ({ gridArea: 'foot', position: 'relative', zIndex: 1, borderTop: `1px solid ${t.nerv.hue.orange}` })}>
+          {footer}
         </Box>
       )}
     </Box>
@@ -263,6 +292,64 @@ export function Stat({ label, value, tone = 'paper', sx }: StatProps) {
       >
         {value}
       </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* GaugeCard — a chamfered card framing one gauge (a trigger / channel). */
+
+export interface GaugeCardProps {
+  /** Small kanji-tagged channel label (e.g. `CRON · 定時`), tinted by `tone`. */
+  kind: ReactNode;
+  /** Condensed channel name (e.g. `NIGHTLY REVIEW`). */
+  name: ReactNode;
+  /** The gauge itself (RadialGauge, SegmentBar, LedColumn, …). */
+  children: ReactNode;
+  /** Optional readout line under the gauge (tinted by `tone`). */
+  readout?: ReactNode;
+  /** Optional footer line (e.g. `NEXT: 02:00:00`), in dim green. */
+  sub?: ReactNode;
+  /** Border / accent hue — the channel's state color. @default 'mint' */
+  tone?: Tone;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A single-corner-chamfered card that frames one gauge as a monitored channel:
+ * a tinted channel label, a condensed name, the gauge, an optional readout, and
+ * an optional footer. The border carries the channel's state hue (color = state)
+ * — so a row of these reads as a legible trigger/channel bank.
+ *
+ * @example
+ * <GaugeCard tone="blue" kind="WATCHER · 監視" name="MEDIA WATCHER"
+ *   readout={<><b>45</b>% BUFFER</>} sub="POLLING: 10S">
+ *   <SegmentBar value={45} tone="blue" height={36} />
+ * </GaugeCard>
+ */
+export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', sx }: GaugeCardProps) {
+  return (
+    <Box
+      sx={[
+        (t) => ({
+          border: `1px solid ${toneHue(t, tone)}`,
+          p: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1,
+          clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%)',
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="span" sx={(t) => ({ fontSize: 9, letterSpacing: '0.16em', color: toneHue(t, tone), fontFamily: t.nerv.fonts.mono })}>{kind}</Box>
+      <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 16, color: t.nerv.hue.paper })}>{name}</Box>
+      {children}
+      {readout && (
+        <Box component="span" sx={(t) => ({ fontSize: 11, color: toneHue(t, tone), fontFamily: t.nerv.fonts.mono, '& b': { fontFamily: t.nerv.fonts.display, fontSize: 19, fontWeight: 700 } })}>{readout}</Box>
+      )}
+      {sub && <Box component="span" sx={(t) => ({ fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono })}>{sub}</Box>}
     </Box>
   );
 }

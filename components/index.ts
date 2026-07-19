@@ -29,19 +29,19 @@ export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel } from './tex
 export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps } from './text';
 
 // Layout & structure — the command shell and its scaffolding
-export { ConsoleFrame, ZoneTitle, Monogram, Stat } from './layout';
-export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps } from './layout';
+export { ConsoleFrame, ZoneTitle, Monogram, Stat, GaugeCard } from './layout';
+export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps, GaugeCardProps } from './layout';
 
 // Flow — step sequences
 export { StepFlow } from './flow';
 export type { StepFlowProps, StepFlowStep } from './flow';
 
 // Status
-export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote } from './status';
+export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow } from './status';
 export type {
   StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
   RailItemProps, GateRowProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
-  RecallNoteProps,
+  RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineStatus,
 } from './status';
 
 // Console form controls
@@ -51,17 +51,17 @@ export type {
 } from './inputs';
 
 // Navigation
-export { FilterRail, WikiLink, ConsoleNav } from './navigation';
-export type { FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem } from './navigation';
+export { FilterChips, FilterRail, WikiLink, ConsoleNav } from './navigation';
+export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem } from './navigation';
 
 // Feedback
 export { HazardPrompt, GateDecisionDialog, ApprovalBar } from './feedback';
 export type { HazardPromptProps, GateDecisionDialogProps, GateDecision, ApprovalBarProps } from './feedback';
 
 // Data-viz — meters & gauges
-export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar } from './meters';
+export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar, LedColumn } from './meters';
 export type {
-  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps,
+  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps, LedColumnProps,
 } from './meters';
 
 // Data-viz — terminal, clock, marquee, charts

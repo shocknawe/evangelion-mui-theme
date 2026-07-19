@@ -116,7 +116,9 @@ export function Dashboard02Page() {
         const i = Math.floor(Math.random() * prev.length);
         const roll = Math.random();
         const next: AgentStatus = roll < 0.6 ? 'ACTIVE' : roll < 0.85 ? 'REVIEWING' : 'IDLE';
-        return prev.map((a, x) => (x === i ? { ...a, status: next, task: next === 'IDLE' ? 'STANDBY' : a.task } : a));
+        // Only status changes; `task` stays the agent's real task (the STANDBY
+        // label is derived from status at render, so it isn't lost on re-activate).
+        return prev.map((a, x) => (x === i ? { ...a, status: next } : a));
       });
     }, 3600);
     return () => { clearInterval(feed); clearInterval(churn); };

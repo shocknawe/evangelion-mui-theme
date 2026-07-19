@@ -484,3 +484,157 @@ export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps)
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* SinkRow — a notification-sink status row (name · state · ping · stamp). */
+
+export type SinkStatus = 'ACTIVE' | 'CONNECTED' | 'OFFLINE';
+
+export interface SinkRowProps {
+  /** Sink name (e.g. `NTFY GATEWAY`). */
+  name: React.ReactNode;
+  status: SinkStatus;
+  /** Small state line under the name. @default the status word */
+  detail?: React.ReactNode;
+  /** Right-aligned latency readout. @default `—` when OFFLINE */
+  ping?: React.ReactNode;
+  /** Stamp label. @default `DOWN` when OFFLINE, else `LIVE` */
+  stampLabel?: string;
+  sx?: SxProps<Theme>;
+}
+
+const SINK_TONE: Record<SinkStatus, Tone> = { ACTIVE: 'mint', CONNECTED: 'blue', OFFLINE: 'red' };
+
+/**
+ * A delivery-sink row: name over a state line, a ping readout, and a state stamp.
+ * The hue is the sink's state (ACTIVE mint · CONNECTED blue · OFFLINE red);
+ * OFFLINE inverts the stamp to a solid red fill with black content (the
+ * figure/ground "recorded" grammar). Divided by a dotted hairline.
+ */
+export function SinkRow({ name, status, detail, ping, stampLabel, sx }: SinkRowProps) {
+  const offline = status === 'OFFLINE';
+  const label = stampLabel ?? (offline ? 'DOWN' : 'LIVE');
+  return (
+    <Box
+      sx={[
+        (t) => ({ display: 'flex', alignItems: 'center', gap: 1.25, borderBottom: `1px dotted ${t.nerv.hue.greenDim}`, py: 1, fontFamily: t.nerv.fonts.mono }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 12, flex: 1, minWidth: 0 })}>
+        {name}
+        <Box component="small" sx={(t) => ({ display: 'block', fontSize: 9, letterSpacing: '0.12em', mt: '2px', color: toneHue(t, SINK_TONE[status]) })}>
+          {detail ?? status}
+        </Box>
+      </Box>
+      <Box component="span" sx={(t) => ({ fontSize: 10, color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>{ping ?? (offline ? '—' : null)}</Box>
+      <Box
+        component="span"
+        sx={(t) => {
+          const c = toneHue(t, SINK_TONE[status]);
+          return {
+            flex: 'none',
+            fontSize: 9,
+            border: `1px solid ${c}`,
+            background: offline ? c : 'transparent',
+            color: offline ? t.nerv.hue.void : c,
+            p: '2px 8px',
+            borderRadius: `${t.nerv.radius.chip}px`,
+          };
+        }}
+      >
+        {label}
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* RoutineRow — a scheduled-routine row (id · name · kind · status · RUN). */
+
+export type RoutineStatus = 'PENDING' | 'SUCCESS' | 'RETRIED';
+
+export interface RoutineRowProps {
+  /** Routine id (e.g. `RT·01`). */
+  id: React.ReactNode;
+  /** Routine name. */
+  name: React.ReactNode;
+  /** Trigger kind (e.g. `CRON`). */
+  kind: React.ReactNode;
+  status: RoutineStatus;
+  /** Dim + desaturate (filtered out but never hidden). @default false */
+  dim?: boolean;
+  /** Fires when RUN is pressed. */
+  onRun?: () => void;
+  sx?: SxProps<Theme>;
+}
+
+const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'mint', RETRIED: 'red' };
+
+/**
+ * A routine-manager row: id · name · kind · a state stamp (PENDING blue ·
+ * SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and
+ * desaturates it (for filter-rail scoping) without removing it from the list.
+ */
+export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: RoutineRowProps) {
+  const reduced = useReducedMotion();
+  return (
+    <Box
+      sx={[
+        (t) => ({
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          border: `1px solid ${t.nerv.hue.greenDim}`,
+          p: '8px 10px',
+          fontFamily: t.nerv.fonts.mono,
+          opacity: dim ? 0.25 : 1,
+          filter: dim ? 'grayscale(.6)' : 'none',
+          transition: 'opacity 120ms linear',
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, fontSize: 10, whiteSpace: 'nowrap' })}>{id}</Box>
+      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })}>{name}</Box>
+      <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', whiteSpace: 'nowrap' })}>{kind}</Box>
+      <Box
+        component="span"
+        sx={(t) => {
+          const c = toneHue(t, ROUTINE_TONE[status]);
+          return {
+            flex: 'none',
+            fontSize: 9,
+            border: `1px solid ${c}`,
+            color: c,
+            p: '2px 8px',
+            borderRadius: `${t.nerv.radius.chip}px`,
+            textShadow: status === 'RETRIED' ? '0 0 4px currentColor' : 'none',
+            animation: status === 'RETRIED' && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+          };
+        }}
+      >
+        {status}
+      </Box>
+      <Box
+        component="button"
+        type="button"
+        onClick={onRun}
+        sx={(t) => ({
+          flex: 'none',
+          border: `1px solid ${t.nerv.hue.mint}`,
+          background: t.nerv.hue.void,
+          color: t.nerv.hue.mint,
+          fontSize: 9,
+          p: '3px 8px',
+          cursor: 'pointer',
+          fontFamily: t.nerv.fonts.mono,
+          '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void },
+          '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
+        })}
+      >
+        RUN
+      </Box>
+    </Box>
+  );
+}
