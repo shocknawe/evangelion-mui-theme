@@ -29,21 +29,27 @@ export const feedback: Pick<
       root: ({ theme }) => ({
         borderRadius: 0,
         border: '1px solid currentColor',
-        backgroundColor: v(theme).palette.background.default,
         fontFamily: theme.nerv.fonts.mono,
         fontSize: '0.75rem',
         letterSpacing: '0.04em',
         alignItems: 'center',
-        // Severity hues via class selectors (outline/standard share the hue;
-        // filled inverts to a solid-hue block with void content).
-        '&.MuiAlert-standardSuccess, &.MuiAlert-outlinedSuccess': { color: theme.nerv.hue.mint },
-        '&.MuiAlert-standardInfo, &.MuiAlert-outlinedInfo': { color: theme.nerv.hue.blue },
-        '&.MuiAlert-standardWarning, &.MuiAlert-outlinedWarning': { color: theme.nerv.hue.amber },
-        '&.MuiAlert-standardError, &.MuiAlert-outlinedError': { color: theme.nerv.hue.redHi },
-        '&.MuiAlert-filledSuccess': { backgroundColor: theme.nerv.hue.mint, color: theme.nerv.hue.void, borderColor: theme.nerv.hue.mint },
-        '&.MuiAlert-filledInfo': { backgroundColor: theme.nerv.hue.blue, color: theme.nerv.hue.void, borderColor: theme.nerv.hue.blue },
-        '&.MuiAlert-filledWarning': { backgroundColor: theme.nerv.hue.amber, color: theme.nerv.hue.void, borderColor: theme.nerv.hue.amber },
-        '&.MuiAlert-filledError': { backgroundColor: theme.nerv.hue.redHi, color: theme.nerv.hue.void, borderColor: theme.nerv.hue.redHi },
+        // The `severity` prop sets the state hue as the root `color`; the border
+        // and (for filled) the fill both track it via currentColor.
+        '&.MuiAlert-colorSuccess': { color: theme.nerv.hue.mint },
+        '&.MuiAlert-colorInfo': { color: theme.nerv.hue.blue },
+        '&.MuiAlert-colorWarning': { color: theme.nerv.hue.amber },
+        '&.MuiAlert-colorError': { color: theme.nerv.hue.redHi },
+        // Outline / standard = hairline stamp on void.
+        '&.MuiAlert-outlined, &.MuiAlert-standard': {
+          backgroundColor: v(theme).palette.background.default,
+        },
+        // Filled = the inverse (solid state hue, void content).
+        '&.MuiAlert-filled': {
+          backgroundColor: 'currentColor',
+          '& .MuiAlert-message, & .MuiAlert-icon, & .MuiAlert-action, & .MuiAlertTitle-root': {
+            color: theme.nerv.hue.void,
+          },
+        },
       }),
       icon: { opacity: 1 },
     },

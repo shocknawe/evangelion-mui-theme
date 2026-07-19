@@ -27,9 +27,12 @@ export const dataDisplay: Pick<
   | 'MuiListSubheader'
   | 'MuiTypography'
 > = {
-  // Chip = boxed stamp. Default outline; `stamp` variant inverts to a fill.
+  // Chip = boxed stamp. The `color` prop drives the state hue (mint/blue/amber/
+  // red); `outlined` = hairline stamp on void, `filled`/`stamp` = the inverse
+  // (solid hue, void content). Hue is set once as the root `color` so both the
+  // border (currentColor) and the fill track the color prop automatically.
   MuiChip: {
-    defaultProps: { variant: 'outlined', size: 'small' },
+    defaultProps: { variant: 'outlined', size: 'small', color: 'success' },
     styleOverrides: {
       root: ({ theme }) => ({
         borderRadius: theme.nerv.radius.chip,
@@ -38,28 +41,41 @@ export const dataDisplay: Pick<
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
         height: 22,
+        // State hue → currentColor. success=mint · info=blue · warning=amber · error=red.
+        '&.MuiChip-colorDefault': { color: theme.nerv.hue.mint },
+        '&.MuiChip-colorPrimary': { color: theme.nerv.hue.mint },
+        '&.MuiChip-colorSuccess': { color: theme.nerv.hue.mint },
+        '&.MuiChip-colorSecondary': { color: theme.nerv.hue.orange },
+        '&.MuiChip-colorInfo': { color: theme.nerv.hue.blue },
+        '&.MuiChip-colorWarning': { color: theme.nerv.hue.amber },
+        '&.MuiChip-colorError': { color: theme.nerv.hue.redHi },
+        '& .MuiChip-deleteIcon': {
+          color: 'currentColor',
+          opacity: 0.7,
+          '&:hover': { color: theme.nerv.hue.redHi, opacity: 1 },
+        },
         variants: [
           {
+            // Solid-fill inverse stamp (black content on the state hue).
             props: { variant: 'stamp' },
             style: {
               backgroundColor: 'currentColor',
-              color: theme.nerv.hue.redHi,
               border: 0,
               '& .MuiChip-label': { color: theme.nerv.hue.void },
+              '& .MuiChip-deleteIcon': { color: theme.nerv.hue.void, '&:hover': { color: theme.nerv.hue.void } },
             },
           },
         ],
       }),
-      outlined: ({ theme }) => ({
+      outlined: {
         border: '1px solid currentColor',
-        color: theme.nerv.hue.mint,
         backgroundColor: 'transparent',
-      }),
+      },
       // Filled = the inverse stamp (solid hue, void content).
       filled: ({ theme }) => ({
-        backgroundColor: theme.nerv.hue.mint,
-        color: theme.nerv.hue.void,
+        backgroundColor: 'currentColor',
         border: 0,
+        '& .MuiChip-label': { color: theme.nerv.hue.void },
       }),
     },
   },

@@ -78,12 +78,17 @@ Typecheck the theme against MUI types (no deps installed at root) with the
 Zapac reference's toolchain if needed:
 `references/zapac-material-ui/node_modules/.bin/tsc -p <tsconfig>`.
 
+Or run the **`app/`** demo (Vite + React + MUI v9), which mounts the theme from
+source and type-checks it in context: `cd app && npm install && npm run dev`
+(build: `npm run build`). See [`app/README.md`](app/README.md).
+
 ## Repo layout
 
 ```
 DESIGN.md · PRODUCT.md · design-system.{md,html}   # design authority
 REFERENCE-ANALYSIS.md · DESIGN-SYSTEM.md           # research
 theme/                                             # the MUI v7 theme
+app/                                               # Vite+React demo mounting the theme (rebuilds design-system.html)
 experiment-*.html · experiment-sonnet-*.html       # standalone studies
 dashboard-0{1,2,3}.html · form-0{1,2}.html         # reference implementations
 landing-page-0{1,2}.html · wiki.html
