@@ -40,6 +40,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `BilingualLabel` | Large kanji + small English caption (the signature bimodal pair) | `jp`, `en`, `tone`, `size`, `layout` |
 | `MetadataBlock` | Monospace `KEY:VALUE` spec block | `entries` (object or `[k,v][]`), `keyTone` |
 | `SectionDivider` | Numbered index chip · kanji · title · fading rule | `index`, `jp`, `title` |
+| `SectionHeading` | Marketing section head: numbered chip · big heading · fading rule · note | `index`, `children`, `note` |
 | `FieldLabel` | Bilingual caption above a form control | `jp`, `label`, `children` |
 
 ### Layout & structure
@@ -63,6 +64,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `GateRow` | Decision-queue row: id · title · leader · priority · REVIEW/verdict | `id`, `title`, `sub`, `priority`, `verdict`, `onReview` |
 | `SinkRow` | Delivery-sink row: name · state · ping · LIVE/DOWN stamp (OFFLINE inverts) | `name`, `status`, `detail`, `ping`, `stampLabel` |
 | `RoutineRow` | Routine-manager row: id · name · kind · status stamp · RUN (dims when filtered) | `id`, `name`, `kind`, `status`, `dim`, `onRun` |
+| `ModuleCard` | Pinnable product/system card: kanji glyph · code · title · body · state stamp | `jp`, `code`, `codeSub`, `title`, `children`, `stamp`, `meta`, `tone`, `selected`, `onSelect` |
 
 ### Form controls
 
@@ -82,6 +84,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `FilterRail` | Filter chips that **dim** non-matching rows (never hide) | `filters`, `rows`, `value`/`defaultValue`, `onChange`, `allValue` |
 | `WikiLink` | `[[cross-reference]]` that inverts on hover | `children`, `href`, `onClick` |
 | `ConsoleNav` | Stacked boxed bilingual sidebar nav (current = mint inversion) | `items`, `value`, `onChange` |
+| `SiteHeader` | Sticky landing-page brand nav: mark · wordmark · links (smooth-scroll `#anchors`) · actions slot | `name`, `version`, `links`, `actions` |
 
 ### Feedback
 
@@ -100,7 +103,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `LedColumn` | Single vertical LED column (fills bottom-up; goes red under `hotBelow`) | `value`, `segments`, `tone`, `hotBelow` |
 | `ProgressMeter` | Horizontal segmented progress bar with a drawn threshold/gate line | `value`, `segments`, `threshold`, `label`, `readout`, `animated` |
 | `HealthColumns` | Mini stepped system-health bars (biased-nominal) | `columns`, `cells`, `animated` |
-| `Terminal` | Amber diagnostic log with dot-leader checks + typewriter reveal | `rows`, `title`, `typewriter`, `speed` |
+| `Terminal` | Amber diagnostic log — dot-leader checks, `exec` rows (timestamp + rich message), typewriter reveal | `rows`, `title`, `typewriter`, `speed`, `minBodyHeight`, `maxBodyHeight` |
 | `SevenSegClock` | Seven-segment clock (mint chip + orange readout skins) | `variant` |
 | `Marquee` | Red hazard status ticker (linear scroll) | `items`, `speedSec` |
 | `LineChart` | Glowing sparse trend line over a dotted field | `label`, `status`, `height` |
@@ -146,3 +149,7 @@ matching `sample-layouts/` file:
 - **`/dashboard-03`** — "Automation Central" (a `GaugeCard` trigger bank, a live
   `LogConsole` exec feed, `SinkRow` sinks, and a `FilterChips`-scoped `RoutineRow`
   manager inside a `ConsoleFrame` with a footer status bar + retry-alarm state).
+- **`/landing-01`** — "Command Center" marketing homepage (`SiteHeader` sticky nav,
+  a live hero cluster, `Marquee` ticker, a `ModuleCard` system grid, `ScanLattice`
+  separator, `RadialGauge`/`SegmentBar`/`LedColumn` telemetry, a `Terminal` feed,
+  and a Y/N deploy gate — section breaks by `SectionHeading`).

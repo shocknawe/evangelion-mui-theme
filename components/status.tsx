@@ -638,3 +638,116 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* ModuleCard — a pinnable system/product card (jp glyph · code · desc · stamp). */
+
+export interface ModuleCardProps {
+  /** Large kanji glyph (the system's mark). */
+  jp: string;
+  /** System code (e.g. `SYS·01`). */
+  code: React.ReactNode;
+  /** Second code line (e.g. the system name). */
+  codeSub?: React.ReactNode;
+  /** Card title. */
+  title: React.ReactNode;
+  /** Body copy. */
+  children: React.ReactNode;
+  /** Footer state stamp text (e.g. `NOMINAL`). */
+  stamp: React.ReactNode;
+  /** Right-aligned footer meta (e.g. `2,482 NODES`). */
+  meta?: React.ReactNode;
+  /** Stamp hue — the system's state. @default 'mint' */
+  tone?: Tone;
+  /** Pinned/selected — mint border + glow. @default false */
+  selected?: boolean;
+  onSelect?: () => void;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A product/system card for landing pages: a glowing kanji glyph with a `SYS·NN`
+ * code, a title, body copy, and a footer state stamp (tinted by `tone`). Chrome
+ * (orange) border at rest that lifts on hover; selecting it pins the card with a
+ * mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
+ */
+export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, sx }: ModuleCardProps) {
+  return (
+    <Box
+      component="button"
+      type="button"
+      aria-pressed={selected}
+      onClick={onSelect}
+      sx={[
+        (t) => ({
+          display: 'flex',
+          flexDirection: 'column',
+          textAlign: 'left',
+          width: '100%',
+          minHeight: 150,
+          cursor: 'pointer',
+          background: t.nerv.hue.void,
+          border: `1px solid ${selected ? t.nerv.hue.mint : t.nerv.hue.orange}`,
+          p: '16px',
+          fontFamily: t.nerv.fonts.mono,
+          boxShadow: selected ? '0 0 16px rgba(82,242,154,.4)' : 'none',
+          transition: 'box-shadow 120ms linear, border-color 120ms linear',
+          '&:hover': selected ? null : { boxShadow: '0 0 14px rgba(242,100,0,.35), inset 0 0 16px rgba(242,100,0,.06)' },
+          '&:focus-visible': { outline: `2px solid ${t.nerv.hue.paper}`, outlineOffset: 3 },
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+        <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: 26, lineHeight: 1, color: t.nerv.hue.mintHi, textTransform: 'none', textShadow: '0 0 8px rgba(82,242,154,.3)' })}>{jp}</Box>
+        <Box sx={(t) => ({ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.1em', textAlign: 'right', lineHeight: 1.4 })}>
+          {code}
+          {codeSub && <Box component="span" sx={{ display: 'block' }}>{codeSub}</Box>}
+        </Box>
+      </Box>
+      <Box component="h3" sx={(t) => ({ m: 0, fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 19, color: t.nerv.hue.mint, letterSpacing: '0.04em', mb: '6px' })}>{title}</Box>
+      <Box component="p" sx={(t) => ({ m: 0, flex: 1, fontSize: 11, lineHeight: 1.55, color: t.nerv.hue.mint, opacity: 0.7, textTransform: 'none' })}>{children}</Box>
+      <Box sx={(t) => ({ mt: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 9, color: t.nerv.hue.greenMap })}>
+        <Box component="span" sx={(t) => ({ border: `1px solid ${toneHue(t, tone)}`, color: toneHue(t, tone), p: '2px 6px', letterSpacing: '0.08em' })}>{stamp}</Box>
+        {meta && <Box component="span">{meta}</Box>}
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* MemoryRow — a queryable memory-vault entry (id · title · kind stamp). */
+
+export type MemoryKind = 'decision' | 'pattern' | 'mistake' | 'learning';
+
+export interface MemoryRowProps {
+  /** Node id (e.g. `MEM-2024-0512`). */
+  id: React.ReactNode;
+  /** The entry title. */
+  title: React.ReactNode;
+  /** Entry kind — colors the stamp (decision amber · pattern mint · mistake red · learning blue). */
+  kind: MemoryKind;
+  sx?: SxProps<Theme>;
+}
+
+const MEMORY_TONE: Record<MemoryKind, Tone> = { decision: 'amber', pattern: 'mint', mistake: 'red', learning: 'blue' };
+
+/**
+ * A memory-vault entry row: a fixed-width node id, a readable title, and a kind
+ * stamp colored by type. Hovering lifts the border to orange. Pair with
+ * {@link FilterChips} to build a queryable memory list.
+ */
+export function MemoryRow({ id, title, kind, sx }: MemoryRowProps) {
+  return (
+    <Box
+      sx={[
+        (t) => ({ display: 'flex', alignItems: 'center', gap: 1.75, border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '12px 14px', fontFamily: t.nerv.fonts.mono, '&:hover': { borderColor: t.nerv.hue.orange } }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="span" sx={(t) => ({ fontSize: 9, color: t.nerv.hue.greenMap, width: 120, flex: 'none', letterSpacing: '0.06em' })}>{id}</Box>
+      <Box component="span" sx={(t) => ({ flex: 1, minWidth: 0, fontSize: 12, color: t.nerv.hue.mint, textTransform: 'none', letterSpacing: '0.02em' })}>{title}</Box>
+      <Box component="span" sx={(t) => ({ flex: 'none', fontSize: 9, border: `1px solid ${toneHue(t, MEMORY_TONE[kind])}`, color: toneHue(t, MEMORY_TONE[kind]), p: '2px 7px', letterSpacing: '0.08em' })}>{kind.toUpperCase()}</Box>
+    </Box>
+  );
+}

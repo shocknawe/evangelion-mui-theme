@@ -25,8 +25,8 @@ export { type Tone, toneHue } from './util';
 export { useReducedMotion, pad2 } from './hooks';
 
 // Text — bimodal / bilingual pairings
-export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel } from './text';
-export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps } from './text';
+export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel, SectionHeading } from './text';
+export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps, SectionHeadingProps } from './text';
 
 // Layout & structure — the command shell and its scaffolding
 export { ConsoleFrame, ZoneTitle, Monogram, Stat, GaugeCard } from './layout';
@@ -37,11 +37,12 @@ export { StepFlow } from './flow';
 export type { StepFlowProps, StepFlowStep } from './flow';
 
 // Status
-export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow } from './status';
+export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow, ModuleCard, MemoryRow } from './status';
 export type {
   StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
   RailItemProps, GateRowProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
-  RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineStatus,
+  RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineStatus, ModuleCardProps,
+  MemoryRowProps, MemoryKind,
 } from './status';
 
 // Console form controls
@@ -51,8 +52,8 @@ export type {
 } from './inputs';
 
 // Navigation
-export { FilterChips, FilterRail, WikiLink, ConsoleNav } from './navigation';
-export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem } from './navigation';
+export { FilterChips, FilterRail, WikiLink, ConsoleNav, SiteHeader } from './navigation';
+export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem, SiteHeaderProps, SiteHeaderLink } from './navigation';
 
 // Feedback
 export { HazardPrompt, GateDecisionDialog, ApprovalBar } from './feedback';

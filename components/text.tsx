@@ -248,3 +248,56 @@ export function FieldLabel({ jp, label, children, htmlFor, sx }: FieldLabelProps
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* SectionHeading — a marketing section head: index chip · heading · rule · note. */
+
+export interface SectionHeadingProps {
+  /** Sequence number shown in the solid chip (e.g. `"01"`). */
+  index: string;
+  /** The heading text (condensed caps). */
+  children: ReactNode;
+  /** Right-aligned note after the fading rule (orange chrome). */
+  note?: ReactNode;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A numbered landing-section header: a filled orange index chip, a large
+ * condensed heading, a fading orange rule, and an optional right-aligned note.
+ * Bigger and looser than {@link SectionDivider} (which is for numbered form
+ * sequences); use this for marketing section breaks. Number a sequence only when
+ * it *is* one.
+ *
+ * @example
+ * <SectionHeading index="02" note="LIVE · 1HZ">SYSTEM TELEMETRY</SectionHeading>
+ */
+export function SectionHeading({ index, children, note, sx }: SectionHeadingProps) {
+  return (
+    <Box sx={[{ display: 'flex', alignItems: 'center', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box
+        component="span"
+        sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 13, color: t.nerv.hue.void, background: t.nerv.hue.orange, p: '3px 8px', letterSpacing: '0.1em', flex: 'none' })}
+      >
+        {index}
+      </Box>
+      <Box
+        component="h2"
+        sx={(t) => ({
+          m: 0,
+          fontFamily: t.nerv.fonts.display,
+          fontWeight: 700,
+          fontSize: 'clamp(22px, 3vw, 34px)',
+          color: t.nerv.hue.mintHi,
+          letterSpacing: '0.03em',
+          textShadow: '0 0 8px rgba(82,242,154,.3)',
+          textTransform: 'uppercase',
+        })}
+      >
+        {children}
+      </Box>
+      <Box sx={(t) => ({ flex: 1, height: 2, background: `linear-gradient(90deg, ${t.nerv.hue.orange}, transparent)` })} />
+      {note && <Box component="span" sx={(t) => ({ fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.12em', whiteSpace: 'nowrap', flex: 'none', fontFamily: t.nerv.fonts.mono })}>{note}</Box>}
+    </Box>
+  );
+}

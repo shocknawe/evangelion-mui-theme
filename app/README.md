@@ -39,7 +39,7 @@ Mounted dark-only, as the theme ships (see [`src/main.tsx`](src/main.tsx)):
 ```
 src/
   main.tsx                  ThemeProvider + CssBaseline (dark)
-  App.tsx                   route switch: / → design system · /dashboard-0{1,2,3} → screens
+  App.tsx                   route switch: / → design system · /dashboard-0{1,2,3} · /landing-01
   pages/DesignSystemPage    the whole reference, one scrolling page (route /)
   pages/Dashboard01Page     "Morning Brief" console screen (route /dashboard-01),
                             ported from sample-layouts/dashboard-01.html
@@ -47,6 +47,8 @@ src/
                             ported from sample-layouts/dashboard-02.html
   pages/Dashboard03Page     "Automation Central" (route /dashboard-03),
                             ported from sample-layouts/dashboard-03.html
+  pages/Landing01Page       "Command Center" marketing homepage (route /landing-01),
+                            ported from sample-layouts/landing-page-01.html
   components/               Shell (rail + scroll-spy TOC), Masthead, Footer, primitives
   sections/                 Foundations · Atoms · FormControls · DataDisplay ·
                             Feedback · Navigation · Patterns

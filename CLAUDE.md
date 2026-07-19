@@ -80,17 +80,18 @@ Reusable console-specific React components live in
 [`components/`](components/) — see [`components/README.md`](components/README.md).
 They pair with the theme (all read `theme.nerv.*`; none hardcode off-token) and
 cover the pieces MUI has no equivalent for — text (`BilingualLabel`,
-`MetadataBlock`, `SectionDivider`, `FieldLabel`), layout (`ConsoleFrame`,
-`ZoneTitle`, `Monogram`, `Stat`, `GaugeCard`), status (`StatusLegend`, `Roster`,
-`StatTile`, `RailItem`, `GateRow`, `AgentCard`, `RecallNote`, `SinkRow`,
-`RoutineRow`), inputs (`ChipRadioGroup`, `NumberStepper`, `HazardRating`,
-`TagInput`, `DateSegments`), nav (`FilterChips`, `FilterRail`, `WikiLink`,
-`ConsoleNav`), feedback (`HazardPrompt`, `GateDecisionDialog`, `ApprovalBar`), and
-data-viz (`SegmentedMeter`, `RadialGauge`, `BarColumnGauge`, `ProgressMeter`,
-`SegmentBar`, `LedColumn`, `HealthColumns`, `Terminal`, `LogConsole`,
-`SevenSegClock`, `Marquee`, `LineChart`, `Waveform`, `ScanLattice`). The `app/`
-design-system page imports them from `@components` and doubles as live usage
-examples; `app/`'s `/dashboard-0{1,2,3}` routes assemble them into full screens
+`MetadataBlock`, `SectionDivider`, `SectionHeading`, `FieldLabel`), layout
+(`ConsoleFrame`, `ZoneTitle`, `Monogram`, `Stat`, `GaugeCard`), status
+(`StatusLegend`, `Roster`, `StatTile`, `RailItem`, `GateRow`, `AgentCard`,
+`RecallNote`, `SinkRow`, `RoutineRow`, `ModuleCard`), inputs (`ChipRadioGroup`,
+`NumberStepper`, `HazardRating`, `TagInput`, `DateSegments`), nav (`FilterChips`,
+`FilterRail`, `WikiLink`, `ConsoleNav`, `SiteHeader`), feedback (`HazardPrompt`,
+`GateDecisionDialog`, `ApprovalBar`), and data-viz (`SegmentedMeter`,
+`RadialGauge`, `BarColumnGauge`, `ProgressMeter`, `SegmentBar`, `LedColumn`,
+`HealthColumns`, `Terminal`, `LogConsole`, `SevenSegClock`, `Marquee`,
+`LineChart`, `Waveform`, `ScanLattice`). The `app/` design-system page imports
+them from `@components` and doubles as live usage examples; `app/`'s
+`/dashboard-0{1,2,3}` and `/landing-01` routes assemble them into full screens
 (ported from the matching `sample-layouts/*.html`). Prefer these (and stock MUI
 carrying the theme) over reinventing a pattern inline with `sx`.
 

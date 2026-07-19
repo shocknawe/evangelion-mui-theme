@@ -6,6 +6,7 @@
 import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
+import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
 /* FilterChips — a row of orange scope chips (active = solid inversion). */
@@ -148,26 +149,66 @@ export interface ConsoleNavProps {
   onChange: (value: string) => void;
   /** Accessible name for the nav. */
   ariaLabel?: string;
+  /**
+   * `boxed` (default) = stacked boxed buttons, current inverted to a mint fill.
+   * `rail` = compact app-shell links (kanji + label on one line) with a mint
+   * left-edge indicator on the current item.
+   */
+  variant?: 'boxed' | 'rail';
   sx?: SxProps<Theme>;
 }
 
 /**
- * The sidebar navigation used across console screens: stacked boxed buttons,
- * kanji over English, the current item inverted to a solid mint fill with black
- * content. Vertical and scrollable inside a fixed rail.
+ * The sidebar navigation used across console screens. `boxed` stacks bilingual
+ * buttons and inverts the current one to a solid mint fill with black content;
+ * `rail` renders quieter one-line links (kanji glyph + label) with a mint
+ * left-edge indicator — the app-shell sidebar grammar.
  *
  * @example
  * <ConsoleNav value={s} onChange={setS} items={[{ value: 'eng', jp: '工学', en: 'ENGINEERING' }]} />
+ * <ConsoleNav variant="rail" value={s} onChange={setS} items={items} />
  */
-export function ConsoleNav({ items, value, onChange, ariaLabel, sx }: ConsoleNavProps) {
+export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed', sx }: ConsoleNavProps) {
+  const rail = variant === 'rail';
   return (
     <Box
       component="nav"
       aria-label={ariaLabel}
-      sx={[{ display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[{ display: 'flex', flexDirection: 'column', gap: rail ? '3px' : '6px', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {items.map((item) => {
         const on = value === item.value;
+        if (rail)
+          return (
+            <Box
+              key={item.value}
+              component="button"
+              aria-current={on}
+              onClick={() => onChange(item.value)}
+              sx={(t) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                textAlign: 'left',
+                cursor: 'pointer',
+                background: on ? 'rgba(82,242,154,.08)' : 'transparent',
+                border: 0,
+                borderLeft: `2px solid ${on ? t.nerv.hue.mint : 'transparent'}`,
+                boxShadow: on ? 'inset 0 0 12px rgba(82,242,154,.08)' : 'none',
+                color: on ? t.nerv.hue.mintHi : t.nerv.hue.mint,
+                opacity: on ? 1 : 0.72,
+                fontSize: 12,
+                letterSpacing: '0.05em',
+                p: '9px 10px',
+                fontFamily: t.nerv.fonts.mono,
+                '&:hover': on ? null : { opacity: 1, background: 'rgba(82,242,154,.06)', borderLeftColor: t.nerv.hue.greenDim },
+                '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
+              })}
+            >
+              <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontSize: 14, textTransform: 'none', opacity: 0.8, width: 16, flex: 'none' })}>{item.jp}</Box>
+              {item.en}
+            </Box>
+          );
         return (
           <Box
             key={item.value}
@@ -199,6 +240,96 @@ export function ConsoleNav({ items, value, onChange, ariaLabel, sx }: ConsoleNav
           </Box>
         );
       })}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* SiteHeader — a sticky brand nav bar for landing / marketing pages. */
+
+export interface SiteHeaderLink {
+  label: string;
+  /** In-page `#anchor` (smooth-scrolled) or a full URL. */
+  href: string;
+}
+
+export interface SiteHeaderProps {
+  /** Brand wordmark (e.g. `JAIRUS_OS`). */
+  name: ReactNode;
+  /** Small version/tag after the wordmark (orange chrome). */
+  version?: ReactNode;
+  /** Nav links, pushed to the right. */
+  links?: SiteHeaderLink[];
+  /** Right-most slot (clock, status chip, CTA). */
+  actions?: ReactNode;
+  /** Max content width (px). @default 1180 */
+  maxWidth?: number;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * The sticky top bar for a landing page: the diamond brand mark + wordmark +
+ * version, a row of nav links, and a right-hand actions slot. In-page `#anchor`
+ * links smooth-scroll to their target (instant under reduced motion); other hrefs
+ * behave normally.
+ */
+export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, sx }: SiteHeaderProps) {
+  const reduced = useReducedMotion();
+  const onLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith('#')) return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  return (
+    <Box
+      component="header"
+      sx={[
+        (t) => ({
+          position: 'sticky',
+          top: 0,
+          zIndex: t.zIndex.appBar,
+          background: 'rgba(10,10,10,.94)',
+          borderBottom: `2px solid ${t.nerv.hue.orange}`,
+          boxShadow: '0 0 14px rgba(242,100,0,.25)',
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box sx={{ maxWidth, mx: 'auto', px: 3, height: 60, display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
+          <Box sx={(t) => ({ width: 16, height: 16, background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
+          <Box component="b" sx={(t) => ({ fontSize: 20, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
+          {version && <Box component="span" sx={(t) => ({ fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
+        </Box>
+        {links.length > 0 && (
+          <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', fontSize: 11, letterSpacing: '0.12em' }}>
+            {links.map((l) => (
+              <Box
+                key={l.href}
+                component="a"
+                href={l.href}
+                onClick={(e) => onLink(e, l.href)}
+                sx={(t) => ({
+                  color: t.nerv.hue.mint,
+                  opacity: 0.7,
+                  textDecoration: 'none',
+                  borderBottom: '1px solid transparent',
+                  pb: '2px',
+                  fontFamily: t.nerv.fonts.mono,
+                  '&:hover': { opacity: 1, borderBottomColor: t.nerv.hue.mint },
+                  '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2, opacity: 1 },
+                })}
+              >
+                {l.label}
+              </Box>
+            ))}
+          </Box>
+        )}
+        {actions && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: links.length ? 0 : 'auto' }}>{actions}</Box>}
+      </Box>
     </Box>
   );
 }

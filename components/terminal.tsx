@@ -10,10 +10,14 @@ import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
 import { type Tone, toneHue } from './util';
 
-/** A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`. */
+/**
+ * A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`; `exec`
+ * renders a dim timestamp before a rich (colored) message.
+ */
 export type TerminalRow =
   | { k: 'line' | 'rule' | 'note' | 'sum'; t: string }
-  | { k: 'chk'; l: string; ok: boolean };
+  | { k: 'chk'; l: string; ok: boolean }
+  | { k: 'exec'; ts: string; msg: ReactNode };
 
 export interface TerminalProps {
   /** Log rows, top→bottom. Defaults to a sample diagnostic. */
@@ -24,6 +28,10 @@ export interface TerminalProps {
   typewriter?: boolean;
   /** Interval between typed rows (ms). @default 130 */
   speed?: number;
+  /** Min height of the scrolling body (px). @default 150 */
+  minBodyHeight?: number;
+  /** Max height of the body before it scrolls (px, or `'none'` to grow). @default 190 */
+  maxBodyHeight?: number | 'none';
   sx?: SxProps<Theme>;
 }
 
@@ -40,7 +48,7 @@ const DEFAULT_ROWS: TerminalRow[] = [
   { k: 'sum', t: '7 CHECKS · 6 PASS · 1 FLAGGED' },
 ];
 
-export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, sx }: TerminalProps) {
+export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, minBodyHeight = 150, maxBodyHeight = 190, sx }: TerminalProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const still = reduced || !typewriter;
@@ -77,8 +85,15 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
           ))}
         </Box>
       </Box>
-      <Box ref={bodyRef} sx={{ p: '12px 14px', fontSize: 12, lineHeight: 1.5, minHeight: 150, maxHeight: 190, overflowY: 'auto', fontFamily: t.nerv.fonts.mono }}>
+      <Box ref={bodyRef} sx={{ p: '12px 14px', fontSize: 12, lineHeight: 1.5, minHeight: minBodyHeight, maxHeight: maxBodyHeight === 'none' ? undefined : maxBodyHeight, overflowY: 'auto', fontFamily: t.nerv.fonts.mono }}>
         {rows.slice(0, count).map((r, i) => {
+          if (r.k === 'exec')
+            return (
+              <Box key={i} sx={{ whiteSpace: 'pre-wrap', textTransform: 'none', letterSpacing: '0.02em' }}>
+                <Box component="span" sx={{ color: t.nerv.hue.amberDim }}>{r.ts}</Box>{' '}
+                <Box component="span" sx={{ color: t.nerv.hue.amber }}>{r.msg}</Box>
+              </Box>
+            );
           if (r.k === 'chk')
             return (
               <Box key={i} sx={{ display: 'flex', alignItems: 'baseline', gap: 1, whiteSpace: 'nowrap' }}>
