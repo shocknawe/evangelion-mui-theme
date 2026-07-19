@@ -174,22 +174,28 @@ export function Shell({ children }: { children: ReactNode }) {
           <Box sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', color: t.nerv.hue.orange })}>
             SCREENS
           </Box>
-          <Box
-            component="a"
-            href="/dashboard-01"
-            onClick={(e) => { e.preventDefault(); navigate('/dashboard-01'); }}
-            sx={(t) => ({
-              fontFamily: t.nerv.fonts.mono,
-              fontSize: 11,
-              color: t.nerv.hue.mint,
-              textDecoration: 'none',
-              letterSpacing: '0.04em',
-              '&:hover': { color: t.nerv.hue.mintHi },
-              '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
-            })}
-          >
-            図 DASHBOARD-01 · MORNING BRIEF →
-          </Box>
+          {[
+            { to: '/dashboard-01', label: '図 DASHBOARD-01 · MORNING BRIEF →' },
+            { to: '/dashboard-02', label: '図 DASHBOARD-02 · PROJECT DEEP DIVE →' },
+          ].map((s) => (
+            <Box
+              key={s.to}
+              component="a"
+              href={s.to}
+              onClick={(e) => { e.preventDefault(); navigate(s.to); }}
+              sx={(t) => ({
+                fontFamily: t.nerv.fonts.mono,
+                fontSize: 11,
+                color: t.nerv.hue.mint,
+                textDecoration: 'none',
+                letterSpacing: '0.04em',
+                '&:hover': { color: t.nerv.hue.mintHi },
+                '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+              })}
+            >
+              {s.label}
+            </Box>
+          ))}
         </Box>
       </Box>
 

@@ -382,3 +382,105 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* AgentCard — a selectable status card (name · stamp · task). */
+
+export type AgentStatus = 'ACTIVE' | 'REVIEWING' | 'IDLE';
+
+export interface AgentCardProps {
+  /** Agent name (e.g. `AGENT·ORION`). */
+  name: string;
+  status: AgentStatus;
+  /** Current task line. */
+  task: string;
+  /** Selected = the console currently shown (thicker border + inset glow). */
+  selected?: boolean;
+  onSelect?: () => void;
+  sx?: SxProps<Theme>;
+}
+
+const AGENT_TONE: Record<AgentStatus, Tone> = { ACTIVE: 'mint', REVIEWING: 'blue', IDLE: 'dim' };
+
+/**
+ * A boxed agent card colored by status (ACTIVE mint · REVIEWING blue · IDLE dim),
+ * with a name, a status stamp, and a task line. Selecting it (to view a console,
+ * say) thickens the border and adds an inset glow.
+ */
+export function AgentCard({ name, status, task, selected = false, onSelect, sx }: AgentCardProps) {
+  return (
+    <Box
+      component="button"
+      type="button"
+      aria-pressed={selected}
+      onClick={onSelect}
+      sx={[
+        (t) => {
+          const c = toneHue(t, AGENT_TONE[status]);
+          return {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '7px',
+            textAlign: 'left',
+            width: '100%',
+            cursor: 'pointer',
+            background: t.nerv.hue.void,
+            border: `${selected ? 2 : 1}px solid ${c}`,
+            color: c,
+            p: '9px 11px',
+            fontFamily: t.nerv.fonts.mono,
+            boxShadow: selected ? `inset 0 0 12px color-mix(in srgb, ${c} 16%, transparent)` : 'none',
+            '&:focus-visible': { outline: `2px dashed ${t.nerv.hue.amber}`, outlineOffset: 2 },
+          };
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '6px' }}>
+        <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 15, letterSpacing: '0.02em' })}>{name}</Box>
+        <Box component="span" sx={(t) => ({ border: '1px solid currentColor', borderRadius: `${t.nerv.radius.chip}px`, p: '1px 6px', fontSize: 9, letterSpacing: '0.06em', flex: 'none' })}>{status}</Box>
+      </Box>
+      <Box component="span" sx={{ fontSize: 9, letterSpacing: '0.06em', opacity: 0.85 }}>{task}</Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* RecallNote — a cited memory / decision-log fragment. */
+
+export interface RecallNoteProps {
+  /** Reference id (e.g. `DECISION_LOG_32`). */
+  id: string;
+  /** The recalled text. */
+  children: React.ReactNode;
+  /** Left-edge + tint accent. @default 'teal' */
+  tone?: Tone;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A recalled reference — a cited decision-log or memory fragment with a tinted
+ * left edge (1px, per the no-side-stripe rule), an amber id, and readable body
+ * text.
+ */
+export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps) {
+  return (
+    <Box
+      sx={[
+        (t) => {
+          const c = toneHue(t, tone);
+          return {
+            border: `1px solid ${t.nerv.hue.greenDim}`,
+            borderLeft: `1px solid ${c}`,
+            background: `color-mix(in srgb, ${c} 6%, transparent)`,
+            p: '7px 10px',
+          };
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box sx={(t) => ({ fontSize: 9, color: t.nerv.hue.amber, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono })}>{id}</Box>
+      <Box sx={(t) => ({ fontSize: 11, color: t.nerv.hue.paper, textTransform: 'none', lineHeight: 1.5, mt: '3px', fontFamily: t.nerv.fonts.mono })}>{children}</Box>
+    </Box>
+  );
+}

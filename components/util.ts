@@ -10,7 +10,7 @@ import type { Theme } from '@mui/material/styles';
  *   red    critical / error                   orange chrome (borders, chips) — never a data value
  *   paper  max-brightness fill                 dim    idle border / disabled
  */
-export type Tone = 'mint' | 'green' | 'amber' | 'blue' | 'red' | 'orange' | 'paper' | 'dim';
+export type Tone = 'mint' | 'green' | 'amber' | 'blue' | 'red' | 'orange' | 'paper' | 'dim' | 'teal';
 
 /** Resolve a {@link Tone} to its canonical `theme.nerv.hue` value. */
 export function toneHue(t: Theme, tone: Tone): string {
@@ -24,6 +24,7 @@ export function toneHue(t: Theme, tone: Tone): string {
     case 'orange': return h.orange;
     case 'paper': return h.paper;
     case 'dim': return h.greenDim;
+    case 'teal': return h.teal;
   }
 }
 

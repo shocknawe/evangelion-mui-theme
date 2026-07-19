@@ -32,11 +32,16 @@ export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, Fiel
 export { ConsoleFrame, ZoneTitle, Monogram, Stat } from './layout';
 export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps } from './layout';
 
+// Flow — step sequences
+export { StepFlow } from './flow';
+export type { StepFlowProps, StepFlowStep } from './flow';
+
 // Status
-export { StatusLegend, Roster, StatTile, RailItem, GateRow } from './status';
+export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote } from './status';
 export type {
   StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
-  RailItemProps, GateRowProps, GatePriority, GateVerdict,
+  RailItemProps, GateRowProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
+  RecallNoteProps,
 } from './status';
 
 // Console form controls
@@ -50,18 +55,18 @@ export { FilterRail, WikiLink, ConsoleNav } from './navigation';
 export type { FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem } from './navigation';
 
 // Feedback
-export { HazardPrompt, GateDecisionDialog } from './feedback';
-export type { HazardPromptProps, GateDecisionDialogProps, GateDecision } from './feedback';
+export { HazardPrompt, GateDecisionDialog, ApprovalBar } from './feedback';
+export type { HazardPromptProps, GateDecisionDialogProps, GateDecision, ApprovalBarProps } from './feedback';
 
 // Data-viz — meters & gauges
-export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns } from './meters';
+export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar } from './meters';
 export type {
-  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps,
+  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps,
 } from './meters';
 
 // Data-viz — terminal, clock, marquee, charts
-export { Terminal } from './terminal';
-export type { TerminalProps, TerminalRow } from './terminal';
+export { Terminal, LogConsole } from './terminal';
+export type { TerminalProps, TerminalRow, LogConsoleProps, LogRow, LogTag } from './terminal';
 export { SevenSegClock } from './clock';
 export type { SevenSegClockProps } from './clock';
 export { Marquee } from './marquee';

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type Tone, toneHue } from './util';
 
 const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 
@@ -319,12 +320,14 @@ export interface HealthColumnsProps {
   cells?: number;
   /** Repaint on an interval (biased-nominal). @default true */
   animated?: boolean;
+  /** Reports lit vs total cells on each repaint — drive a "SYSTEM HEALTH" word. */
+  onSummary?: (lit: number, total: number) => void;
   sx?: SxProps<Theme>;
 }
 
 /** A tiny system-health readout: stepped mini columns, mostly nominal (mint),
  *  with occasional amber peaks. Static under reduced motion. */
-export function HealthColumns({ columns = 4, cells = 7, animated = true, sx }: HealthColumnsProps) {
+export function HealthColumns({ columns = 4, cells = 7, animated = true, onSummary, sx }: HealthColumnsProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const seed = () => Array.from({ length: columns }, () => ({ lit: 3 + Math.floor(Math.random() * 3), hot: Math.random() < 0.16 }));
@@ -336,6 +339,11 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, sx }: H
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animated, reduced, columns]);
+
+  const litTotal = cols.reduce((s, c) => s + c.lit, 0);
+  useEffect(() => {
+    onSummary?.(litTotal, columns * cells);
+  }, [litTotal, columns, cells, onSummary]);
 
   return (
     <Box sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]} role="img" aria-label="System health">
@@ -360,6 +368,48 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, sx }: H
             );
           })}
         </Box>
+      ))}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* SegmentBar — a thin inline horizontal segmented fill. */
+
+export interface SegmentBarProps {
+  /** Fill percentage (0..100). */
+  value: number;
+  /** Number of segments. @default 20 */
+  segments?: number;
+  /** Fill hue. @default 'mint' */
+  tone?: Tone;
+  /** Bar height (px). @default 8 */
+  height?: number;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A compact horizontal progress bar drawn as discrete lit segments — the inline
+ * counterpart to {@link ProgressMeter} (no labels or threshold), for a `PROGRESS
+ * … 62%` row.
+ */
+export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx }: SegmentBarProps) {
+  const t = useTheme();
+  const lit = Math.round((value / 100) * segments);
+  const c = toneHue(t, tone);
+  return (
+    <Box sx={[{ display: 'flex', gap: '2px', height, flex: 1, minWidth: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      {Array.from({ length: segments }, (_, i) => (
+        <Box
+          key={i}
+          sx={{
+            flex: 1,
+            borderRadius: '1px',
+            ...(i < lit
+              ? { background: c, opacity: 1, boxShadow: `0 0 4px color-mix(in srgb, ${c} 40%, transparent)` }
+              : { background: t.nerv.hue.greenDim, opacity: 0.3 }),
+          }}
+        />
       ))}
     </Box>
   );

@@ -101,3 +101,80 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* LogConsole — a live tagged, timestamped log view with a status bar. */
+
+export type LogTag = 'info' | 'warn' | 'git' | 'gate';
+
+export interface LogRow {
+  /** Timestamp string (e.g. `14:02:51`). */
+  ts: string;
+  tag: LogTag;
+  msg: string;
+}
+
+export interface LogConsoleProps {
+  /** Header caption. @default 'STDOUT' */
+  title?: string;
+  /** Rows, oldest→newest. The view auto-scrolls to the newest. */
+  rows: LogRow[];
+  /** Connection state shown at right. @default true */
+  connected?: boolean;
+  /** Blinking cursor after the last row. @default true */
+  cursor?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+const TAG_TONE: Record<LogTag, keyof Theme['nerv']['hue']> = {
+  info: 'amber',
+  warn: 'redHi',
+  git: 'greenMap',
+  gate: 'mint',
+};
+
+/**
+ * A streaming agent console: an amber-framed log of timestamped, tagged rows
+ * (`[INFO]` amber · `[WARN]` red · `[GIT]` green · `[GATE]` mint) under a title +
+ * connection status bar. Presentational — feed it `rows`; it auto-scrolls to the
+ * newest and can host an approval bar beneath it.
+ */
+export function LogConsole({ title = 'STDOUT', rows, connected = true, cursor = true, sx }: LogConsoleProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [rows]);
+
+  return (
+    <Box sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.12em', border: `1px solid ${t.nerv.hue.amberDim}`, borderBottom: 'none', p: '6px 12px', fontFamily: t.nerv.fonts.mono }}>
+        <span>{title}</span>
+        <Box component="span" sx={{ color: connected ? t.nerv.hue.mint : t.nerv.hue.redHi }}>
+          {connected ? 'CONNECTED: OK' : 'CONNECTION LOST'}
+        </Box>
+      </Box>
+      <Box
+        ref={bodyRef}
+        role="log"
+        aria-live="polite"
+        sx={{ flex: 1, overflowY: 'auto', border: `1px solid ${t.nerv.hue.amberDim}`, p: '10px 14px', background: 'rgba(244,159,9,.02)', fontSize: 12, lineHeight: 1.5, fontFamily: t.nerv.fonts.mono }}
+      >
+        {rows.map((r, i) => (
+          <Box key={i} sx={{ display: 'flex', gap: 1.25, whiteSpace: 'nowrap' }}>
+            <Box component="span" sx={{ color: t.nerv.hue.amberDim, flex: 'none' }}>{r.ts}</Box>
+            <Box component="span" sx={{ flex: 'none', fontWeight: 700, color: t.nerv.hue[TAG_TONE[r.tag]], textShadow: r.tag === 'warn' || r.tag === 'gate' ? '0 0 4px currentColor' : 'none' }}>
+              [{r.tag.toUpperCase()}]
+            </Box>
+            <Box component="span" sx={{ color: t.nerv.hue.amber, textTransform: 'none', whiteSpace: 'normal' }}>{r.msg}</Box>
+          </Box>
+        ))}
+        {cursor && (
+          <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
+        )}
+      </Box>
+    </Box>
+  );
+}

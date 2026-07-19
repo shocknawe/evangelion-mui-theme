@@ -101,15 +101,17 @@ export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150
 
 export interface WaveformProps {
   /** Left caption. @default 'INFERENCE FIELD' */
-  label?: string;
+  label?: React.ReactNode;
   /** Right caption. @default '共振 / RESONANCE' */
-  caption?: string;
-  /** Height (px). @default 96 */
-  height?: number;
+  caption?: React.ReactNode;
+  /** Height (px or CSS length). @default 96 */
+  height?: number | string;
+  /** Draw the 1px frame. Set false when embedding in a bordered band. @default true */
+  frame?: boolean;
   sx?: SxProps<Theme>;
 }
 
-export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONANCE', height = 96, sx }: WaveformProps) {
+export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONANCE', height = 96, frame = true, sx }: WaveformProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const time = useRef(0);
@@ -136,9 +138,9 @@ export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONA
   }, 83, reduced);
 
   return (
-    <Box sx={[(th) => ({ position: 'relative', height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box sx={[(th) => ({ position: 'relative', height, border: frame ? `1px solid ${th.nerv.hue.greenDim}` : 0, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
-      <Box sx={{ position: 'absolute', left: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono }}>{label}</Box>
+      <Box sx={{ position: 'absolute', left: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mint, fontWeight: 400 } }}>{label}</Box>
       <Box sx={{ position: 'absolute', right: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>{caption}</Box>
     </Box>
   );

@@ -215,3 +215,65 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
     </Modal>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* ApprovalBar — an inline human-in-the-loop gate (approve / deny). */
+
+export interface ApprovalBarProps {
+  /** Small caption. @default 'PENDING APPROVAL ·' */
+  label?: string;
+  /** What awaits approval. */
+  item: React.ReactNode;
+  onApprove?: () => void;
+  onDeny?: () => void;
+  /** Approve button text. @default 'APPROVE · 承認' */
+  approveLabel?: string;
+  /** Deny button text. @default 'DENY · 否認' */
+  denyLabel?: string;
+  /** Once decided, replaces the buttons with a verdict (buttons disable). */
+  verdict?: { ok: boolean; text: React.ReactNode } | null;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * The human gate: a bar naming what's pending, with approve / deny actions
+ * (approve blinks like a primary action). Once decided, the actions disable and
+ * a mint/red verdict takes their place. Pairs under {@link LogConsole}.
+ */
+export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, sx }: ApprovalBarProps) {
+  const decided = !!verdict;
+  const btn = (t: Theme, hue: string, blink = false) => ({
+    border: `1px solid ${hue}`,
+    background: t.nerv.hue.void,
+    color: hue,
+    p: '8px 16px',
+    fontSize: 11,
+    cursor: decided ? 'default' : 'pointer',
+    fontFamily: t.nerv.fonts.mono,
+    opacity: decided ? 0.35 : 1,
+    animation: blink && !decided ? `nervBtnBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+    '&:hover': decided ? null : { background: hue, color: t.nerv.hue.void },
+    '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+    '&:disabled': { opacity: 0.35, cursor: 'default', animation: 'none' },
+  });
+  return (
+    <Box
+      sx={[
+        (t) => ({ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', border: `1px solid ${t.nerv.hue.amberDim}`, borderTop: 'none', p: '10px 12px' }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box component="span" sx={(t) => ({ fontSize: 9, letterSpacing: '0.16em', color: t.nerv.hue.amber, fontFamily: t.nerv.fonts.mono })}>{label}</Box>
+      <Box component="span" sx={(t) => ({ fontSize: 12, color: t.nerv.hue.paper, fontFamily: t.nerv.fonts.mono })}>{item}</Box>
+      <Box sx={{ flex: 1 }} />
+      {verdict ? (
+        <Box component="span" sx={(t) => ({ fontSize: 11, color: verdict.ok ? t.nerv.hue.mint : t.nerv.hue.redHi, fontFamily: t.nerv.fonts.mono })}>{verdict.text}</Box>
+      ) : (
+        <>
+          <Box component="button" disabled={decided} onClick={onApprove} sx={(t) => btn(t, t.nerv.hue.mint, true)}>{approveLabel}</Box>
+          <Box component="button" disabled={decided} onClick={onDeny} sx={(t) => btn(t, t.nerv.hue.redHi)}>{denyLabel}</Box>
+        </>
+      )}
+    </Box>
+  );
+}

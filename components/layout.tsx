@@ -15,6 +15,8 @@ import { type Tone, toneHue } from './util';
 export interface ConsoleFrameProps {
   /** Full-width top band. */
   header: ReactNode;
+  /** Optional full-width band directly under the header (e.g. a separator). */
+  band?: ReactNode;
   /** Left column (nav). Omit to drop the column. */
   sidebar?: ReactNode;
   /** Right column (rail). Omit to drop the column. */
@@ -27,6 +29,8 @@ export interface ConsoleFrameProps {
   railWidth?: number;
   /** Header band height (px). @default 100 */
   headerHeight?: number;
+  /** Height of the optional band row (px). @default 96 */
+  bandHeight?: number;
   sx?: SxProps<Theme>;
 }
 
@@ -43,17 +47,26 @@ export interface ConsoleFrameProps {
  */
 export function ConsoleFrame({
   header,
+  band,
   sidebar,
   rail,
   children,
   sidebarWidth = 198,
   railWidth = 292,
   headerHeight = 100,
+  bandHeight = 96,
   sx,
 }: ConsoleFrameProps) {
   const cols = [sidebar ? `${sidebarWidth}px` : null, '1fr', rail ? `${railWidth}px` : null].filter(Boolean).join(' ');
+  const spanRow = (area: string) => [sidebar ? area : null, area, rail ? area : null].filter(Boolean).join(' ');
   const midRow = [sidebar ? 'side' : null, 'main', rail ? 'rail' : null].filter(Boolean).join(' ');
-  const headCols = [sidebar ? 'head' : null, 'head', rail ? 'head' : null].filter(Boolean).join(' ');
+  const headCols = spanRow('head');
+  const bandCols = spanRow('band');
+  const mdRows = [`${headerHeight}px`, band ? `${bandHeight}px` : null, '1fr'].filter(Boolean).join(' ');
+  const mdAreas = [`"${headCols}"`, band ? `"${bandCols}"` : null, `"${midRow}"`].filter(Boolean).join(' ');
+  const xsAreas = ['"head"', band ? '"band"' : null, sidebar ? '"side"' : null, '"main"', rail ? '"rail"' : null]
+    .filter(Boolean)
+    .join(' ');
 
   // Desktop: each region scrolls inside the fixed-height frame. Mobile: the
   // frame grows and the page scrolls as one, so regions must not clip.
@@ -83,11 +96,8 @@ export function ConsoleFrame({
           display: 'grid',
           // Desktop grid; stacks below md so the deck stays usable on mobile.
           gridTemplateColumns: { xs: '1fr', md: cols },
-          gridTemplateRows: { xs: 'auto', md: `${headerHeight}px 1fr` },
-          gridTemplateAreas: {
-            xs: `"head" ${sidebar ? '"side"' : ''} "main" ${rail ? '"rail"' : ''}`.trim(),
-            md: `"${headCols}" "${midRow}"`,
-          },
+          gridTemplateRows: { xs: 'auto', md: mdRows },
+          gridTemplateAreas: { xs: xsAreas, md: mdAreas },
           // Inner rule = the second frame line.
           '&::before': {
             content: '""',
@@ -105,6 +115,11 @@ export function ConsoleFrame({
       <Box component="header" sx={(t) => ({ gridArea: 'head', position: 'relative', zIndex: 1, borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
         {header}
       </Box>
+      {band && (
+        <Box sx={(t) => ({ gridArea: 'band', position: 'relative', zIndex: 1, overflow: 'hidden', borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
+          {band}
+        </Box>
+      )}
       {sidebar && (
         <Box component="aside" sx={(t) => ({ ...region, gridArea: 'side', borderRight: { md: `1px solid ${t.nerv.hue.orange}` }, borderBottom: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
           {sidebar}
