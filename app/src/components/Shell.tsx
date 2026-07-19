@@ -5,6 +5,7 @@
  */
 import { useEffect, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
+import { navigate } from '../lib/router';
 
 const TOC = [
   { id: 'foundations', k: '基', label: 'FOUNDATIONS' },
@@ -157,6 +158,38 @@ export function Shell({ children }: { children: ReactNode }) {
           <div>
             <b>DOC:</b> design-system.md
           </div>
+        </Box>
+
+        {/* screens — jump to a full assembly built from the same components */}
+        <Box
+          sx={(t) => ({
+            mt: 2,
+            pt: 1.5,
+            borderTop: `1px solid ${t.nerv.hue.greenDim}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+          })}
+        >
+          <Box sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 10, letterSpacing: '0.14em', color: t.nerv.hue.orange })}>
+            SCREENS
+          </Box>
+          <Box
+            component="a"
+            href="/dashboard-01"
+            onClick={(e) => { e.preventDefault(); navigate('/dashboard-01'); }}
+            sx={(t) => ({
+              fontFamily: t.nerv.fonts.mono,
+              fontSize: 11,
+              color: t.nerv.hue.mint,
+              textDecoration: 'none',
+              letterSpacing: '0.04em',
+              '&:hover': { color: t.nerv.hue.mintHi },
+              '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+            })}
+          >
+            図 DASHBOARD-01 · MORNING BRIEF →
+          </Box>
         </Box>
       </Box>
 

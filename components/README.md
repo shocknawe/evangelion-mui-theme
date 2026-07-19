@@ -42,6 +42,15 @@ and settles to its final frame when the user prefers reduced motion.
 | `SectionDivider` | Numbered index chip · kanji · title · fading rule | `index`, `jp`, `title` |
 | `FieldLabel` | Bilingual caption above a form control | `jp`, `label`, `children` |
 
+### Layout & structure
+
+| Component | What it is | Key props |
+|---|---|---|
+| `ConsoleFrame` | The chamfered command shell: full-width header over a `sidebar · main · rail` grid, orange double-frame, independent scroll regions (stacks on mobile) | `header`, `sidebar`, `rail`, `children`, `sidebarWidth`, `railWidth`, `headerHeight` |
+| `ZoneTitle` | Orange section label over a hairline rule, with optional amber meta | `children`, `aside` |
+| `Monogram` | Boxed bilingual monogram — glowing kanji over a caption | `jp`, `label`, `tone`, `size` |
+| `Stat` | Compact label/value vital (lighter than `StatTile`) | `label`, `value`, `tone` |
+
 ### Status
 
 | Component | What it is | Key props |
@@ -49,6 +58,8 @@ and settles to its final frame when the user prefers reduced motion.
 | `StatusLegend` | Row of bilingual status stamps (filled = active) | `items: {jp,en,tone,filled?}[]` |
 | `Roster` | Grid of selectable status tiles (OFFLINE inverts, CAUTION blinks) | `units`, `columns`, `onSelect` |
 | `StatTile` | Negative-space KPI: tiny label, giant numeral, tiny footer | `label`, `value`, `footer`, `tone` |
+| `RailItem` | Reminder / inbox row: title · subtitle · due, with a `done` strike | `title`, `sub`, `when`, `done` |
+| `GateRow` | Decision-queue row: id · title · leader · priority · REVIEW/verdict | `id`, `title`, `sub`, `priority`, `verdict`, `onReview` |
 
 ### Form controls
 
@@ -66,12 +77,14 @@ and settles to its final frame when the user prefers reduced motion.
 |---|---|---|
 | `FilterRail` | Filter chips that **dim** non-matching rows (never hide) | `filters`, `rows`, `value`/`defaultValue`, `onChange`, `allValue` |
 | `WikiLink` | `[[cross-reference]]` that inverts on hover | `children`, `href`, `onClick` |
+| `ConsoleNav` | Stacked boxed bilingual sidebar nav (current = mint inversion) | `items`, `value`, `onChange` |
 
 ### Feedback
 
 | Component | What it is | Key props |
 |---|---|---|
 | `HazardPrompt` | Full-bleed tri-channel Y/N decision surface (flashes on activate) | `jp`, `en`, `onDecide`, `height` |
+| `GateDecisionDialog` | Full-screen approve / deny / defer decision modal (focus-trapped, Esc-aware) | `open`, `item`, `onDecide`, `onClose`, `jp`, `en` |
 
 ### Data-viz
 
@@ -80,6 +93,8 @@ and settles to its final frame when the user prefers reduced motion.
 | `SegmentedMeter` | Vertical LED columns with a drawn threshold line | `values`/`defaultValues`, `segments`, `limitPct`, `columnLabels`, `animated` |
 | `RadialGauge` | Segmented arc with a big center readout | `value`, `label`, `segments`, `size`, `animated` |
 | `BarColumnGauge` | Horizontal LED bar over a column histogram | `columns`, `bar`, `animated` |
+| `ProgressMeter` | Horizontal segmented progress bar with a drawn threshold/gate line | `value`, `segments`, `threshold`, `label`, `readout`, `animated` |
+| `HealthColumns` | Mini stepped system-health bars (biased-nominal) | `columns`, `cells`, `animated` |
 | `Terminal` | Amber diagnostic log with dot-leader checks + typewriter reveal | `rows`, `title`, `typewriter`, `speed` |
 | `SevenSegClock` | Seven-segment clock (mint chip + orange readout skins) | `variant` |
 | `Marquee` | Red hazard status ticker (linear scroll) | `items`, `speedSec` |
@@ -116,4 +131,7 @@ pattern), so you can extend without fighting the defaults:
 ```
 
 Live examples of every component render in the demo app
-([`../app`](../app)) — the design-system page imports them all from `@components`.
+([`../app`](../app)): the design-system page (`/`) imports them all from
+`@components`, and the **`/dashboard-01`** route assembles them into a full
+"Morning Brief" console screen (header · sidebar · main · rail + the gate
+decision modal) — the layout ported from `sample-layouts/dashboard-01.html`.

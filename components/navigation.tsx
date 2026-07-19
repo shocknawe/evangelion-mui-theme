@@ -106,6 +106,78 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
 }
 
 /* ------------------------------------------------------------------ */
+/* ConsoleNav — a stacked boxed bilingual nav with figure/ground inversion. */
+
+export interface ConsoleNavItem {
+  value: string;
+  /** Kanji label (top line). */
+  jp: string;
+  /** English label (bottom line). */
+  en: string;
+}
+
+export interface ConsoleNavProps {
+  items: ConsoleNavItem[];
+  value: string;
+  onChange: (value: string) => void;
+  /** Accessible name for the nav. */
+  ariaLabel?: string;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * The sidebar navigation used across console screens: stacked boxed buttons,
+ * kanji over English, the current item inverted to a solid mint fill with black
+ * content. Vertical and scrollable inside a fixed rail.
+ *
+ * @example
+ * <ConsoleNav value={s} onChange={setS} items={[{ value: 'eng', jp: '工学', en: 'ENGINEERING' }]} />
+ */
+export function ConsoleNav({ items, value, onChange, ariaLabel, sx }: ConsoleNavProps) {
+  return (
+    <Box
+      component="nav"
+      aria-label={ariaLabel}
+      sx={[{ display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
+      {items.map((item) => {
+        const on = value === item.value;
+        return (
+          <Box
+            key={item.value}
+            component="button"
+            aria-current={on}
+            onClick={() => onChange(item.value)}
+            sx={(t) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '2px',
+              textAlign: 'left',
+              cursor: 'pointer',
+              p: '7px 10px',
+              background: on ? t.nerv.hue.mint : t.nerv.hue.void,
+              border: `1px solid ${on ? t.nerv.hue.mint : t.nerv.hue.greenDim}`,
+              color: on ? t.nerv.hue.void : t.nerv.hue.mint,
+              fontWeight: on ? 700 : 400,
+              '&:hover': on ? null : { borderColor: t.nerv.hue.mint },
+              '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
+            })}
+          >
+            <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: 16, lineHeight: 1, letterSpacing: '0.14em' })}>
+              {item.jp}
+            </Box>
+            <Box component="span" sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 10, letterSpacing: '0.12em', opacity: on ? 1 : 0.85 })}>
+              {item.en}
+            </Box>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* WikiLink — a [[cross-reference]] that inverts on hover. */
 
 export interface WikiLinkProps {

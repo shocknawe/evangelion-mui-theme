@@ -8,8 +8,6 @@ const themeSrc = (p: string) =>
   fileURLToPath(new URL(`../theme/${p}`, import.meta.url));
 const componentsSrc = (p: string) =>
   fileURLToPath(new URL(`../components/${p}`, import.meta.url));
-const appDep = (p: string) =>
-  fileURLToPath(new URL(`./node_modules/${p}`, import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -23,14 +21,12 @@ export default defineConfig({
       // The reusable component library, also consumed from source (repo root
       // `components/`) so token/override edits stay live with HMR.
       '@components': componentsSrc('index.ts'),
-      // The theme and component library live at the repo root with no adjacent
-      // node_modules, so their bare imports (`@mui/material/*`, `react`,
-      // `react-dom`) can't be resolved from there during the production build.
-      // Point those subtrees at this app's install. (Dev/serve resolves them
-      // against the app root already; this makes `vite build` agree.)
-      '@mui/material': appDep('@mui/material'),
-      react: appDep('react'),
-      'react-dom': appDep('react-dom'),
     },
+    // The theme + component library live at the repo root with no adjacent
+    // node_modules. `dedupe` resolves their bare peer imports to this app's
+    // single install (dev and `vite build` alike) AND guarantees one copy of
+    // each — path-aliasing React instead creates a second copy that breaks
+    // hooks ("Invalid hook call") once a portal component (Modal/Dialog) mounts.
+    dedupe: ['react', 'react-dom', '@mui/material', '@emotion/react', '@emotion/styled'],
   },
 });

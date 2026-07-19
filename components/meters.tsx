@@ -225,3 +225,142 @@ export function BarColumnGauge({ columns, bar, animated = true, sx }: BarColumnG
     </Box>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* ProgressMeter — a horizontal segmented bar with an optional threshold line. */
+
+export interface ProgressMeterProps {
+  /** Target completion (0..100). */
+  value: number;
+  /** Number of discrete segments. @default 25 */
+  segments?: number;
+  /** A drawn gate/threshold marker at this percentage. */
+  threshold?: { pct: number; label?: string };
+  /** Left caption after the percentage. @default 'COMPLETE' */
+  label?: string;
+  /** Right-aligned readout (e.g. an ETA). */
+  readout?: React.ReactNode;
+  /** Fill in stepped increments on mount. @default true */
+  animated?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+/**
+ * A horizontal progress meter drawn as discrete LED segments (never a continuous
+ * fill), with an optional threshold/gate line rendered as its own object. Fills
+ * in mechanical steps on mount; jumps straight to `value` under reduced motion.
+ */
+export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLETE', readout, animated = true, sx }: ProgressMeterProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const target = Math.round((value / 100) * segments);
+  const [fill, setFill] = useState(animated && !reduced ? 0 : target);
+
+  useEffect(() => {
+    if (!animated || reduced) {
+      setFill(target);
+      return;
+    }
+    setFill(0);
+    let n = 0;
+    const id = setInterval(() => {
+      n += 1;
+      setFill(n);
+      if (n >= target) clearInterval(id);
+    }, 90);
+    return () => clearInterval(id);
+  }, [target, animated, reduced]);
+
+  const pct = Math.round((fill / segments) * 100);
+
+  return (
+    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ position: 'relative', pt: '2px' }}>
+        <Box sx={{ display: 'flex', gap: '3px', height: 18 }}>
+          {Array.from({ length: segments }, (_, i) => (
+            <Box
+              key={i}
+              sx={{
+                flex: 1,
+                borderRadius: `${t.nerv.radius.chip}px`,
+                transition: 'opacity 120ms linear, background 120ms linear',
+                ...(i < fill ? { background: t.nerv.hue.mint, opacity: 1, boxShadow: '0 0 5px rgba(82,242,154,.45)' } : { background: t.nerv.hue.greenDim, opacity: 0.35 }),
+              }}
+            />
+          ))}
+        </Box>
+        {threshold && (
+          <Box sx={{ position: 'absolute', top: -4, bottom: -4, left: `${threshold.pct}%`, width: 2, background: t.nerv.hue.amber, boxShadow: '0 0 6px rgba(244,159,9,.6)' }}>
+            {threshold.label && (
+              <Box component="span" sx={{ position: 'absolute', top: -11, left: '50%', transform: 'translate(-50%, -100%)', color: t.nerv.hue.amber, background: t.nerv.hue.void, border: `1px solid ${t.nerv.hue.amber}`, borderRadius: `${t.nerv.radius.chip}px`, fontSize: 9, p: '1px 6px', whiteSpace: 'nowrap', fontFamily: t.nerv.fonts.mono }}>
+                {threshold.label}
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.greenMap, mt: '6px', fontFamily: t.nerv.fonts.mono }}>
+        <span>
+          <Box component="b" sx={{ color: t.nerv.hue.mint, fontWeight: 400 }}>{pct}%</Box> {label}
+        </span>
+        {readout && <span>{readout}</span>}
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* HealthColumns — mini stepped system-health bars for a header. */
+
+export interface HealthColumnsProps {
+  /** Number of columns. @default 4 */
+  columns?: number;
+  /** Cells per column. @default 7 */
+  cells?: number;
+  /** Repaint on an interval (biased-nominal). @default true */
+  animated?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+/** A tiny system-health readout: stepped mini columns, mostly nominal (mint),
+ *  with occasional amber peaks. Static under reduced motion. */
+export function HealthColumns({ columns = 4, cells = 7, animated = true, sx }: HealthColumnsProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const seed = () => Array.from({ length: columns }, () => ({ lit: 3 + Math.floor(Math.random() * 3), hot: Math.random() < 0.16 }));
+  const [cols, setCols] = useState(seed);
+
+  useEffect(() => {
+    if (!animated || reduced) return;
+    const id = setInterval(() => setCols(seed()), 700);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animated, reduced, columns]);
+
+  return (
+    <Box sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]} role="img" aria-label="System health">
+      {cols.map((col, ci) => (
+        <Box key={ci} sx={{ width: 9, display: 'flex', flexDirection: 'column-reverse', gap: '2px' }}>
+          {Array.from({ length: cells }, (_, i) => {
+            const on = i < col.lit;
+            const hot = on && col.hot && i === col.lit - 1;
+            return (
+              <Box
+                key={i}
+                sx={{
+                  height: 4,
+                  borderRadius: '1px',
+                  ...(on
+                    ? hot
+                      ? { background: t.nerv.hue.amber, boxShadow: '0 0 4px rgba(244,159,9,.5)' }
+                      : { background: t.nerv.hue.mint, boxShadow: '0 0 4px rgba(82,242,154,.5)' }
+                    : { background: t.nerv.hue.greenDim, opacity: 0.35 }),
+                }}
+              />
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
+}

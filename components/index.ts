@@ -28,9 +28,16 @@ export { useReducedMotion, pad2 } from './hooks';
 export { BilingualLabel, MetadataBlock, SectionDivider, FieldLabel } from './text';
 export type { BilingualLabelProps, MetadataBlockProps, SectionDividerProps, FieldLabelProps } from './text';
 
+// Layout & structure — the command shell and its scaffolding
+export { ConsoleFrame, ZoneTitle, Monogram, Stat } from './layout';
+export type { ConsoleFrameProps, ZoneTitleProps, MonogramProps, StatProps } from './layout';
+
 // Status
-export { StatusLegend, Roster, StatTile } from './status';
-export type { StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps } from './status';
+export { StatusLegend, Roster, StatTile, RailItem, GateRow } from './status';
+export type {
+  StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
+  RailItemProps, GateRowProps, GatePriority, GateVerdict,
+} from './status';
 
 // Console form controls
 export { ChipRadioGroup, NumberStepper, HazardRating, TagInput, DateSegments } from './inputs';
@@ -39,16 +46,18 @@ export type {
 } from './inputs';
 
 // Navigation
-export { FilterRail, WikiLink } from './navigation';
-export type { FilterRailProps, FilterRow, WikiLinkProps } from './navigation';
+export { FilterRail, WikiLink, ConsoleNav } from './navigation';
+export type { FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem } from './navigation';
 
 // Feedback
-export { HazardPrompt } from './feedback';
-export type { HazardPromptProps } from './feedback';
+export { HazardPrompt, GateDecisionDialog } from './feedback';
+export type { HazardPromptProps, GateDecisionDialogProps, GateDecision } from './feedback';
 
 // Data-viz — meters & gauges
-export { SegmentedMeter, RadialGauge, BarColumnGauge } from './meters';
-export type { SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps } from './meters';
+export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns } from './meters';
+export type {
+  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps,
+} from './meters';
 
 // Data-viz — terminal, clock, marquee, charts
 export { Terminal } from './terminal';

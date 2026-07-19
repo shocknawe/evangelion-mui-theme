@@ -79,14 +79,18 @@ import { theme } from './theme';
 Reusable console-specific React components live in
 [`components/`](components/) — see [`components/README.md`](components/README.md).
 They pair with the theme (all read `theme.nerv.*`; none hardcode off-token) and
-cover the pieces MUI has no equivalent for: `BilingualLabel`, `MetadataBlock`,
-`SectionDivider`, `FieldLabel`, `StatusLegend`, `Roster`, `StatTile`,
-`ChipRadioGroup`, `NumberStepper`, `HazardRating`, `TagInput`, `DateSegments`,
-`FilterRail`, `WikiLink`, `HazardPrompt`, `SegmentedMeter`, `RadialGauge`,
-`BarColumnGauge`, `Terminal`, `SevenSegClock`, `Marquee`, `LineChart`,
-`Waveform`, `ScanLattice`. The `app/` sections import them from `@components` and
-double as live usage examples. Prefer these (and stock MUI carrying the theme)
-over reinventing a pattern inline with `sx`.
+cover the pieces MUI has no equivalent for — text (`BilingualLabel`,
+`MetadataBlock`, `SectionDivider`, `FieldLabel`), layout (`ConsoleFrame`,
+`ZoneTitle`, `Monogram`, `Stat`), status (`StatusLegend`, `Roster`, `StatTile`,
+`RailItem`, `GateRow`), inputs (`ChipRadioGroup`, `NumberStepper`, `HazardRating`,
+`TagInput`, `DateSegments`), nav (`FilterRail`, `WikiLink`, `ConsoleNav`),
+feedback (`HazardPrompt`, `GateDecisionDialog`), and data-viz (`SegmentedMeter`,
+`RadialGauge`, `BarColumnGauge`, `ProgressMeter`, `HealthColumns`, `Terminal`,
+`SevenSegClock`, `Marquee`, `LineChart`, `Waveform`, `ScanLattice`). The `app/`
+design-system page imports them from `@components` and doubles as live usage
+examples; `app/`'s `/dashboard-01` route assembles them into a full screen (ported
+from `sample-layouts/dashboard-01.html`). Prefer these (and stock MUI carrying the
+theme) over reinventing a pattern inline with `sx`.
 
 Typecheck the theme against MUI types (no deps installed at root) with the
 Zapac reference's toolchain if needed:
