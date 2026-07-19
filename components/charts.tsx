@@ -1,15 +1,19 @@
 /**
- * Canvas / SVG data-viz: a sparse trend line, a braided waveform separator, and
- * a static scan-lattice separator. Colours are pulled from theme tokens so the
- * canvas stays on-palette. Animation halts (final frame drawn) under reduced
- * motion. Ported from sonnet-18 (refined) / exp-06 / exp-04.
+ * Canvas / SVG data-viz — a sparse trend line, a braided waveform separator, and
+ * a static scan-lattice separator. Colors are pulled from theme tokens so the
+ * canvas stays on-palette; animation halts (final frame drawn) under reduced
+ * motion.
  */
 import { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
-import { useReducedMotion } from '../lib/motion';
+import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
+import { useReducedMotion } from './hooks';
 
-function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: number, frame: number) => void, intervalMs: number, reduced: boolean) {
+function useCanvas(
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number, frame: number) => void,
+  intervalMs: number,
+  reduced: boolean,
+) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const cv = ref.current;
@@ -41,7 +45,20 @@ function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: number, f
   return ref;
 }
 
-export function LineChart() {
+/* ------------------------------------------------------------------ */
+/* LineChart — a glowing sparse trend line over a dotted field. */
+
+export interface LineChartProps {
+  /** Corner caption; the highlighted word is `status`. @default 'RESONANCE' */
+  label?: string;
+  /** Highlighted status word. @default 'STABLE' */
+  status?: string;
+  /** Height (px). @default 150 */
+  height?: number;
+  sx?: SxProps<Theme>;
+}
+
+export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150, sx }: LineChartProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const data = useRef<number[]>(Array.from({ length: 48 }, (_, i) => 50 + Math.sin(i / 4) * 18));
@@ -51,40 +68,48 @@ export function LineChart() {
     data.current.shift();
     const d = data.current;
     ctx.clearRect(0, 0, W, H);
-    // sparse baseline dots
     ctx.fillStyle = 'rgba(60,156,108,.4)';
     for (let x = 30; x < W; x += 60) for (let y = H * 0.25; y < H; y += H * 0.28) ctx.fillRect(x, y, 1.5, 1.5);
-    // midline
     ctx.strokeStyle = 'rgba(36,108,60,.5)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
     const stepX = W / (d.length - 1);
     const pts = d.map((v, i) => [i * stepX, H - (v / 100) * H] as const);
-    // area fill
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, 'rgba(82,242,154,.28)');
     grad.addColorStop(1, 'rgba(82,242,154,0)');
     ctx.beginPath(); ctx.moveTo(0, H); pts.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath();
     ctx.fillStyle = grad; ctx.fill();
-    // glowing line
     ctx.strokeStyle = t.nerv.hue.mint; ctx.lineWidth = 2; ctx.shadowColor = t.nerv.hue.mint; ctx.shadowBlur = 6;
     ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.shadowBlur = 0;
-    // leading dot
     const [lx, ly] = pts[pts.length - 1];
     ctx.fillStyle = t.nerv.hue.mintHi; ctx.beginPath(); ctx.arc(lx - 1, ly, 3, 0, 7); ctx.fill();
   }, 140, reduced);
 
   return (
-    <Box sx={{ position: 'relative', height: 150, border: `1px solid ${t.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }}>
+    <Box sx={[(th) => ({ position: 'relative', height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
       <Box sx={{ position: 'absolute', left: 10, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', zIndex: 2, fontFamily: t.nerv.fonts.mono }}>
-        RESONANCE · <Box component="b" sx={{ color: t.nerv.hue.mint }}>STABLE</Box>
+        {label} · <Box component="b" sx={{ color: t.nerv.hue.mint }}>{status}</Box>
       </Box>
     </Box>
   );
 }
 
-export function Waveform() {
+/* ------------------------------------------------------------------ */
+/* Waveform — a braided oscilloscope separator. */
+
+export interface WaveformProps {
+  /** Left caption. @default 'INFERENCE FIELD' */
+  label?: string;
+  /** Right caption. @default '共振 / RESONANCE' */
+  caption?: string;
+  /** Height (px). @default 96 */
+  height?: number;
+  sx?: SxProps<Theme>;
+}
+
+export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONANCE', height = 96, sx }: WaveformProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const time = useRef(0);
@@ -111,19 +136,30 @@ export function Waveform() {
   }, 83, reduced);
 
   return (
-    <Box sx={{ position: 'relative', height: 96, border: `1px solid ${t.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }}>
+    <Box sx={[(th) => ({ position: 'relative', height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
-      <Box sx={{ position: 'absolute', left: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono }}>INFERENCE FIELD</Box>
-      <Box sx={{ position: 'absolute', right: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>共振 / RESONANCE</Box>
+      <Box sx={{ position: 'absolute', left: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono }}>{label}</Box>
+      <Box sx={{ position: 'absolute', right: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>{caption}</Box>
     </Box>
   );
 }
 
-export function ScanLattice() {
+/* ------------------------------------------------------------------ */
+/* ScanLattice — a static schematic grid with a targeting reticle. */
+
+export interface ScanLatticeProps {
+  /** Height (px). @default 110 */
+  height?: number;
+  /** Reticle label. @default 'NODE·0x512' */
+  nodeLabel?: string;
+  sx?: SxProps<Theme>;
+}
+
+export function ScanLattice({ height = 110, nodeLabel = 'NODE·0x512', sx }: ScanLatticeProps) {
   const t = useTheme();
   const cx = 300, cy = 55;
   return (
-    <Box sx={{ height: 110, border: `1px solid ${t.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }}>
+    <Box sx={[(th) => ({ height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <svg viewBox="0 0 600 110" preserveAspectRatio="none" width="100%" height="100%" style={{ display: 'block' }}>
         {Array.from({ length: Math.ceil((600 - 20) / 42) }, (_, i) => 20 + i * 42).map((x) => (
           <line key={`v${x}`} x1={x} y1={0} x2={x} y2={110} stroke={t.nerv.hue.greenDim} strokeWidth={1} opacity={0.5} />
@@ -138,7 +174,7 @@ export function ScanLattice() {
         <circle cx={cx} cy={cy} r={4} fill={t.nerv.hue.orange} />
         <line x1={cx - 38} y1={cy} x2={cx + 38} y2={cy} stroke={t.nerv.hue.orange} strokeWidth={1} />
         <line x1={cx} y1={cy - 38} x2={cx} y2={cy + 38} stroke={t.nerv.hue.orange} strokeWidth={1} />
-        <text x={cx + 30} y={cy - 12} fill={t.nerv.hue.redHi} fontSize={9} fontFamily="monospace">NODE·0x512</text>
+        <text x={cx + 30} y={cy - 12} fill={t.nerv.hue.redHi} fontSize={9} fontFamily="monospace">{nodeLabel}</text>
       </svg>
     </Box>
   );

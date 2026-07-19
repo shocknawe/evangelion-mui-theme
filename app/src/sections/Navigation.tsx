@@ -1,6 +1,6 @@
 /**
- * 06 · NAVIGATION — filter rail (dims, never hides), sidebar nav with the
- * figure/ground inversion (MUI List), and MUI Tabs, Pagination, Breadcrumbs.
+ * 06 · NAVIGATION — the FilterRail and WikiLink library components beside stock
+ * MUI (List with the figure/ground inversion, Tabs, Pagination, Breadcrumbs).
  */
 import { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -13,13 +13,9 @@ import Pagination from '@mui/material/Pagination';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
+import { FilterRail, WikiLink } from '@components';
 import { Section, SpecCard, SpecGrid, ZoneTitle } from '../components/primitives';
 
-const ROWS: [string, string, 'CRON' | 'EVENT'][] = [
-  ['RT·01', 'NIGHTLY REVIEW', 'CRON'],
-  ['RT·05', 'TICKET INGEST', 'EVENT'],
-  ['RT·02', 'JOURNAL SYNC', 'CRON'],
-];
 const NAV = [
   ['工学', 'ENGINEERING'],
   ['記憶', 'KNOWLEDGE'],
@@ -28,35 +24,22 @@ const NAV = [
 
 export function Navigation() {
   const t = useTheme();
-  const [filter, setFilter] = useState<'ALL' | 'CRON' | 'EVENT'>('ALL');
   const [nav, setNav] = useState(0);
   const [tab, setTab] = useState(0);
 
   return (
-    <Section id="nav" idx="06" kanji="案内" title="NAVIGATION" note="Filter rails dim non-matching rows rather than hiding them. The current sidebar item uses the figure/ground inversion. Tabs, Pagination and Breadcrumbs are stock MUI.">
+    <Section id="nav" idx="06" kanji="案内" title="NAVIGATION" note="Filter rails dim non-matching rows rather than hiding them. The current sidebar item uses the figure/ground inversion. Tabs, Pagination and Breadcrumbs are stock MUI; FilterRail and WikiLink are @components.">
       <SpecGrid cols={2}>
         {/* filter rail */}
-        <SpecCard label="FILTER RAIL (DIM)" src="sonnet-35" verdict="keep" verdictText="✅ FILTER" column>
-          <Box sx={{ display: 'flex', gap: '5px', mb: 1.25 }}>
-            {(['ALL', 'CRON', 'EVENT'] as const).map((k) => {
-              const on = filter === k;
-              return (
-                <Box key={k} component="button" onClick={() => setFilter(k)} sx={{ border: `1px solid ${t.nerv.hue.orange}`, background: on ? t.nerv.hue.orange : t.nerv.hue.void, color: on ? t.nerv.hue.void : t.nerv.hue.orange, fontWeight: on ? 700 : 400, fontSize: 10, p: '5px 11px', cursor: 'pointer', fontFamily: t.nerv.fonts.mono, '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 } }}>{k}</Box>
-              );
-            })}
-          </Box>
-          <Box sx={{ width: '100%' }}>
-            {ROWS.map(([id, name, kind]) => {
-              const dim = filter !== 'ALL' && kind !== filter;
-              return (
-                <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${t.nerv.hue.greenDim}`, p: '7px 10px', mb: '6px', fontSize: 11, opacity: dim ? 0.25 : 1, filter: dim ? 'grayscale(.6)' : 'none', transition: 'opacity 120ms linear' }}>
-                  <Box component="span" sx={{ color: t.nerv.hue.amber, whiteSpace: 'nowrap' }}>{id}</Box>
-                  <Box component="span" sx={{ color: t.nerv.hue.paper, flex: 1 }}>{name}</Box>
-                  <Box component="span" sx={{ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' }}>{kind}</Box>
-                </Box>
-              );
-            })}
-          </Box>
+        <SpecCard label="FILTER RAIL (DIM)" src="<FilterRail/>" verdict="keep" verdictText="✅ FILTER" column>
+          <FilterRail
+            filters={['ALL', 'CRON', 'EVENT']}
+            rows={[
+              { id: 'RT·01', name: 'NIGHTLY REVIEW', kind: 'CRON' },
+              { id: 'RT·05', name: 'TICKET INGEST', kind: 'EVENT' },
+              { id: 'RT·02', name: 'JOURNAL SYNC', kind: 'CRON' },
+            ]}
+          />
         </SpecCard>
 
         {/* sidebar nav */}
@@ -96,11 +79,9 @@ export function Navigation() {
             <Box component="span">FEEDBACK LOOPS</Box>
           </Breadcrumbs>
         </SpecCard>
-        <SpecCard label="WIKILINK" src="wiki">
+        <SpecCard label="WIKILINK" src="<WikiLink/>">
           <Box sx={{ fontSize: 13, color: t.nerv.hue.mint, textTransform: 'none', fontFamily: t.nerv.fonts.mono }}>
-            learns from the{' '}
-            <Box component="button" sx={{ color: t.nerv.hue.mintHi, border: 0, borderBottom: `1px dashed ${t.nerv.hue.mint}`, background: 'none', cursor: 'pointer', font: 'inherit', '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void } }}>[[MEMORY_VAULT]]</Box>{' '}
-            archive
+            learns from the <WikiLink>[[MEMORY_VAULT]]</WikiLink> archive
           </Box>
         </SpecCard>
       </SpecGrid>

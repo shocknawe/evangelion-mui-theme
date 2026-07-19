@@ -39,13 +39,15 @@ src/
   components/               Shell (rail + scroll-spy TOC), Masthead, Footer, primitives
   sections/                 Foundations · Atoms · FormControls · DataDisplay ·
                             Feedback · Navigation · Patterns
-  widgets/                  bespoke data-viz not in MUI: 7-seg clock, segmented
-                            meter, gauges, canvas trend/waveform, scan lattice,
-                            terminal log, roster, marquee
-  lib/motion.ts             useReducedMotion + helpers
+  lib/motion.ts             pad2 + helpers
 ```
 
 MUI components do the heavy lifting (TextField, Select, Checkbox, Switch, Slider,
 ToggleButtonGroup, Chip, Alert, Dialog, Tabs, Pagination, Breadcrumbs, List,
-Stepper); the `widgets/` are the console-specific pieces MUI has no equivalent
-for, each reading `theme.nerv.*` so nothing is hardcoded off-token.
+Stepper). The console-specific pieces MUI has no equivalent for — legends,
+stamps, meters, gauges, the terminal, hazard prompt, roster, marquee, 7-seg
+clock, canvas trend/waveform/lattice — now live in the reusable
+[`../components`](../components) library and are imported here via the
+`@components` alias (see [`vite.config.ts`](vite.config.ts) +
+[`tsconfig.app.json`](tsconfig.app.json)), so each section doubles as a live
+usage example of the library.

@@ -74,6 +74,20 @@ import { theme } from './theme';
 - Overrides source of truth is `theme/tokens.ts`. **Never hardcode a hex or size
   that isn't traceable to a token there.**
 
+## The component library
+
+Reusable console-specific React components live in
+[`components/`](components/) — see [`components/README.md`](components/README.md).
+They pair with the theme (all read `theme.nerv.*`; none hardcode off-token) and
+cover the pieces MUI has no equivalent for: `BilingualLabel`, `MetadataBlock`,
+`SectionDivider`, `FieldLabel`, `StatusLegend`, `Roster`, `StatTile`,
+`ChipRadioGroup`, `NumberStepper`, `HazardRating`, `TagInput`, `DateSegments`,
+`FilterRail`, `WikiLink`, `HazardPrompt`, `SegmentedMeter`, `RadialGauge`,
+`BarColumnGauge`, `Terminal`, `SevenSegClock`, `Marquee`, `LineChart`,
+`Waveform`, `ScanLattice`. The `app/` sections import them from `@components` and
+double as live usage examples. Prefer these (and stock MUI carrying the theme)
+over reinventing a pattern inline with `sx`.
+
 Typecheck the theme against MUI types (no deps installed at root) with the
 Zapac reference's toolchain if needed:
 `references/zapac-material-ui/node_modules/.bin/tsc -p <tsconfig>`.
@@ -88,7 +102,8 @@ source and type-checks it in context: `cd app && npm install && npm run dev`
 DESIGN.md · PRODUCT.md · design-system.{md,html}   # design authority
 REFERENCE-ANALYSIS.md · DESIGN-SYSTEM.md           # research
 theme/                                             # the MUI v7 theme
-app/                                               # Vite+React demo mounting the theme (rebuilds design-system.html)
+components/                                         # reusable React component library (pairs with the theme)
+app/                                               # Vite+React demo mounting the theme + components (rebuilds design-system.html)
 experiment-*.html · experiment-sonnet-*.html       # standalone studies
 dashboard-0{1,2,3}.html · form-0{1,2}.html         # reference implementations
 landing-page-0{1,2}.html · wiki.html

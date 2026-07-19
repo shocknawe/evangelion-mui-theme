@@ -1,0 +1,227 @@
+/**
+ * Segmented meters & gauges — discrete LED segments, never a continuous fill;
+ * thresholds are drawn objects. Each accepts controlled values, or animates a
+ * self-driving demo when uncontrolled. All settle to a static reading under
+ * `prefers-reduced-motion`.
+ */
+import { useEffect, useMemo, useState } from 'react';
+import Box from '@mui/material/Box';
+import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
+import { useReducedMotion } from './hooks';
+
+const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
+
+/* ------------------------------------------------------------------ */
+/* SegmentedMeter — vertical LED columns with a drawn threshold line. */
+
+export interface SegmentedMeterProps {
+  /** Controlled per-column levels (0..segments). Omit to self-animate. */
+  values?: number[];
+  /** Seed levels when uncontrolled. @default [10, 13, 8, 15] */
+  defaultValues?: number[];
+  /** Segments per column. @default 20 */
+  segments?: number;
+  /** Threshold line as a percentage of full scale. @default 70 */
+  limitPct?: number;
+  /** Per-column labels along the bottom. @default ['A','B','C','D'] */
+  columnLabels?: string[];
+  /** Left-axis tick labels, top→bottom. @default ['+100','±0','-100'] */
+  axisLabels?: [string, string, string];
+  /** Animate when uncontrolled. @default true */
+  animated?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+export function SegmentedMeter({
+  values,
+  defaultValues = [10, 13, 8, 15],
+  segments = 20,
+  limitPct = 70,
+  columnLabels,
+  axisLabels = ['+100', '±0', '-100'],
+  animated = true,
+  sx,
+}: SegmentedMeterProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const [internal, setInternal] = useState<number[]>(defaultValues);
+  const levels = values ?? internal;
+
+  useEffect(() => {
+    if (values !== undefined || !animated || reduced) return;
+    const id = setInterval(
+      () =>
+        setInternal((prev) =>
+          prev.map((l) => l + (Math.random() < 0.4 ? rnd(-2, 2) : 0)).map((l) => Math.max(3, Math.min(segments, l))),
+        ),
+      600,
+    );
+    return () => clearInterval(id);
+  }, [values, animated, reduced, segments]);
+
+  const labels = columnLabels ?? levels.map((_, i) => String.fromCharCode(65 + i));
+
+  const segColor = (i: number, lit: boolean) => {
+    if (!lit) return { background: t.nerv.hue.greenDim, opacity: 0.3 };
+    const p = ((i + 1) / segments) * 100;
+    if (p > 70) return { background: t.nerv.hue.redHi, opacity: 1, boxShadow: '0 0 6px rgba(226,40,15,.55)' };
+    if (p > 50) return { background: t.nerv.hue.amber, opacity: 1, boxShadow: '0 0 5px rgba(244,159,9,.45)' };
+    return { background: t.nerv.hue.mint, opacity: 1, boxShadow: '0 0 5px rgba(82,242,154,.45)' };
+  };
+
+  return (
+    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', gap: 1.5, height: 150 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 9, color: t.nerv.hue.orange, borderRight: `1px solid ${t.nerv.hue.orange}`, pr: '5px', fontFamily: t.nerv.fonts.mono }}>
+          {axisLabels.map((a) => (
+            <span key={a}>{a}</span>
+          ))}
+        </Box>
+        <Box sx={{ flex: 1, display: 'flex', gap: 2, position: 'relative' }}>
+          {levels.map((lvl, bi) => (
+            <Box key={bi} sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '3px' }}>
+              {Array.from({ length: segments }, (_, i) => (
+                <Box key={i} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, transition: 'opacity 120ms linear, background 120ms linear', ...segColor(i, i < lvl) }} />
+              ))}
+            </Box>
+          ))}
+          <Box sx={{ position: 'absolute', left: -6, right: -6, bottom: `${limitPct}%`, height: 2, background: t.nerv.hue.orange, boxShadow: '0 0 6px rgba(242,100,0,.6)', zIndex: 2 }}>
+            <Box component="span" sx={{ position: 'absolute', right: 0, top: -10, background: t.nerv.hue.void, border: `1px solid ${t.nerv.hue.orange}`, color: t.nerv.hue.orange, fontSize: 8, p: '1px 5px', fontFamily: t.nerv.fonts.mono }}>
+              LIMIT · {limitPct}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 2, mt: '6px' }}>
+        {labels.map((l) => (
+          <Box key={l} sx={{ flex: 1, textAlign: 'center', fontSize: 9, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
+            {l}
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* RadialGauge — a segmented arc with a big center readout. */
+
+const polar = (cx: number, cy: number, r: number, d: number): [number, number] => {
+  const a = ((d - 90) * Math.PI) / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+};
+
+export interface RadialGaugeProps {
+  /** Controlled percentage (0..100). Omit to self-animate near full. */
+  value?: number;
+  /** Caption under the readout. @default 'ARMED' */
+  label?: string;
+  /** Number of arc segments. @default 22 */
+  segments?: number;
+  /** Diameter (px). @default 120 */
+  size?: number;
+  /** Animate when uncontrolled. @default true */
+  animated?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120, animated = true, sx }: RadialGaugeProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const [internal, setInternal] = useState(98);
+  const pct = value ?? internal;
+
+  useEffect(() => {
+    if (value !== undefined || !animated || reduced) return;
+    const id = setInterval(() => setInternal(90 + Math.random() * 10), 1400);
+    return () => clearInterval(id);
+  }, [value, animated, reduced]);
+
+  const paths = useMemo(() => {
+    const cx = 60, cy = 60, rO = 54, rI = 40, st = -135, en = 135, gap = 1.8;
+    const span = (en - st - gap * segments) / segments;
+    return Array.from({ length: segments }, (_, i) => {
+      const a0 = st + i * (span + gap), a1 = a0 + span;
+      const [p1x, p1y] = polar(cx, cy, rO, a1);
+      const [p2x, p2y] = polar(cx, cy, rO, a0);
+      const [p3x, p3y] = polar(cx, cy, rI, a0);
+      const [p4x, p4y] = polar(cx, cy, rI, a1);
+      return `M${p1x} ${p1y} A${rO} ${rO} 0 0 0 ${p2x} ${p2y} L${p3x} ${p3y} A${rI} ${rI} 0 0 1 ${p4x} ${p4y}Z`;
+    });
+  }, [segments]);
+  const lit = Math.round((pct / 100) * segments);
+
+  return (
+    <Box sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <svg viewBox="0 0 120 120" width="100%" height="100%">
+        {paths.map((d, i) => (
+          <path key={i} d={d} fill={i < lit ? t.nerv.hue.mint : t.nerv.hue.greenDim} opacity={i < lit ? 1 : 0.3} />
+        ))}
+      </svg>
+      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <Box component="b" sx={{ fontFamily: t.nerv.fonts.display, fontSize: 22, color: t.nerv.hue.mintHi, textShadow: '0 0 4px currentColor' }}>
+          {Math.round(pct)}%
+        </Box>
+        <Box component="span" sx={{ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em' }}>
+          {label}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* BarColumnGauge — a horizontal LED bar over a column histogram. */
+
+function seg(t: Theme, lit: boolean, hot = false) {
+  if (!lit) return { background: t.nerv.hue.greenDim, opacity: 0.3 };
+  if (hot) return { background: t.nerv.hue.redHi, opacity: 1 };
+  return { background: t.nerv.hue.amber, opacity: 1, boxShadow: '0 0 4px rgba(244,159,9,.5)' };
+}
+
+export interface BarColumnGaugeProps {
+  /** Controlled column heights (0..10). Omit to self-animate. */
+  columns?: number[];
+  /** Controlled horizontal-bar fill (0..18). Omit to self-animate. */
+  bar?: number;
+  /** Animate when uncontrolled. @default true */
+  animated?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+export function BarColumnGauge({ columns, bar, animated = true, sx }: BarColumnGaugeProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
+  const [hbar, setHbar] = useState(9);
+  const [cols, setCols] = useState<number[]>([5, 7, 4, 6, 8, 5]);
+  const barVal = bar ?? hbar;
+  const colVals = columns ?? cols;
+
+  useEffect(() => {
+    if ((columns !== undefined && bar !== undefined) || !animated || reduced) return;
+    const id = setInterval(() => {
+      setHbar(Math.round((0.35 + Math.random() * 0.25) * 18));
+      setCols(Array.from({ length: 6 }, () => 3 + Math.floor(Math.random() * 7)));
+    }, 900);
+    return () => clearInterval(id);
+  }, [columns, bar, animated, reduced]);
+
+  return (
+    <Box sx={[{ display: 'flex', flexDirection: 'column', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', gap: '3px', height: 34, width: '100%' }}>
+        {Array.from({ length: 18 }, (_, i) => (
+          <Box key={i} sx={{ flex: 1, ...(i < barVal ? { background: t.nerv.hue.blue, opacity: 1, boxShadow: '0 0 5px rgba(80,144,208,.5)' } : { background: t.nerv.hue.greenDim, opacity: 0.3 }) }} />
+        ))}
+      </Box>
+      <Box sx={{ display: 'flex', gap: '6px', height: 110, alignItems: 'flex-end', width: '100%' }}>
+        {colVals.map((val, ci) => (
+          <Box key={ci} sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '2px', height: '100%' }}>
+            {Array.from({ length: 10 }, (_, i) => (
+              <Box key={i} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, ...seg(t, i < val, (i + 1) / 10 > 0.8) }} />
+            ))}
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
