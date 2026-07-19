@@ -15,6 +15,7 @@ const TOC = [
   { id: 'feedback', k: '応', label: 'FEEDBACK' },
   { id: 'nav', k: '案', label: 'NAVIGATION' },
   { id: 'patterns', k: '構', label: 'PATTERNS' },
+  { id: 'additions', k: '増', label: 'ADDITIONS' },
 ];
 
 function useScrollSpy(ids: string[]) {

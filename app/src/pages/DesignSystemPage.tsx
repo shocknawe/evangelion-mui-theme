@@ -12,6 +12,7 @@ import { DataDisplay } from '../sections/DataDisplay';
 import { Feedback } from '../sections/Feedback';
 import { Navigation } from '../sections/Navigation';
 import { Patterns } from '../sections/Patterns';
+import { Additions } from '../sections/Additions';
 
 export function DesignSystemPage() {
   return (
@@ -24,6 +25,7 @@ export function DesignSystemPage() {
       <Feedback />
       <Navigation />
       <Patterns />
+      <Additions />
       <Footer />
     </Shell>
   );
