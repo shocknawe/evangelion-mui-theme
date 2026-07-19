@@ -99,6 +99,16 @@ components:
     textColor: "{colors.orange}"
     rounded: "{rounded.none}"
     padding: "0 0 4px 0"
+  gauge-card:
+    backgroundColor: "{colors.bg}"
+    textColor: "{colors.mint}"
+    rounded: "{rounded.none}"
+    padding: "18px"
+  card-module:
+    backgroundColor: "{colors.bg}"
+    textColor: "{colors.mint}"
+    rounded: "{rounded.none}"
+    padding: "16px"
 ---
 
 # Design System: Jairus OS — NERV/MAGI Tactical Console
@@ -195,6 +205,10 @@ The only shadow-like tokens in the system are **glow** effects, and they are lum
 
 Every interactive component ships default, hover, focus-visible, active/selected, and (where relevant) disabled and error. Shape is universally hard-cornered (`0` radius) except chips and meter segments (2–4px). Hero panels and frames chamfer one or two corners via `clip-path`.
 
+Every grammar below is a named React component in [`components/`](components/) (full prop tables in `components/README.md`), each reading `theme.nerv.*` tokens. Reach for the named component — a bordered `<span>` is a `Stamp`, a metric panel is a `TelemetryCard`, a status readout is a typed row — before hand-rolling `sx`.
+
+**The Named-Component Rule.** If a pattern here has a component, assemble from it (and from stock MUI carrying the theme); do not re-derive the grammar inline. Branch out only when the UX genuinely wins, then fold the new pattern back into the library.
+
 ### Buttons
 - **Shape:** Zero radius, always. Condensed caps, letter-spacing 0.12em.
 - **Primary:** Mint outline on black (`2px solid #52F29A`, text mint), padding `10px 20px`. The **selected/primary-active** state is the signature figure/ground inversion — solid mint fill, black text — and blinks (`btnblink`, 1s steps(1)) to signal "this is the live action."
@@ -205,6 +219,7 @@ Every interactive component ships default, hover, focus-visible, active/selected
 ### Stamps / Chips
 - **Style:** Text boxed in a 1px border of its own color, radius 2px, padding `2px 9px`. Colorway via `currentColor`.
 - **State:** Outline (default record) · `.blink` (in-progress: `点検中`, `審査中`) · `.fill` (inverse — solid hue, black content — for active/recorded, e.g. an OFFLINE unit or a timestamp).
+- **Component:** `Stamp` (`tone`, `filled`, `blink`, `glow`, `size`) is the atom — the canonical boxed pill for any id, status, or tag. Never hand-roll a bordered `<span>` for one.
 
 ### Legend
 - **Style:** A row of small boxed kanji+EN swatches (`正常` NOMINAL / `注意` CAUTION / `待機` PENDING / `阻止` BLOCKED) that keys every status color used in the section below it. Signature supporting element — place one above any status-colored grid.
@@ -213,8 +228,10 @@ Every interactive component ships default, hover, focus-visible, active/selected
 - **Corner Style:** `0` radius; hero/focal panels chamfer 1–2 corners (`clip-path`, cut 16–32px).
 - **Background:** Void (`#0A0A0A`), never a lighter surface.
 - **Shadow Strategy:** None — see Elevation. Border (`1–2px #F26400`) plus faint inset orange glow.
-- **Border:** 1px idle chrome; 2px emphasis. The **frame shell** uses 3px + a `::before` inset 1px line = the signature double frame.
+- **Border:** 1px idle chrome; 2px emphasis. The **frame shell** (`ConsoleFrame`) uses 3px + a `::before` inset 1px line = the signature double frame; it holds a header over `sidebar · main · rail`, plus an optional full-width `band`, a `footer` status bar, and an `alarm` state that recolors the frame red and drops a 45° hazard stripe across the top.
 - **Internal Padding:** `12–22px`. Titled zones use `.zone-title` (orange condensed caps, green-dim underline).
+- **Telemetry panels:** `TelemetryCard` (orange border, title/type header · gauge body · two-slot footer) and `GaugeCard` (single-corner chamfer, state-tinted border, a kanji-tagged channel framing one gauge + readout + sub) are the canonical metric containers — drop a gauge inside, never free-float one.
+- **Product card:** `ModuleCard` — the pinnable system/product card for brand surfaces: a glowing kanji glyph · `SYS·NN` code · title · body · footer state stamp; selecting it pins with a mint border + glow (figure/ground). `RecallNote` is the cited memory/decision fragment (1px tinted left edge). Nested cards are forbidden.
 
 ### Inputs / Fields
 - **Style:** Void field, `1px solid #246C3C` idle border, mint text and caret, uppercase, zero radius.
@@ -224,10 +241,10 @@ Every interactive component ships default, hover, focus-visible, active/selected
 - **Full control set:** custom listbox dropdown (native `<select>` replaced with an ARIA combobox; active option inverts to mint), radio priority chips, checkbox, switch, native-range slider + dual-thumb range, number stepper, segmented toggle group, autocomplete tag input, hazard-block rating, segmented date/time, file dropzone, password reveal, input adornments. Every "checked/selected" state uses the mint (or per-role hue) inversion.
 
 ### Navigation
-- **Sidebar:** Stacked boxed items, kanji-on-top / EN-below. Current item = mint inversion (solid fill, black text). Hover = border → mint. Focus-visible = amber dashed outline. Supports left + right rails.
-- **Filter rail:** Scope buttons that **dim** non-matching rows (opacity 0.25 + grayscale) rather than hiding them — the set stays visible, the filter narrows attention.
+- **Sidebar:** `ConsoleNav` — stacked bilingual items, kanji-on-top / EN-below. Its `boxed` variant (default) inverts the current item to a mint fill (black content); its `rail` variant renders quieter one-line links (kanji + label) with a mint left-edge indicator, for app-shell rails. Hover = border → mint; focus-visible = amber dashed outline. Supports left + right rails.
+- **Filter rail:** `FilterRail` — scope buttons that **dim** non-matching rows (opacity 0.25 + grayscale) rather than hiding them; the set stays visible, the filter narrows attention. `FilterChips` is the orange scope-chip row alone (active = solid orange inversion), to pair with your own dimmed rows.
 - **Breadcrumb:** `A › B › here` with orange separators, mint-hi current.
-- **Top nav:** Sticky orange-ruled bar, rotated-square brand mark, 7-seg clock with blinking colons, integrity stat chip.
+- **Top nav / brand:** `SiteHeader` — sticky orange-ruled bar whose in-page `#anchor` links smooth-scroll (reduced-motion aware) beside an actions slot. The `Brand` lockup (rotated-square mint mark · condensed wordmark · orange version, inline or stacked) is the shared masthead mark. Time reads on `SevenSegClock` (mint chip / orange readout skins; `digits` drives an uptime counter) or the lighter `DigitalClock` (mono `HH:MM:SS`, blinking colons). `WikiLink` is the `[[cross-reference]]` that inverts on hover.
 
 ### Terminal / Log (signature)
 - Amber-on-black, **two brightness levels** (bright amber = data, dim amber = chrome). Dash-rule section headers, dot-leader `LABEL … OK/FAIL` status columns, a single boxed CAUTION stamp exception in an otherwise unboxed log, a persistent blinking cursor. Rows enter by teletype (~130ms/row). This is the canonical way to show system output, feeds, and receipts.
@@ -236,7 +253,18 @@ Every interactive component ships default, hover, focus-visible, active/selected
 - Full-bleed red overlay, 45° hazard stripes top/bottom, a giant condensed English word in a black band, boxed Japanese stamps (intentionally off-center per the reference), corner `ALERT` chips — and always a **response footer** giving the operator the decision (承認 APPROVE / 否認 DENY / 保留 DEFER). Tri-channel: English word + Japanese stamp + hazard pattern. Escape defers.
 
 ### Data Display (signature)
-- **Segmented meters** use discrete LED segments (never a continuous fill), colored per zone, with a drawn, labeled threshold rule riding across. **Gauge trio:** radial arc / horizontal bar / vertical columns — three geometries, one grammar. **Line/trend charts** use a glowing polyline with a gradient area fill and a leading dot over sparse baseline dots (not a dense `+` grid). **Wave separator:** an edge-tapered braided sinusoid band between sections. All animate in mechanical steps.
+- **Segmented meters** use discrete LED segments (never a continuous fill), colored per zone, with a drawn, labeled threshold rule riding across: `SegmentedMeter` (vertical columns + threshold), `SegmentBar` (thin inline horizontal), `LedColumn` (a single vertical column that fills bottom-up and turns critical-red under a `hotBelow` floor), `ProgressMeter` (horizontal with a drawn gate line), `HealthColumns` (mini stepped health bars). **Gauge trio:** `RadialGauge` (arc) / `BarColumnGauge` (bar over histogram) / column banks — three geometries, one grammar.
+- **The one continuous-fill exception** is `MeterBar` — a thin **continuous** glowing vitals bar (label · value · fill; `warn` flips it amber) for a sidebar CPU/memory readout. It is the deliberate exception to the LED-segment rule; everything data-quantitative else stays segmented.
+- **Charts & separators:** `LineChart` (a glowing polyline with a gradient area fill and a leading dot over sparse baseline dots — not a dense `+` grid), `Waveform` (an edge-tapered braided sinusoid band between sections), `ScanLattice` (a static schematic grid with a targeting reticle). All animate in mechanical steps.
+
+### Flow / Sequence
+- **`StepFlow`** — a horizontal progress stepper: chamfered nodes, done → current (blinking blue) → upcoming. **`AgenticLoop`** — the OODA loop as a ring of bilingual kanji nodes with `→` connectors, one lit at a time (self-cycling, mechanical). **`TaskCard`** — a loop-synchronizer task: id · title · action over a `StepFlow` and a labeled progress bar. Sequence grammar (a stepper, a ring, numbering) earns its place only when the content *is* an ordered flow.
+
+### Status rows
+- A family of typed, boxed rows for dense status lists — each carries its state in a `Stamp`, never a side-stripe: **`AgentDot`** (state dot + label for a footer bar), **`SinkRow`** (delivery sink: name · state · ping · LIVE/DOWN stamp; OFFLINE inverts to a solid red fill), **`RoutineRow`** (id · name · kind · status stamp · RUN, `dim` when filtered), **`MemoryRow`** (vault entry: id · title · kind stamp), **`GateRow`** (decision-queue row: id · title · priority · REVIEW/verdict), **`RailItem`** (reminder/inbox row with a due marker), **`StatTile`** (negative-space KPI: tiny label · giant numeral · tiny footer).
+
+### Brand surfaces
+- The dual-use pieces for the landing/showcase register: **`SiteHeader`** + **`Brand`** (masthead), **`SectionHeading`** (numbered marketing head — index chip · big condensed heading · fading orange rule · note; distinct from the form-oriented `SectionDivider`), **`DossierSheet`** (an "official document" block — teal-ruled heading · KEY/VALUE rows · signature footer · optional rotated `PRELIMINARY` watermark), **`ModuleCard`** (product grid), **`Marquee`** (red hazard ticker), and **`YesNoGate`** (the big Y/N call-to-action — mint YES beside red NO, each fills on choose, with an aria-live response line). One signature per screen still holds: the giant 開始 CTA carries the page; everything around it stays disciplined.
 
 ## 6. Do's and Don'ts
 
