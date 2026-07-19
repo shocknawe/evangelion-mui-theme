@@ -65,6 +65,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `SinkRow` | Delivery-sink row: name · state · ping · LIVE/DOWN stamp (OFFLINE inverts) | `name`, `status`, `detail`, `ping`, `stampLabel` |
 | `RoutineRow` | Routine-manager row: id · name · kind · status stamp · RUN (dims when filtered) | `id`, `name`, `kind`, `status`, `dim`, `onRun` |
 | `ModuleCard` | Pinnable product/system card: kanji glyph · code · title · body · state stamp | `jp`, `code`, `codeSub`, `title`, `children`, `stamp`, `meta`, `tone`, `selected`, `onSelect` |
+| `MemoryRow` | Memory-vault entry: id · title · kind stamp (decision/pattern/mistake/learning) | `id`, `title`, `kind` |
 
 ### Form controls
 
@@ -83,7 +84,7 @@ and settles to its final frame when the user prefers reduced motion.
 | `FilterChips` | Just the scope-chip row (active = orange inversion) — pair with your own dimmed rows | `filters`, `value`, `onChange`, `ariaLabel` |
 | `FilterRail` | Filter chips that **dim** non-matching rows (never hide) | `filters`, `rows`, `value`/`defaultValue`, `onChange`, `allValue` |
 | `WikiLink` | `[[cross-reference]]` that inverts on hover | `children`, `href`, `onClick` |
-| `ConsoleNav` | Stacked boxed bilingual sidebar nav (current = mint inversion) | `items`, `value`, `onChange` |
+| `ConsoleNav` | Bilingual sidebar nav — `boxed` (mint inversion) or `rail` (app-shell links with a left-edge indicator) | `items`, `value`, `onChange`, `variant` |
 | `SiteHeader` | Sticky landing-page brand nav: mark · wordmark · links (smooth-scroll `#anchors`) · actions slot | `name`, `version`, `links`, `actions` |
 
 ### Feedback
@@ -153,3 +154,8 @@ matching `sample-layouts/` file:
   a live hero cluster, `Marquee` ticker, a `ModuleCard` system grid, `ScanLattice`
   separator, `RadialGauge`/`SegmentBar`/`LedColumn` telemetry, a `Terminal` feed,
   and a Y/N deploy gate — section breaks by `SectionHeading`).
+- **`/landing-02`** — "Operator Manifest" editorial app-shell (dual sticky rails,
+  `ConsoleNav` `rail` variant, a cycling agentic-loop hero, `Waveform` separator,
+  `LedColumn` retention bars, a `FilterChips` + `MemoryRow` query list, a
+  `LineChart` throughput signal, a dossier block, and a theme-styled access
+  `Dialog`).

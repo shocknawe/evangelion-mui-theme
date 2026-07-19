@@ -4,6 +4,7 @@ import { Dashboard01Page } from './pages/Dashboard01Page';
 import { Dashboard02Page } from './pages/Dashboard02Page';
 import { Dashboard03Page } from './pages/Dashboard03Page';
 import { Landing01Page } from './pages/Landing01Page';
+import { Landing02Page } from './pages/Landing02Page';
 
 export default function App() {
   const path = useRoute();
@@ -11,5 +12,6 @@ export default function App() {
   if (path === '/dashboard-02') return <Dashboard02Page />;
   if (path === '/dashboard-03') return <Dashboard03Page />;
   if (path === '/landing-01') return <Landing01Page />;
+  if (path === '/landing-02') return <Landing02Page />;
   return <DesignSystemPage />;
 }
