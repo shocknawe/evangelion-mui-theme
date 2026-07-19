@@ -1,11 +1,9 @@
 /**
  * Phosphor Console — the production Material UI (v7) theme.
  *
- * A dark-first NERV/MAGI tactical system with a second "Blueprint" schematic
- * scheme. Built with `colorSchemes` (dark default + light/blueprint) and
- * `cssVariables` so every scheme-varying token becomes a `--mui-*` CSS variable
- * that switches without re-rendering. Assembled from focused token/override
- * modules.
+ * A dark-only NERV/MAGI tactical system. Built with `colorSchemes` (a single
+ * `dark` scheme) and `cssVariables` so every custom token becomes a `--mui-*`
+ * CSS variable. Assembled from focused token/override modules.
  *
  *   import { ThemeProvider, CssBaseline } from '@mui/material';
  *   import { theme } from './theme';
@@ -13,8 +11,6 @@
  *     <CssBaseline />
  *     … app …
  *   </ThemeProvider>
- *
- * Toggle schemes with `useColorScheme()` from `@mui/material/styles`.
  */
 import { createTheme } from '@mui/material/styles';
 import './augmentation'; // side-effect: module augmentation for custom keys
@@ -36,12 +32,10 @@ const hazard = (a: string = hue.crimson, b = '#000') =>
   `repeating-linear-gradient(-45deg, ${a} 0 12px, ${b} 12px 24px)`;
 
 export const theme = createTheme({
-  // Manual dark/light toggle via a `.light` / `.dark` class on the root element.
   cssVariables: { colorSchemeSelector: 'class', cssVarPrefix: 'mui' },
-  defaultColorScheme: 'dark', // the canonical Phosphor Console
+  defaultColorScheme: 'dark', // the canonical (and only) Phosphor Console scheme
   colorSchemes: {
-    dark: { palette: buildPalette('dark') },
-    light: { palette: buildPalette('light') }, // the "Blueprint" schematic variant
+    dark: { palette: buildPalette() },
   },
 
   typography,
@@ -83,7 +77,7 @@ export const theme = createTheme({
     tooltip: layers.tooltip,
   },
 
-  // Scheme-invariant custom tokens, consumed by overrides and app code.
+  // Structural custom tokens, consumed by overrides and app code.
   nerv: {
     hue,
     radius: radii,

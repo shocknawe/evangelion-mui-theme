@@ -65,9 +65,9 @@ import { theme } from './theme';
 <ThemeProvider theme={theme} defaultMode="dark"><CssBaseline />…</ThemeProvider>
 ```
 
-- Two schemes: `dark` (canonical, default) and `light` (the **Blueprint**
-  schematic variant — flat, no glow/CRT). `cssVariables` is on.
-- Tokens: scheme-invariant on `theme.nerv.*`, scheme-varying on
+- Single `dark` scheme (the canonical Phosphor Console — there is no light
+  mode). `cssVariables` is on.
+- Tokens: structural on `theme.nerv.*`, palette tokens on
   `theme.palette.nerv.*` (CSS vars — reach them via `theme.vars.palette.nerv.*`).
 - Custom variants: Button `ghost`/`alt`/`stamp` (+ `className="nerv-live"`),
   Chip `stamp`, Paper `chamfer`/`frame`, Typography `jp`/`terminal`/`stamp`/`data`.

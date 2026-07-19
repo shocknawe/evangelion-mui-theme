@@ -1,37 +1,25 @@
 /**
- * Phosphor Console palette — one builder, two schemes.
+ * Phosphor Console palette — dark-only.
  *
- * Every token resolves from `tokens.ts`. Semantic hues are scheme-invariant
- * (mint = primary, orange = chrome/secondary, red = error, …); the surface,
- * ink, glow, and CRT layers vary by scheme and are attached under `palette.nerv`
- * so `cssVariables` emits a `--mui-palette-nerv-*` var per scheme.
+ * Every token resolves from `tokens.ts`. Semantic hues (mint = primary,
+ * orange = chrome/secondary, red = error, …) and the surface, ink, glow, and
+ * CRT layers are all attached; the custom group lives under `palette.nerv` so
+ * `cssVariables` emits a `--mui-palette-nerv-*` var per token.
  *
  * The signature move — figure/ground inversion — is enforced through
- * `contrastText: void` on every filled control. Black-on-hue is both the brand
- * grammar AND the higher-contrast choice (black beats white on mint/amber/red/
- * blue), so the aesthetic and WCAG AA agree.
+ * `contrastText` = black (`hue.void`) on every filled control. Black-on-hue is
+ * both the brand grammar AND the higher-contrast choice (black beats white on
+ * mint/amber/red/blue), so the aesthetic and WCAG AA agree.
  */
 import type { PaletteOptions } from '@mui/material/styles';
-import {
-  crt,
-  glowFx,
-  hue,
-  ink,
-  status,
-  surfaces,
-  terminal,
-  type Scheme,
-} from './tokens';
+import { crt, glowFx, hue, ink, status, surfaces, terminal } from './tokens';
 
-const pick = (t: { light: string; dark: string }, s: Scheme) => t[s];
-
-export function buildPalette(scheme: Scheme): PaletteOptions {
-  const isDark = scheme === 'dark';
-  /** The content color punched out of a filled control. */
-  const inkOnFill = isDark ? hue.void : hue.void; // black on hue in both schemes
+export function buildPalette(): PaletteOptions {
+  /** The content color punched out of a filled control — black on hue. */
+  const inkOnFill = hue.void;
 
   return {
-    mode: scheme,
+    mode: 'dark',
 
     // Primary = Phosphor Mint. Filled → black content (the inversion signature).
     primary: {
@@ -48,59 +36,59 @@ export function buildPalette(scheme: Scheme): PaletteOptions {
       contrastText: inkOnFill,
     },
     error: {
-      main: pick(status.danger, scheme),
+      main: status.danger,
       dark: hue.red,
       contrastText: inkOnFill,
     },
     warning: {
-      main: pick(status.warning, scheme),
+      main: status.warning,
       contrastText: inkOnFill,
     },
     info: {
-      main: pick(status.info, scheme),
+      main: status.info,
       contrastText: inkOnFill,
     },
     success: {
-      main: pick(status.success, scheme),
+      main: status.success,
       contrastText: inkOnFill,
     },
 
     background: {
-      default: pick(surfaces.bg, scheme),
-      paper: pick(surfaces.paper, scheme),
+      default: surfaces.bg,
+      paper: surfaces.paper,
     },
     text: {
-      primary: pick(ink.primary, scheme),
-      secondary: pick(ink.secondary, scheme),
-      disabled: pick(ink.disabled, scheme),
+      primary: ink.primary,
+      secondary: ink.secondary,
+      disabled: ink.disabled,
     },
-    // Divider = chrome orange in dark, dark hairline in blueprint.
-    divider: pick(surfaces.stroke, scheme),
+    // Divider = chrome orange.
+    divider: surfaces.stroke,
 
     action: {
       active: hue.mint,
-      hover: pick(surfaces.surface2, scheme),
+      hover: surfaces.surface2,
       selected: hue.mint,
       focus: hue.mint,
-      disabled: pick(ink.disabled, scheme),
-      disabledBackground: pick(surfaces.track, scheme),
+      disabled: ink.disabled,
+      disabledBackground: surfaces.track,
     },
 
-    /* -------- custom scheme-varying token group -------- */
+    /* -------- custom token group (emitted as CSS vars) -------- */
     nerv: {
-      surface2: pick(surfaces.surface2, scheme),
-      stroke: pick(surfaces.stroke, scheme),
-      stroke2: pick(surfaces.stroke2, scheme),
-      track: pick(surfaces.track, scheme),
-      field: pick(surfaces.field, scheme),
-      fieldFocus: pick(surfaces.fieldFocus, scheme),
-      termText: pick(terminal.text, scheme),
-      termDim: pick(terminal.dim, scheme),
-      glowPanel: pick(glowFx.panel, scheme),
-      glowPanelStrong: pick(glowFx.panelStrong, scheme),
-      glowFocus: pick(glowFx.focus, scheme),
-      glowMint: pick(glowFx.mint, scheme),
-      crt: pick(crt, scheme),
+      surface2: surfaces.surface2,
+      stroke: surfaces.stroke,
+      stroke2: surfaces.stroke2,
+      track: surfaces.track,
+      field: surfaces.field,
+      fieldFocus: surfaces.fieldFocus,
+      termText: terminal.text,
+      termDim: terminal.dim,
+      glowPanel: glowFx.panel,
+      glowPanelStrong: glowFx.panelStrong,
+      glowFocus: glowFx.focus,
+      glowMint: glowFx.mint,
+      crt,
     },
   };
 }

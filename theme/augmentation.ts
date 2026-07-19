@@ -1,18 +1,18 @@
 /**
  * TypeScript module augmentation for the Phosphor Console theme.
  *
- * Scheme-varying custom tokens (surfaces, ink, glow, CRT, terminal) live on
- * `palette.nerv` so `cssVariables` emits a light + dark value per token that
- * auto-switches with the color scheme. Scheme-invariant tokens (hues, radii,
- * spacing, fonts, motion, z-layers, helpers) live on the top-level `nerv` key.
+ * Custom tokens split by where `cssVariables` needs them: the palette-varying
+ * group (surfaces, ink, glow, CRT, terminal) lives on `palette.nerv` so it is
+ * emitted as CSS vars; the structural tokens (hues, radii, spacing, fonts,
+ * motion, z-layers, helpers) live on the top-level `nerv` key.
  */
 import type { CSSProperties } from 'react';
 
-/** Scheme-varying tokens — one CSS var per scheme. */
+/** Palette tokens — emitted as CSS vars under `--mui-palette-nerv-*`. */
 interface NervPaletteTokens {
   /** Recessed inner surface (hover, terminal field). */
   surface2: string;
-  /** Structural chrome border (orange in dark, dark hairline in blueprint). */
+  /** Structural chrome border (orange). */
   stroke: string;
   /** Idle / divider border. */
   stroke2: string;
@@ -25,16 +25,16 @@ interface NervPaletteTokens {
   /** Terminal text (bright) + dim (AA-safe secondary). */
   termText: string;
   termDim: string;
-  /** Glow strings — flatten to `none` in blueprint. */
+  /** Glow strings — the only "elevation" material. */
   glowPanel: string;
   glowPanelStrong: string;
   glowFocus: string;
   glowMint: string;
-  /** CRT scanline+vignette overlay (`none` in blueprint). */
+  /** CRT scanline+vignette overlay. */
   crt: string;
 }
 
-/** Scheme-invariant tokens + helpers. */
+/** Structural tokens + helpers. */
 interface NervTokens {
   hue: {
     void: string;
@@ -51,7 +51,6 @@ interface NervTokens {
     crimson: string;
     teal: string;
     blue: string;
-    blueprint: string;
   };
   radius: { none: number; chip: number; seg: number; chamfer: number };
   space: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number>;

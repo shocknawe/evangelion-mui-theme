@@ -41,31 +41,22 @@ export default function App() {
 `nervBlink` / `nervBtnBlink` keyframes the overrides depend on, and the
 `prefers-reduced-motion` guard.
 
-## Two schemes
+## Dark only
 
-| Scheme | Role |
-| --- | --- |
-| `dark` *(default)* | The canonical Phosphor Console — black field, phosphor glow, CRT pass. |
-| `light` | The **Blueprint** schematic daylight variant — pale gray field, dark ink, hairline traces, **no glow, no CRT**. A deliberate schematic exception (per DESIGN.md), not a generic light mode. |
+The theme ships a single `dark` scheme — the canonical Phosphor Console (black
+field, phosphor glow, CRT pass). There is no light mode: the console is a black
+CRT command deck by definition. Mount it with `defaultMode="dark"`.
 
-Toggle with MUI's color-scheme API:
-
-```tsx
-import { useColorScheme } from '@mui/material/styles';
-const { mode, setMode } = useColorScheme();
-setMode(mode === 'dark' ? 'light' : 'dark');
-```
-
-`cssVariables` is on (`colorSchemeSelector: 'class'`), so scheme-varying tokens
-are emitted as `--mui-*` CSS variables and switch without a re-render.
+`cssVariables` is on (`colorSchemeSelector: 'class'`), so every custom token is
+emitted as a `--mui-*` CSS variable and consumed via `theme.vars.*`.
 
 ## Structure
 
 ```
 theme/
-  index.ts          createTheme composition (schemes, transitions, zIndex, nerv tokens)
+  index.ts          createTheme composition (dark scheme, transitions, zIndex, nerv tokens)
   tokens.ts         raw primitives — the single source of truth
-  palette.ts        buildPalette(scheme) → MUI palette + custom palette.nerv group
+  palette.ts        buildPalette() → MUI palette + custom palette.nerv group
   typography.ts     three faces (display / mono / jp) + custom variants
   shape.ts          radius 0
   spacing.ts        8px unit (matches the 4/8/16/24/32 rhythm)
@@ -86,19 +77,19 @@ theme/
 
 ## Custom tokens
 
-Scheme-invariant tokens live on `theme.nerv`; scheme-varying ones on
-`theme.palette.nerv` (so they become CSS vars). In `sx` / `styled`:
+Structural tokens live on `theme.nerv`; palette tokens on `theme.palette.nerv`
+(emitted as CSS vars). In `sx` / `styled`:
 
 ```tsx
 sx={(t) => ({
-  color: t.nerv.hue.mint,                 // invariant hue
-  border: `1px solid ${t.vars.palette.nerv.stroke}`, // scheme-varying (CSS var)
+  color: t.nerv.hue.mint,                 // structural hue
+  border: `1px solid ${t.vars.palette.nerv.stroke}`, // palette token (CSS var)
   clipPath: t.nerv.chamfer(20),           // chamfered panel
   background: t.nerv.hazard(),            // 45° hazard stripes
 })}
 ```
 
-`theme.nerv` includes: `hue` (all 15 named colors), `radius`, `space`, `fonts`,
+`theme.nerv` includes: `hue` (all 14 named colors), `radius`, `space`, `fonts`,
 `motion`, `layers`, and the `chamfer(cut)` / `hazard(a,b)` helpers.
 `theme.palette.nerv` includes: `surface2`, `stroke`, `stroke2`, `track`, `field`,
 `fieldFocus`, `termText`, `termDim`, `glowPanel*`, `glowFocus`, `glowMint`, `crt`.

@@ -2,7 +2,7 @@
  * CssBaseline — the console's base layer.
  *
  *  - Loads the CRT scanline + vignette pass on a fixed `body::before` overlay
- *    (scheme-varying via `palette.nerv.crt`; flat in blueprint).
+ *    (via `palette.nerv.crt`).
  *  - Registers the global `nervBlink` / `nervBtnBlink` keyframes used across
  *    overrides for the in-progress and selected-action signals.
  *  - Sets base body type/colour and a mint text-selection.

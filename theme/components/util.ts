@@ -2,8 +2,8 @@ import type { Theme } from '@mui/material/styles';
 
 /**
  * Resolve palette access through CSS variables when `cssVariables` is on,
- * falling back to raw values otherwise. Lets overrides reference scheme-varying
- * `palette.nerv.*` tokens that auto-switch dark ↔ blueprint.
+ * falling back to raw values otherwise. Lets overrides reference the custom
+ * `palette.nerv.*` tokens as `--mui-*` CSS vars.
  */
 export const v = (theme: Theme) => theme.vars ?? theme;
 

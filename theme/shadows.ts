@@ -5,10 +5,9 @@
  * component that reads `theme.shadows[n]` by number therefore glows instead of
  * casting a shadow, on-brand for the dark console.
  *
- * Elevation is a scheme-INVARIANT array (it can't live under colorSchemes), so
- * blueprint surfaces that must stay flat should use the scheme-varying
- * `palette.nerv.glowPanel*` tokens (which flatten to `none`) rather than a
- * numbered shadow. See surfaces.ts overrides.
+ * Prefer the `palette.nerv.glowPanel*` tokens for panel halos; the numbered
+ * array exists so any component that reads `theme.shadows[n]` still glows
+ * on-brand rather than casting a shadow. See surfaces.ts overrides.
  */
 import type { Shadows } from '@mui/material/styles';
 
