@@ -29,6 +29,7 @@ import { groups, version } from './siteData';
 // needs them pays for them.
 const Landing = lazy(() => import('./pages/Landing'));
 const GettingStarted = lazy(() => import('./pages/GettingStarted'));
+const PipelinePage = lazy(() => import('./pages/PipelinePage'));
 const ComponentPage = lazy(() => import('./components/ComponentPage'));
 const Color = lazy(() => import('./pages/foundations/Color'));
 const TypographyPage = lazy(() => import('./pages/foundations/TypographyPage'));
@@ -44,7 +45,10 @@ const ScreensPattern = lazy(() => import('./pages/patterns/ScreensPattern'));
 const STATIC_GROUPS: TocGroup[] = [
   {
     title: 'Overview',
-    links: [{ label: 'Getting started', href: '#/getting-started' }],
+    links: [
+      { label: 'Getting started', href: '#/getting-started' },
+      { label: 'The pipeline', href: '#/pipeline' },
+    ],
   },
   {
     title: 'Foundations',
@@ -156,6 +160,7 @@ function Shell() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/getting-started" element={<GettingStarted />} />
+            <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/components/:slug" element={<ComponentPage />} />
             <Route path="/foundations/color" element={<Color />} />
             <Route path="/foundations/typography" element={<TypographyPage />} />
