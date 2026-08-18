@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "generate": "node scripts/generate-metadata.mjs",
-    "predev": "npm run generate",
+    "sandbox": "vite build --config vite.sandbox.config.ts --outDir public",
+    "predev": "npm run generate && npm run sandbox",
     "dev": "vite",
-    "prebuild": "npm run generate",
+    "prebuild": "npm run generate && npm run sandbox",
     "build": "tsc --noEmit && vite build",
     "typecheck": "npm run generate && tsc --noEmit",
     "preview": "vite preview"

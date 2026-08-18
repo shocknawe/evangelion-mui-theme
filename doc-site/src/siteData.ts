@@ -57,7 +57,7 @@ export const isApi = (doc: ComponentDoc): boolean => doc.group === 'Hooks & util
 export const importLine = (doc: ComponentDoc): string =>
   `import { ${doc.name} } from '${pkgName}/components';`;
 
-/** Source link — CI injects the repo URL; falls back to the bare path. */
+/** Source link — the deploy workflow sets VITE_REPO_URL; falls back to the bare path. */
 const repoUrl = import.meta.env.VITE_REPO_URL as string | undefined;
 export const sourceHref = (c: ComponentDoc): string | undefined =>
   repoUrl ? `${repoUrl.replace(/\/$/, '')}/blob/main/${c.sourcePath}` : undefined;

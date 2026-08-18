@@ -22,10 +22,15 @@ export function CodeBlock({ code, filename, noCopy = false }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    void navigator.clipboard?.writeText(code).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1400);
-    });
+    void navigator.clipboard?.writeText(code).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1400);
+      },
+      // Clipboard can reject (permission denied, non-secure context) — the
+      // button just stays COPY; don't surface an unhandled rejection.
+      () => {},
+    );
   };
 
   return (

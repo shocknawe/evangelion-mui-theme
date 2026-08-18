@@ -6,9 +6,11 @@
  * a new export is reachable here the moment it ships. The ⌘K palette and the
  * mobile nav drawer both hang off the same `tocOpen` state.
  */
-import { lazy, Suspense, useState } from 'react';
+import { Component, lazy, Suspense, useState } from 'react';
+import type { ReactNode } from 'react';
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import {
   DocFooter,
   DocShell,
@@ -78,6 +80,43 @@ const componentGroups: TocGroup[] = groups.map((g) => ({
 
 const TOC_GROUPS: TocGroup[] = [...STATIC_GROUPS, ...componentGroups];
 
+/**
+ * Catches lazy-chunk load failures. Routes are hashed chunks; after a Pages
+ * deploy replaces the old assets, an already-open tab navigating to an unloaded
+ * route 404s the chunk and would otherwise escape to the root. Offer a reload
+ * instead of a blank page.
+ */
+class ChunkErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    if (this.state.failed) {
+      return (
+        <Box
+          sx={(t) => ({
+            py: 14,
+            textAlign: 'center',
+            fontFamily: t.nerv.fonts.mono,
+            fontSize: 11,
+            letterSpacing: '0.14em',
+            color: t.nerv.hue.amber,
+          })}
+        >
+          <Box sx={{ mb: 2 }}>ROUTE FAILED TO LOAD — THE SITE WAS UPDATED.</Box>
+          <Button variant="ghost" size="small" onClick={() => window.location.reload()}>
+            ↺ RELOAD
+          </Button>
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Shell() {
   const { pathname } = useLocation();
   const [tocOpen, setTocOpen] = useState(false);
@@ -97,6 +136,7 @@ function Shell() {
       <DocsMasthead version={version} onSearchClick={() => setSearchOpen(true)} onMenuClick={() => setTocOpen(true)} />
 
       <DocShell toc={<TableOfContents groups={toc} onNavigate={() => setTocOpen(false)} />} tocOpen={tocOpen} onTocClose={() => setTocOpen(false)}>
+        <ChunkErrorBoundary>
         <Suspense
           fallback={
             <Box
@@ -129,6 +169,7 @@ function Shell() {
             <Route path="*" element={<EmptyPanel title="NO SUCH ROUTE" detail="That address is not on the board. Pick a destination from the navigation or press ⌘K." />} />
           </Routes>
         </Suspense>
+        </ChunkErrorBoundary>
         <DocFooter />
       </DocShell>
 

@@ -272,7 +272,7 @@ return <FilterChips filters={['ALL', 'DECISION', 'PATTERN', 'MISTAKE']} value={s
 />`,
 
   'wiki-link': `<Typography variant="terminal">
-  SEE <WikiLink href="#">[[GATE·04 PROTOCOL]]</WikiLink> FOR ESCALATION RULES.
+  SEE <WikiLink href="#top">[[GATE·04 PROTOCOL]]</WikiLink> FOR ESCALATION RULES.
 </Typography>`,
 
   'console-nav': `const [tab, setTab] = useState('eng');
@@ -292,7 +292,7 @@ return (
   <SiteHeader
     name="JAIRUS_OS"
     version="V2.4.0"
-    links={[{ label: 'SYSTEMS', href: '#' }, { label: 'TELEMETRY', href: '#' }]}
+    links={[{ label: 'SYSTEMS', href: '#top' }, { label: 'TELEMETRY', href: '#top' }]}
     actions={<Stamp tone="mint" glow>LIVE</Stamp>}
   />
 </Box>`,

@@ -1,6 +1,6 @@
 # Phosphor Console — Material UI theme
 
-A production Material UI **v7** theme that translates the NERV/MAGI tactical
+A production Material UI **v9** theme that translates the NERV/MAGI tactical
 design system (see [`DESIGN.md`](../DESIGN.md), [`design-system.md`](../design-system.md),
 [`design-system.html`](../design-system.html)) into a complete `createTheme`
 configuration: tokens, typography, glow-as-elevation, shape, and overrides for

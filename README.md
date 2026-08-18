@@ -1,6 +1,6 @@
 # The Phosphor Console
 
-**A NERV/MAGI tactical UI system — an Evangelion-inspired design language, a production Material UI v7 theme, and reference implementations.**
+**A NERV/MAGI tactical UI system — an Evangelion-inspired design language, a production Material UI v9 theme, and reference implementations.**
 
 Everything luminous blooms on true black. This is not a dark theme — it is a CRT
 command deck. Information is drawn in glowing **phosphor mint**, cut with
@@ -19,7 +19,7 @@ indistinguishable in grammar.
 
 ## Quick start (the MUI theme)
 
-A production Material UI **v7** theme, published as
+A production Material UI **v9** theme, published as
 [`phosphor-console-theme`](https://www.npmjs.com/package/phosphor-console-theme).
 
 ```bash

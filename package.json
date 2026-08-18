@@ -1,7 +1,7 @@
 {
   "name": "phosphor-console-theme",
   "version": "0.1.0",
-  "description": "Phosphor Console — a NERV/MAGI tactical Material UI (v7+) theme plus a paired console component library. Dark-only CRT command deck: color is state, active = figure/ground inversion, mechanical motion, bimodal bilingual type.",
+  "description": "Phosphor Console — a NERV/MAGI tactical Material UI (v9+) theme plus a paired console component library. Dark-only CRT command deck: color is state, active = figure/ground inversion, mechanical motion, bimodal bilingual type.",
   "type": "module",
   "license": "MIT",
   "author": "Jairus Aragon",
@@ -48,7 +48,7 @@
   "peerDependencies": {
     "@emotion/react": ">=11",
     "@emotion/styled": ">=11",
-    "@mui/material": ">=7",
+    "@mui/material": ">=9",
     "react": ">=18",
     "react-dom": ">=18"
   },
