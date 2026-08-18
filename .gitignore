@@ -3,3 +3,8 @@
 references/
 references-chosen/
 references-google-stitch-v1/
+
+# published npm package build (run `npm run build` to regenerate)
+node_modules/
+dist/
+*.tgz

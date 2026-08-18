@@ -1,0 +1,82 @@
+{
+  "name": "phosphor-console-theme",
+  "version": "0.1.0",
+  "description": "Phosphor Console — a NERV/MAGI tactical Material UI (v7+) theme plus a paired console component library. Dark-only CRT command deck: color is state, active = figure/ground inversion, mechanical motion, bimodal bilingual type.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Jairus Aragon",
+  "keywords": [
+    "material-ui",
+    "mui",
+    "theme",
+    "react",
+    "evangelion",
+    "nerv",
+    "design-system",
+    "dark-theme"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/theme.d.ts",
+      "import": "./dist/theme.js"
+    },
+    "./theme": {
+      "types": "./dist/theme.d.ts",
+      "import": "./dist/theme.js"
+    },
+    "./components": {
+      "types": "./dist/components.d.ts",
+      "import": "./dist/components.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/theme.d.ts",
+  "main": "./dist/theme.js",
+  "module": "./dist/theme.js",
+  "files": [
+    "dist",
+    "theme/README.md",
+    "components/README.md",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@emotion/react": ">=11",
+    "@emotion/styled": ">=11",
+    "@mui/material": ">=7",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@mui/icons-material": {
+      "optional": true
+    },
+    "@mui/x-data-grid": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tsup": "^8.3.5",
+    "typescript": "~5.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-github-username>/evangelion-mui-theme.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

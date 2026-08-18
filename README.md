@@ -19,18 +19,17 @@ indistinguishable in grammar.
 
 ## Quick start (the MUI theme)
 
-A production Material UI **v7** theme lives in [`theme/`](theme/).
+A production Material UI **v7** theme, published as
+[`phosphor-console-theme`](https://www.npmjs.com/package/phosphor-console-theme).
 
 ```bash
-npm i @mui/material @emotion/react @emotion/styled
+npm i phosphor-console-theme @mui/material @emotion/react @emotion/styled
 # optional: @mui/icons-material @mui/x-data-grid
 ```
 
-Copy `theme/` into your app, then:
-
 ```tsx
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from './theme';
+import { theme } from 'phosphor-console-theme';
 
 export default function App() {
   return (
@@ -45,7 +44,13 @@ export default function App() {
 `CssBaseline` is **required** — it installs the CRT scanline/vignette overlay,
 the blink keyframes the overrides depend on, and the `prefers-reduced-motion`
 path. See [`theme/README.md`](theme/README.md) for tokens, custom variants, and
-the full component map.
+the full component map, and [`components/README.md`](components/README.md) for
+the paired console component library (`import { Stamp, ... } from
+'phosphor-console-theme/components'`).
+
+Working in *this* repo (not consuming the published package)? Source lives in
+[`theme/`](theme/) and [`components/`](components/); `app/` imports them
+directly for live HMR (see [`theme/README.md`](theme/README.md#developing-in-this-repo)).
 
 ### Two schemes
 

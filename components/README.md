@@ -12,13 +12,17 @@ so dropping one into a `ThemeProvider` gives you the design language for free.
 
 ## Install / mount
 
+```bash
+npm i phosphor-console-theme @mui/material @emotion/react @emotion/styled
+```
+
 The library is peer-dependent on `@mui/material`, `@emotion/react`,
 `@emotion/styled` and `react`. Mount the theme, then import components:
 
 ```tsx
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from '../theme';
-import { StatusLegend, SegmentedMeter, HazardPrompt } from '../components';
+import { theme } from 'phosphor-console-theme';
+import { StatusLegend, SegmentedMeter, HazardPrompt } from 'phosphor-console-theme/components';
 
 <ThemeProvider theme={theme} defaultMode="dark">
   <CssBaseline />

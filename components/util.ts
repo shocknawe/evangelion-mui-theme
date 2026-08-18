@@ -1,4 +1,5 @@
 import type { Theme } from '@mui/material/styles';
+import '../theme/augmentation'; // side-effect: theme.nerv / palette.nerv module augmentation
 
 /**
  * Semantic tones — the design system's "color = state" vocabulary, mapped to the

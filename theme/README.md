@@ -15,17 +15,15 @@ every commonly used component.
 ## Install
 
 ```bash
-npm i @mui/material @emotion/react @emotion/styled
+npm i phosphor-console-theme @mui/material @emotion/react @emotion/styled
 # optional: @mui/icons-material @mui/x-data-grid
 ```
-
-Copy `theme/` into your app (e.g. `src/theme/`).
 
 ## Use
 
 ```tsx
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from './theme';
+import { theme } from 'phosphor-console-theme'; // or 'phosphor-console-theme/theme'
 
 export default function App() {
   return (
@@ -36,6 +34,14 @@ export default function App() {
   );
 }
 ```
+
+## Developing in this repo
+
+If you're editing the theme *source* (not consuming the published package),
+`app/` imports `theme/index.ts` and `components/index.ts` straight from the
+repo root via a Vite alias (see `app/vite.config.ts`) — no build step, tokens
+update live under HMR. Run `npm run build` at the repo root (via `tsup`) only
+to produce the publishable `dist/` used by `npm publish`.
 
 `CssBaseline` is required — it installs the CRT scanline/vignette overlay, the
 `nervBlink` / `nervBtnBlink` keyframes the overrides depend on, and the
