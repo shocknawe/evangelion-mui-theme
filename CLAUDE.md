@@ -114,6 +114,7 @@ REFERENCE-ANALYSIS.md · DESIGN-SYSTEM.md           # research
 theme/                                             # the MUI v7 theme
 components/                                         # reusable React component library (pairs with the theme)
 app/                                               # Vite+React demo mounting the theme + components (rebuilds design-system.html)
+doc-site/                                          # Vite+React docs site (published to GitHub Pages; consumes theme/components from source)
 experiment-*.html · experiment-sonnet-*.html       # standalone studies
 dashboard-0{1,2,3}.html · form-0{1,2}.html         # reference implementations
 landing-page-0{1,2}.html · wiki.html

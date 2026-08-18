@@ -126,7 +126,7 @@ export default function MotionPage() {
           stepped-segment demo above settle fully lit instead of cycling.
         </Prose>
         <DemoStage>
-          <Stamp tone={reduced ? 'amber' : 'mint'} glow filled={reduced}>
+          <Stamp tone={reduced ? 'amber' : 'mint'} glow={!reduced} filled={reduced}>
             useReducedMotion() = {String(reduced)}
           </Stamp>
         </DemoStage>

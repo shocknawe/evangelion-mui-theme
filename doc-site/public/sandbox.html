@@ -1,0 +1,27 @@
+<!doctype html>
+<!-- The preview iframe document. Loaded by SandboxPreview with
+     sandbox="allow-scripts" (no allow-same-origin), so this document has an
+     opaque origin: no cookies, no localStorage, no parent access. The runtime
+     is a classic (non-module) script so it loads without CORS from the
+     opaque-origin document. The relative src resolves against this page's URL
+     (the configured base), so it works under any DOCS_BASE. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      #root {
+        min-height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="./sandbox-runtime.js"></script>
+  </body>
+</html>

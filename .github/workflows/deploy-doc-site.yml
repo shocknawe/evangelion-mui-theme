@@ -17,6 +17,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Least privilege: the build job only reads the repo. `npm ci` runs
+    # dependency lifecycle scripts, so it must not hold pages/id-token write
+    # authority — those belong to the deploy job alone.
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +43,7 @@ jobs:
         working-directory: doc-site
         env:
           DOCS_BASE: /evangelion-mui-theme/
+          VITE_REPO_URL: https://github.com/shocknawe/evangelion-mui-theme
         run: npm run build
 
       - name: Upload Pages artifact

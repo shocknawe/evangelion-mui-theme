@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Stamp } from '@components';
-import { compile, PreviewBoundary } from './compile';
+import { transpile, SandboxPreview } from './compile';
 
 export interface LivePlaygroundProps {
   /** Initial editor contents — a JSX expression or a body ending in `return`. */
@@ -35,18 +35,20 @@ export function LivePlayground({ code: initial, previewHeight = 240 }: LivePlayg
     return () => clearTimeout(t);
   }, [code]);
 
-  const { Comp, error } = useMemo(() => {
+  const { js, error } = useMemo(() => {
     try {
-      return { Comp: compile(debounced), error: null as string | null };
+      return { js: transpile(debounced), error: null as string | null };
     } catch (e) {
-      return { Comp: null, error: e instanceof Error ? e.message : String(e) };
+      return { js: null, error: e instanceof Error ? e.message : String(e) };
     }
   }, [debounced]);
 
   // Keep the last successful render visible while an edit is mid-flight.
-  const lastGood = useRef<React.ComponentType | null>(null);
-  if (Comp) lastGood.current = Comp;
-  const Active = Comp ?? lastGood.current;
+  const lastGood = useRef<string | null>(null);
+  useEffect(() => {
+    if (js) lastGood.current = js;
+  }, [js]);
+  const activeJs = js ?? lastGood.current;
 
   const dirty = code !== initial;
   const lineCount = code.split('\n').length;
@@ -78,11 +80,7 @@ export function LivePlayground({ code: initial, previewHeight = 240 }: LivePlayg
             '&::-webkit-scrollbar-thumb': { background: t.nerv.hue.greenDim },
           })}
         >
-          {Active && (
-            <PreviewBoundary key={debounced}>
-              <Active />
-            </PreviewBoundary>
-          )}
+          {activeJs && <SandboxPreview js={activeJs} />}
         </Box>
 
         <Box

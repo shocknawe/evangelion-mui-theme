@@ -2,14 +2,15 @@
  * A landing-page preview tile: renders a component's seed snippet live inside a
  * clipped frame, with a footer that links to its full page.
  *
- * The render is deferred until the tile scrolls near the viewport — there are
- * ~60 of these and several drive canvases or interval timers — and any render
- * error is contained to the tile.
+ * The preview mounts only while the tile is near the viewport — there are ~60
+ * of these and several drive canvases or interval timers — and unmounts again
+ * when it scrolls away, so offscreen tiles stop ticking. The transpiled body is
+ * cached per seed, so scrolling back doesn't recompile.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { compile, PreviewBoundary } from '../playground/compile';
+import { transpile, SandboxPreview } from '../playground/compile';
 
 export interface ComponentPreviewProps {
   slug: string;
@@ -22,29 +23,33 @@ export function ComponentPreview({ slug, name, code }: ComponentPreviewProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
+  // Track both entry and exit: mount the preview near the viewport, unmount it
+  // when it scrolls away so its timers/canvas loops stop.
   useEffect(() => {
     const el = ref.current;
-    if (!el || visible) return;
+    if (!el) return;
     const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
+      (entries) => setVisible(entries.some((e) => e.isIntersecting)),
       { rootMargin: '240px' },
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [visible]);
+  }, []);
 
-  const Comp = useMemo(() => {
+  // Transpile lazily on first visibility, then cache per seed so scrolling back
+  // doesn't recompile.
+  const cacheRef = useRef<Map<string, string | null>>(new Map());
+  const js = useMemo(() => {
     if (!visible) return null;
+    if (cacheRef.current.has(code)) return cacheRef.current.get(code);
+    let out: string | null = null;
     try {
-      return compile(code);
+      out = transpile(code);
     } catch {
-      return null;
+      out = null;
     }
+    cacheRef.current.set(code, out);
+    return out;
   }, [visible, code]);
 
   return (
@@ -74,11 +79,7 @@ export function ComponentPreview({ slug, name, code }: ComponentPreviewProps) {
           borderBottom: `1px solid ${t.nerv.hue.greenDim}`,
         })}
       >
-        {Comp && (
-          <PreviewBoundary key={slug}>
-            <Comp />
-          </PreviewBoundary>
-        )}
+        {js && <SandboxPreview js={js} />}
       </Box>
 
       <Box
