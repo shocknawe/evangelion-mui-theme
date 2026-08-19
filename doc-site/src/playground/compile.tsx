@@ -53,10 +53,19 @@ export function SandboxPreview({ js }: { js: string }) {
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      const { type, message } = e.data ?? {};
+      // The parent window has one global 'message' listener per mounted
+      // preview — the landing page mounts dozens at once — so without this
+      // guard every iframe's messages would fan out to every other preview
+      // (a stray error painting over unrelated tiles, or a 'ready' from a
+      // neighbor firing before this preview's own iframe is actually
+      // listening, which then swallows its first compile job for good).
+      if (e.source !== iframeRef.current?.contentWindow) return;
+      const { type, message, id } = e.data ?? {};
       if (type === 'ready') {
         readyRef.current = true;
         setReady(true);
+      } else if (id !== idRef.current) {
+        // Stale reply to a compile job that's since been superseded.
       } else if (type === 'error') {
         setError(message ?? 'Unknown error');
       } else if (type === 'ok') {
