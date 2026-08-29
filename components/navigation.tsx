@@ -268,11 +268,15 @@ export function Brand({ name, version, size = 'md', stackVersion = false, sx }: 
   const mk = size === 'sm' ? 15 : 16;
   const word = size === 'sm' ? 18 : 20;
   return (
-    <Box sx={[{ display: 'flex', flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
+    <Box sx={[{ display: 'flex', minWidth: 0, flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
         <Box sx={(t) => ({ width: mk, height: mk, flex: 'none', background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
-        <Box component="b" sx={(t) => ({ fontSize: word, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
-        {version && !stackVersion && <Box component="span" sx={(t) => ({ ml: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
+        {/* The wordmark is the only elastic part of the lockup: it truncates
+            rather than forcing the bar wider than its container. `py`/`my`
+            cancel out — they only widen the clip box so the phosphor glow
+            isn't shaved off the top and bottom of the caps. */}
+        <Box component="b" sx={(t) => ({ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', py: '5px', my: '-5px', fontSize: word, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
+        {version && !stackVersion && <Box component="span" sx={(t) => ({ flex: 'none', ml: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
       </Box>
       {version && stackVersion && <Box component="span" sx={(t) => ({ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', pl: '22px', mt: '2px' })}>{version}</Box>}
     </Box>
@@ -333,10 +337,26 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box sx={{ maxWidth, mx: 'auto', px: 3, height: 60, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Brand name={name} version={version} />
+      {/* The bar is a hard container: the brand shrinks, the rest holds its
+          size, and `overflow: hidden` guarantees no consumer can push the
+          page wider than the viewport. (A header's own box-shadow paints
+          outside its box, so the orange glow below is untouched.) */}
+      <Box
+        sx={{
+          maxWidth,
+          mx: 'auto',
+          px: { xs: 1.5, sm: 3 },
+          height: 60,
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 1.5, sm: 3 },
+          minWidth: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <Brand name={name} version={version} sx={{ flexShrink: 1 }} />
         {links.length > 0 && (
-          <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', fontSize: 11, letterSpacing: '0.12em' }}>
+          <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', minWidth: 0, fontSize: 11, letterSpacing: '0.12em' }}>
             {links.map((l) => (
               <Box
                 key={l.href}
@@ -359,7 +379,21 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
             ))}
           </Box>
         )}
-        {actions && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: links.length ? 0 : 'auto' }}>{actions}</Box>}
+        {actions && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: { xs: 1, sm: 1.5 },
+              flexShrink: 0,
+              // Below `md` the nav is hidden, so its `ml: 'auto'` is gone —
+              // the actions take over pushing themselves to the right edge.
+              ml: { xs: 'auto', md: links.length ? 0 : 'auto' },
+            }}
+          >
+            {actions}
+          </Box>
+        )}
       </Box>
     </Box>
   );

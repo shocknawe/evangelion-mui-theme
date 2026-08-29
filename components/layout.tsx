@@ -3,7 +3,7 @@
  * the boxed monogram, and the compact stat pair. These are the scaffolding a
  * full console screen (dashboard, form, wiki) is built on.
  */
-import type { ReactNode } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { type Tone, toneHue } from './util';
@@ -173,6 +173,13 @@ export interface ZoneTitleProps {
   children: ReactNode;
   /** Right-aligned meta (e.g. a count chip). Rendered in amber. */
   aside?: ReactNode;
+  /**
+   * The element to render. Pass a heading (`h2`, `h3`…) when the zone is a real
+   * document section so the page carries an outline (WCAG 1.3.1). The type
+   * ramp is set here, so a heading looks identical to the default `div`.
+   * @default 'div'
+   */
+  component?: ElementType;
   sx?: SxProps<Theme>;
 }
 
@@ -180,9 +187,10 @@ export interface ZoneTitleProps {
  * A zone header: condensed orange caps over a dim-green rule, with optional
  * right-aligned amber meta (a due count, an item total).
  */
-export function ZoneTitle({ children, aside, sx }: ZoneTitleProps) {
+export function ZoneTitle({ children, aside, component = 'div', sx }: ZoneTitleProps) {
   return (
     <Box
+      component={component}
       sx={[
         (t) => ({
           display: 'flex',
@@ -197,6 +205,9 @@ export function ZoneTitle({ children, aside, sx }: ZoneTitleProps) {
           textTransform: 'uppercase',
           borderBottom: `1px solid ${t.nerv.hue.greenDim}`,
           pb: 0.5,
+          // Zero the UA heading margin — CssBaseline does not reset it, so an
+          // `h2` would otherwise sit lower than the default `div`.
+          mt: 0,
           mb: 1,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
