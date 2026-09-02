@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Tabs from '@mui/material/Tabs';
@@ -46,9 +47,11 @@ export function Navigation() {
         <SpecCard label="SIDEBAR NAV (INVERSION)" src="MuiList · dashboard-01" verdict="keep" verdictText="✅ SIDEBAR" column>
           <List sx={{ width: '100%' }}>
             {NAV.map(([jp, en], i) => (
-              <ListItemButton key={en} selected={nav === i} onClick={() => setNav(i)}>
-                <ListItemText primary={`${jp}  ${en}`} />
-              </ListItemButton>
+              <ListItem key={en} disablePadding>
+                <ListItemButton selected={nav === i} onClick={() => setNav(i)}>
+                  <ListItemText primary={`${jp}  ${en}`} />
+                </ListItemButton>
+              </ListItem>
             ))}
           </List>
         </SpecCard>

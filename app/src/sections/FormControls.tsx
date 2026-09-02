@@ -47,20 +47,20 @@ export function FormControls() {
     <Section id="forms" idx="03" kanji="申請" title="FORM CONTROLS" note="Shared field grammar: black field, dim-green idle border → mint glow on focus, checked = colorway inversion. Text, Select, Checkbox, Switch, Slider and ToggleButtonGroup are stock MUI carrying the theme overrides; the bilingual field wrapper and console controls are @components.">
       <SpecGrid cols={3}>
         <SpecCard label="TEXT INPUT" src="MuiTextField · <FieldLabel/>" column>
-          <FieldLabel jp="件名" label="TEXT INPUT">
-            <TextField fullWidth placeholder="API SECURITY GATEWAY" defaultValue="API SECURITY GATEWAY" />
+          <FieldLabel jp="件名" label="TEXT INPUT" htmlFor="field-text">
+            <TextField fullWidth id="field-text" placeholder="API SECURITY GATEWAY" defaultValue="API SECURITY GATEWAY" />
           </FieldLabel>
         </SpecCard>
 
         <SpecCard label="TEXTAREA" src="MuiTextField · <FieldLabel/>" column>
-          <FieldLabel jp="理由" label="TEXTAREA">
-            <TextField fullWidth multiline minRows={2} placeholder="What happens if nobody decides?" />
+          <FieldLabel jp="理由" label="TEXTAREA" htmlFor="field-textarea">
+            <TextField fullWidth multiline id="field-textarea" minRows={2} placeholder="What happens if nobody decides?" />
           </FieldLabel>
         </SpecCard>
 
         <SpecCard label="SELECT (LISTBOX)" src="MuiSelect · <FieldLabel/>" verdict="keep" verdictText="✅ MUI" column>
-          <FieldLabel jp="部門" label="DROPDOWN">
-            <TextField select fullWidth value={dept} onChange={(e) => setDept(e.target.value)}>
+          <FieldLabel jp="部門" label="DROPDOWN" htmlFor="field-dept">
+            <TextField select fullWidth id="field-dept" slotProps={{ htmlInput: { 'aria-label': 'DROPDOWN · 部門' } }} value={dept} onChange={(e) => setDept(e.target.value)}>
               {DEPTS.map(([en, jp]) => (
                 <MenuItem key={en} value={en} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                   {en}
@@ -101,7 +101,7 @@ export function FormControls() {
 
         <SpecCard label="SLIDER" src="MuiSlider">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, width: '100%' }}>
-            <Slider value={ram} min={1} max={32} onChange={(_, v) => setRam(v as number)} sx={{ flex: 1 }} />
+            <Slider value={ram} min={1} max={32} aria-label="MEMORY ALLOCATION" onChange={(_, v) => setRam(v as number)} sx={{ flex: 1 }} />
             <Box component="span" sx={{ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 18, color: t.nerv.hue.mintHi, minWidth: 64, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{pad2(ram)} GB</Box>
           </Box>
         </SpecCard>

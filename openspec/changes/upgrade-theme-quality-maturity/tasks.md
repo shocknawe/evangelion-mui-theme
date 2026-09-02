@@ -35,7 +35,7 @@
 
 ## 6. Accessibility audit in CI (FR-5)
 
-- [ ] 6.1 Add axe-core to `app/` test tooling; run it against every component's live-example route
+- [x] 6.1 Add axe-core to `app/` test tooling; run it against every component's live-example route
 - [ ] 6.2 Map each component to its WAI-ARIA pattern (meter, `progressbar`, `feed`, `switch`/radio, modal focus) and assert required roles/states/keyboard
 - [ ] 6.3 Add reduced-motion checks asserting final-state rendering for at least one path per animated component
 - [ ] 6.4 Publish `docs/a11y.md` with the pattern pass rate (target ≥10/11), known gaps, severities, and remediation plans
