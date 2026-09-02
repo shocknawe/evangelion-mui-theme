@@ -106,7 +106,9 @@ out.push(
   `> NERV/MAGI tactical UI system: an Evangelion-inspired design language, a dark-only Material UI theme, ` +
     `and a React component library. Black CRT surfaces, phosphor mint / safety orange / blood red, ` +
     `bilingual EN + JP, mechanical motion. Docs are for v${data.version}; the site is a single-page ` +
-    `hash-routed app, so every page below lives at ${base}#/<route>.`,
+    `hash-routed app, so every page below lives at ${base}#/<route>. ` +
+    `Every component page carries edge cases, performance notes, and a customization recipe ` +
+    `(sx, classes keys, slots/slotProps, and the single-class Nerv*-root theme override).`,
 );
 
 for (const g of groups) {

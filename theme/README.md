@@ -103,6 +103,14 @@ emitted. Replace a top-level key only when you mean to replace it wholesale.
 
 ### Tokens and overrides are separately importable
 
+For per-component customization — `sx` on the root, the `classes` keys,
+`slots`/`slotProps`, and the single-class `Nerv*-root` theme override — see the
+**CUSTOMIZE · 改変** section on each component's doc-site page (one runnable
+recipe per component — e.g.
+[Stamp](https://shocknawe.github.io/evangelion-mui-theme/#/components/stamp)).
+[Per-component documentation](#per-component-documentation) below describes the
+approach those recipes take.
+
 `phosphor-console-theme/tokens` is the raw, import-safe token module — usable
 with no theme and no overrides at all:
 
@@ -203,6 +211,54 @@ Status colors map to `color` props: `success`=mint, `info`=blue,
 `warning`=amber, `error`=red across Chip/Alert/Button — the "subtle / outlined /
 elevated / ghost / destructive / success / warning" intents are expressed
 through these semantic colors + variants rather than one-off styles.
+
+> **Live-example coverage (honest).** Six of the ten custom variants above are
+> exercised by no `app/` route — Button `stamp`, Paper `frame`, and the
+> Typography `jp` / `terminal` / `stamp` / `data` variant props. They *are*
+> verified rendering (token/color/geometry asserted against the real theme in a
+> throwaway harness), just not on a demo screen; the variant-by-variant matrix,
+> method, and evidence live in
+> [`openspec/changes/upgrade-theme-quality-maturity/notes/4.3-variant-rendering.md`](../openspec/changes/upgrade-theme-quality-maturity/notes/4.3-variant-rendering.md).
+> Follow-ups that add them to an `app/src/sections/*` card should tick that
+> route-coverage gap — no new routes were built for this note.
+
+## Per-component documentation
+
+Every one of the 59 components has a page in the docs site with a live
+playground, the generated props table, and three contract sections:
+
+- **Edge cases** — reduced-motion behavior (hook-gated vs. the global CssBaseline
+  guard), portal rendering (`GateDecisionDialog`), controlled/uncontrolled
+  modes, clamping, and the props-spread/ref conventions (Tasks 3.2–3.3).
+- **Performance notes** — what the component actually runs: intervals, canvas
+  repaint rates, memoization, and per-module gzip weight
+  ([`docs/bundle-budgets.md`](../docs/bundle-budgets.md)).
+- **Customize** — a runnable recipe per component: `sx` on the root, the
+  `classes` keys (parsed from the props interface, so they cannot drift),
+  `slots`/`slotProps` where the component has them, and the theme-wide
+  single-class `Nerv*-root` override.
+
+Component pages live at `/components/<slug>` on the
+[doc site](https://shocknawe.github.io/evangelion-mui-theme/#/components/stamp)
+(source: `doc-site/src/components/ComponentPage.tsx` + the per-component notes in
+`doc-site/src/registry.tsx`, rendered against the generated
+`doc-site/src/generated/site-data.json`), and the machine-readable spine — name, module,
+props summary, `classes` keys, consumed tokens, and example `app/` route per
+component — is [`registry.json`](../registry.json), generated from source by
+`npm run registry`. `llms.txt` at the doc-site root indexes the same pages for
+agent consumption.
+
+The theme-wide half of every recipe is one class of specificity: the library
+emits `Nerv<Component>-root` (and `Nerv<Component>-<part>`) on its own elements,
+defines **zero** selectors against those classes, and puts no `!important` on
+any `Nerv*` class — its only three `!important` declarations sit inside the
+sanctioned global `prefers-reduced-motion: reduce` reset in
+`theme/components/cssBaseline.ts` (the accessibility backstop, targeting `*`,
+`*::before`, and `*::after`; see the
+[reduced-motion exception](../openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md)).
+So a consumer rule on `.NervStamp-root` wins without escalation (see the selector
+audit in
+[`openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md`](../openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md)).
 
 ## Fonts
 

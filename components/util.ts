@@ -127,7 +127,16 @@ export function resolveClasses<Keys extends string, Part extends Keys>(
  * key optionally replaces that part's built-in default element.
  *
  *   slots?: SlotsOf<'tag'>
- *   <TagInput slots={{ tag: Stamp }} />
+ *
+ * A slot receives the part's *contract* — never the built-in element's own
+ * props. {@link TagInput}'s `tag` part ships `label` + `onDelete`, so a slot
+ * component takes exactly those:
+ *
+ *   const Tag = ({ label, onDelete }) => (
+ *     <Stamp tone="mint" filled onDoubleClick={onDelete}>{label}</Stamp>
+ *   );
+ *   <TagInput slots={{ tag: Tag }} />          // Stamp itself is NOT the tag slot:
+ *                                              // it reads `children`, not `label`.
  */
 export type SlotsOf<Keys extends string> = { [K in Keys]?: ElementType };
 

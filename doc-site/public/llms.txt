@@ -1,6 +1,6 @@
 # phosphor-console-theme — Phosphor Console docs
 
-> NERV/MAGI tactical UI system: an Evangelion-inspired design language, a dark-only Material UI theme, and a React component library. Black CRT surfaces, phosphor mint / safety orange / blood red, bilingual EN + JP, mechanical motion. Docs are for v0.1.0; the site is a single-page hash-routed app, so every page below lives at /evangelion-mui-theme/#/<route>.
+> NERV/MAGI tactical UI system: an Evangelion-inspired design language, a dark-only Material UI theme, and a React component library. Black CRT surfaces, phosphor mint / safety orange / blood red, bilingual EN + JP, mechanical motion. Docs are for v0.1.0; the site is a single-page hash-routed app, so every page below lives at /evangelion-mui-theme/#/<route>. Every component page carries edge cases, performance notes, and a customization recipe (sx, classes keys, slots/slotProps, and the single-class Nerv*-root theme override).
 
 ## Overview
 
