@@ -22,7 +22,7 @@
 
 ## 4. Slot APIs where warranted (FR-1)
 
-- [ ] 4.1 Add `slots`/`slotProps` (MUI Core convention) to the slot-candidate components from 2.2
+- [x] 4.1 Add `slots`/`slotProps` (MUI Core convention) to the slot-candidate components from 2.2
 - [ ] 4.2 Migrate any `*Component/*Props` pairing to `slots`/`slotProps`; keep old props working with a deprecation notice for one release
 - [ ] 4.3 Verify all custom variants (Button `ghost`/`alt`/`stamp`, Chip `stamp`, Paper `chamfer`/`frame`, Typography) render with no visual regression across `app/` routes (screenshot check)
 

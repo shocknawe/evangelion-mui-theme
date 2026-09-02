@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, Ref } from 'react';
+import type { ComponentPropsWithoutRef, ElementType, Ref } from 'react';
 import type { Theme } from '@mui/material/styles';
 import '../theme/augmentation'; // side-effect: theme.nerv / palette.nerv module augmentation
 
@@ -47,6 +47,12 @@ export type RootHTMLAttributes<Tag extends keyof HTMLElementTagNameMap = 'div'> 
   ComponentPropsWithoutRef<Tag>,
   'children'
 >;
+
+/**
+ * The same contract as {@link RootHTMLAttributes}, for a part hosted on an SVG
+ * element (a gauge track) — `<svg>` is not in {@link HTMLElementTagNameMap}.
+ */
+export type RootSVGAttributes = Omit<ComponentPropsWithoutRef<'svg'>, 'children'>;
 
 /**
  * The React 19 `ref` prop for a component's root element, typed against the
@@ -114,6 +120,73 @@ export function resolveClasses<Keys extends string, Part extends Keys>(
   ...extra: Array<string | false | null | undefined>
 ): string {
   return cx(nervClass(component, part), classes?.[part], ...extra);
+}
+
+/**
+ * The MUI Core `slots` prop for a component whose slot keys are `Keys`: each
+ * key optionally replaces that part's built-in default element.
+ *
+ *   slots?: SlotsOf<'tag'>
+ *   <TagInput slots={{ tag: Stamp }} />
+ */
+export type SlotsOf<Keys extends string> = { [K in Keys]?: ElementType };
+
+/**
+ * Resolve one slot (`notes/2.2` §5 — the one shared helper, so the semantics
+ * cannot drift across the slot components).
+ *
+ * MUI Core convention: the consumer's `slots[part]` replaces the part's
+ * built-in default element; `slotProps[part]` merges over the part's props with
+ * the consumer winning. Two details this helper pins down:
+ *
+ *   - `className` is *appended*, never replaced — the generated
+ *     `Nerv<Component>-<part>` class and `classes[part]` (the `classes`
+ *     contract, notes/2.3 §5) survive a custom slot, and the consumer's own
+ *     class comes last. MUI's own `mergeSlotProps` joins class lists rather
+ *     than letting a slot prop overwrite them.
+ *   - `defaults` (the built-in element's own JSX content, its styling, and
+ *     component-only props such as a `Chip`'s `color` or a `Box`'s
+ *     `component`) is spread only when the built-in element actually renders —
+ *     a consumer slot takes over the part's look wholesale, so it never
+ *     inherits styling it cannot see.
+ *
+ *   const onDelete = () => onChange(tags.filter((x) => x !== tag));
+ *   const [Tag, tagProps] = resolveSlot(slots?.tag, Chip, {
+ *     contract: { label: tag, onDelete },              // what the part means
+ *     defaults: { label: tag, onDelete, color: 'success' }, // what only Chip needs
+ *     slotProps: slotProps?.tag,                       // consumer props win
+ *     className: resolveClasses('TagInput', 'tag', classes),
+ *   });
+ *   <Tag key={tag} {...tagProps} />
+ */
+export function resolveSlot<
+  Default extends ElementType,
+  P extends object,
+  D extends object = Record<string, never>,
+>(
+  /** The consumer's `slots[part]` — omit to render the built-in default. */
+  slot: ElementType | undefined,
+  /** The part's built-in default element. */
+  Default: Default,
+  parts: {
+    /** The part's semantic contract, passed to a consumer-supplied slot. */
+    contract?: P;
+    /** Props only the built-in default element understands. */
+    defaults?: D;
+    /** The consumer's `slotProps[part]` — merged last, consumer props win. */
+    slotProps?: P;
+    /** The part's generated + `classes` class (from {@link resolveClasses}). */
+    className?: string;
+  },
+): [Default, P & D] {
+  const { contract, defaults, slotProps, className } = parts;
+  const merged = {
+    ...(slot ? contract : defaults),
+    ...slotProps,
+  } as P & D;
+  const cls = cx(className, (slotProps as { className?: string } | undefined)?.className);
+  if (cls) (merged as { className?: string }).className = cls;
+  return [(slot ?? Default) as Default, merged];
 }
 
 /** The mint-fill focus ring used across interactive console controls. */

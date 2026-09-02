@@ -7,7 +7,7 @@ import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, resolveClasses, resolveSlot } from './util';
 
 /* ------------------------------------------------------------------ */
 /* FilterChips — a row of orange scope chips (active = solid inversion). */
@@ -73,6 +73,24 @@ export interface FilterRow {
   kind: string;
 }
 
+/** Props the `row` slot receives (notes/2.2 §3). */
+export interface FilterRailRowProps extends RootHTMLAttributes<'div'> {
+  /** The row this element renders. */
+  row?: FilterRow;
+  /** True when the row is filtered out — the rail dims instead of hiding. */
+  dim?: boolean;
+  /**
+   * State hook for a filtered-out row (`notes/2.3` §6: state is never a
+   * `classes` key) — target it as `[data-dim='true']`.
+   */
+  'data-dim'?: boolean | undefined;
+}
+
+export interface FilterRailSlotProps {
+  /** Props merged onto each list row. */
+  row?: FilterRailRowProps;
+}
+
 /** `value`/`onChange` are the controlled filter, not the DOM ones. */
 export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   /** Filter values. The `allValue` entry clears the filter (shows everything). */
@@ -85,6 +103,14 @@ export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onC
   onChange?: (value: string) => void;
   /** The filter meaning "show all". @default filters[0] */
   allValue?: string;
+  /**
+   * Replace an internal part: `row` (a list row). The row slot is the one way
+   * past the fixed 3-column `id · name · kind` layout — the dim-not-hide
+   * behavior the rail exists for is welded to it (notes/2.2 §2.1).
+   */
+  slots?: SlotsOf<'row'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: FilterRailSlotProps;
   /** Class overrides by part: `root`, `chips` (the embedded chip row), `row` (a list row). */
   classes?: ClassesOf<'root' | 'chips' | 'row'>;
   sx?: SxProps<Theme>;
@@ -94,7 +120,7 @@ export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onC
  * A filter rail that *dims and desaturates* non-matching rows instead of hiding
  * them — the operator never loses their place. Uncontrolled by default.
  */
-export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], classes, className, sx, ...rest }: FilterRailProps) {
+export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], slots, slotProps, classes, className, sx, ...rest }: FilterRailProps) {
   const [internal, setInternal] = useState(defaultValue ?? allValue);
   const active = value ?? internal;
   const setActive = (v: string) => {
@@ -107,12 +133,27 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
       <FilterChips filters={filters} value={active} onChange={setActive} className={resolveClasses('FilterRail', 'chips', classes)} sx={{ mb: 1.25 }} />
       {rows.map((r) => {
         const dim = active !== allValue && r.kind !== active;
-        return (
-          <Box
-            key={r.id}
-            className={resolveClasses('FilterRail', 'row', classes)}
-            data-dim={dim || undefined}
-            sx={(t) => ({
+        // `row` slot (notes/2.2 §3): a consumer with richer rows swaps the
+        // whole row and reads `row`/`dim` from the contract; the dim state
+        // rides the `data-dim` attribute, never a `classes` key (notes/2.3 §6).
+        const [RowSlot, rowProps] = resolveSlot(slots?.row, Box, {
+          contract: { row: r, dim, 'data-dim': dim || undefined },
+          defaults: {
+            'data-dim': dim || undefined,
+            children: (
+              <>
+                <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>
+                  {r.id}
+                </Box>
+                <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, flex: 1 })}>
+                  {r.name}
+                </Box>
+                <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' })}>
+                  {r.kind}
+                </Box>
+              </>
+            ),
+            sx: (t: Theme) => ({
               display: 'flex',
               alignItems: 'center',
               gap: 1,
@@ -123,19 +164,12 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
               opacity: dim ? 0.25 : 1,
               filter: dim ? 'grayscale(.6)' : 'none',
               transition: `opacity ${t.nerv.motion.durations.fast}ms linear`,
-            })}
-          >
-            <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>
-              {r.id}
-            </Box>
-            <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, flex: 1 })}>
-              {r.name}
-            </Box>
-            <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' })}>
-              {r.kind}
-            </Box>
-          </Box>
-        );
+            }),
+          },
+          slotProps: slotProps?.row,
+          className: resolveClasses('FilterRail', 'row', classes),
+        });
+        return <RowSlot key={r.id} {...rowProps} />;
       })}
     </Box>
   );
@@ -308,6 +342,19 @@ export interface SiteHeaderLink {
   href: string;
 }
 
+/** Props the `brand` slot receives (notes/2.2 §3). */
+export interface SiteHeaderBrandProps extends RootHTMLAttributes<'div'> {
+  /** Brand wordmark (e.g. `JAIRUS_OS`). */
+  name?: ReactNode;
+  /** Small version/tag after the wordmark. */
+  version?: ReactNode;
+}
+
+export interface SiteHeaderSlotProps {
+  /** Props merged onto the brand lockup (default: {@link Brand}). */
+  brand?: SiteHeaderBrandProps;
+}
+
 export interface SiteHeaderProps extends RootHTMLAttributes<'header'>, WithRef<'header'> {
   /** Brand wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
@@ -319,6 +366,10 @@ export interface SiteHeaderProps extends RootHTMLAttributes<'header'>, WithRef<'
   actions?: ReactNode;
   /** Max content width (px). @default 1180 */
   maxWidth?: number;
+  /** Replace an internal part: `brand` (the lockup — default {@link Brand}). */
+  slots?: SlotsOf<'brand'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: SiteHeaderSlotProps;
   /** Class overrides by part: `root`, `container` (the max-width bar), `brand`, `nav`, `link`, `actions`. */
   classes?: ClassesOf<'root' | 'container' | 'brand' | 'nav' | 'link' | 'actions'>;
   sx?: SxProps<Theme>;
@@ -330,7 +381,7 @@ export interface SiteHeaderProps extends RootHTMLAttributes<'header'>, WithRef<'
  * links smooth-scroll to their target (instant under reduced motion); other hrefs
  * behave normally.
  */
-export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, classes, className, sx, ...rest }: SiteHeaderProps) {
+export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, slots, slotProps, classes, className, sx, ...rest }: SiteHeaderProps) {
   const reduced = useReducedMotion();
   const onLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (!href.startsWith('#')) return;
@@ -339,6 +390,15 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
     e.preventDefault();
     target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
   };
+  // `brand` slot (notes/2.2 §3): every landing-page adopter stamps their own
+  // lockup — `name`/`version` only re-skin the built-in `Brand`. The
+  // shrink-against-the-bar styling belongs to the header, not the brand.
+  const [BrandSlot, brandProps] = resolveSlot(slots?.brand, Brand, {
+    contract: { name, version },
+    defaults: { name, version, sx: { flexShrink: 1 } },
+    slotProps: slotProps?.brand,
+    className: resolveClasses('SiteHeader', 'brand', classes),
+  });
 
   return (
     <Box
@@ -375,7 +435,7 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
           overflow: 'hidden',
         }}
       >
-        <Brand name={name} version={version} className={resolveClasses('SiteHeader', 'brand', classes)} sx={{ flexShrink: 1 }} />
+        <BrandSlot {...brandProps} />
         {links.length > 0 && (
           <Box component="nav" className={resolveClasses('SiteHeader', 'nav', classes)} sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', minWidth: 0, fontSize: 11, letterSpacing: '0.12em' }}>
             {links.map((l) => (

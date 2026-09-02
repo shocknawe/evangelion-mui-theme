@@ -4,11 +4,11 @@
  * input, and the segmented date display. Stock inputs (TextField, Select,
  * Checkbox, Switch, Slider, ToggleButtonGroup) are already covered by the theme.
  */
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, focusRing, resolveClasses, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, type Tone, focusRing, resolveClasses, resolveSlot, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ChipRadioGroup — bilingual radio chips with figure/ground inversion. */
@@ -195,6 +195,19 @@ export function HazardRating({ value, onChange, max = 5, classes, className, sx,
 /* ------------------------------------------------------------------ */
 /* TagInput — deletable chips + type-to-add. */
 
+/** Props the `tag` slot receives (notes/2.2 §3). */
+export interface TagInputTagProps extends RootHTMLAttributes<'div'> {
+  /** The tag text. */
+  label?: ReactNode;
+  /** Removes this tag from the field. */
+  onDelete?: () => void;
+}
+
+export interface TagInputSlotProps {
+  /** Props merged onto the tag part (default: an MUI `Chip color="success"`). */
+  tag?: TagInputTagProps;
+}
+
 /** `onChange` is the tag-list callback, not the DOM `onChange`. */
 export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, WithRef {
   tags: string[];
@@ -203,6 +216,10 @@ export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, Wit
   placeholder?: string;
   /** Uppercase new tags on add. @default true */
   uppercase?: boolean;
+  /** Replace an internal part: `tag` (a tag chip — default an MUI `Chip`). */
+  slots?: SlotsOf<'tag'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: TagInputSlotProps;
   /** Class overrides by part: `root` (the field), `tag` (a tag chip), `input` (the add-field). */
   classes?: ClassesOf<'root' | 'tag' | 'input'>;
   sx?: SxProps<Theme>;
@@ -212,7 +229,7 @@ export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, Wit
  * A tag field: mint stamp chips (deletable) with an inline input that adds a tag
  * on Enter and removes the last on Backspace.
  */
-export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, classes, className, sx, ...rest }: TagInputProps) {
+export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, slots, slotProps, classes, className, sx, ...rest }: TagInputProps) {
   const [draft, setDraft] = useState('');
   const add = () => {
     const v = (uppercase ? draft.toUpperCase() : draft).trim().replace(/\s+/g, '_');
@@ -236,9 +253,19 @@ export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      {tags.map((tag) => (
-        <Chip key={tag} className={resolveClasses('TagInput', 'tag', classes)} label={tag} color="success" onDelete={() => onChange(tags.filter((x) => x !== tag))} />
-      ))}
+      {tags.map((tag) => {
+        const onDelete = () => onChange(tags.filter((x) => x !== tag));
+        // `tag` slot (notes/2.2 §3): the only stock-MUI part in the library —
+        // the canonical swap-to-`Stamp` case. The custom slot gets the tag's
+        // contract (`label` + `onDelete`); `color: 'success'` is the Chip's own.
+        const [TagSlot, tagProps] = resolveSlot(slots?.tag, Chip, {
+          contract: { label: tag, onDelete },
+          defaults: { label: tag, onDelete, color: 'success' as const },
+          slotProps: slotProps?.tag,
+          className: resolveClasses('TagInput', 'tag', classes),
+        });
+        return <TagSlot key={tag} {...tagProps} />;
+      })}
       <Box
         component="input"
         className={resolveClasses('TagInput', 'input', classes)}

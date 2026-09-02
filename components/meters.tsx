@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type RootSVGAttributes, type SlotsOf, type WithRef, type Tone, resolveClasses, resolveSlot, toneHue } from './util';
 
 const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 
@@ -117,6 +117,24 @@ const polar = (cx: number, cy: number, r: number, d: number): [number, number] =
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 };
 
+/** Props the `track` slot receives — a consumer supplying it owns the whole SVG. */
+export interface RadialGaugeTrackProps extends RootSVGAttributes {}
+
+/** Props the `readout` slot receives (notes/2.2 §3). */
+export interface RadialGaugeReadoutProps extends RootHTMLAttributes<'div'> {
+  /** The current reading (already rounded). */
+  value?: number;
+  /** The caption under the readout. */
+  label?: string;
+}
+
+export interface RadialGaugeSlotProps {
+  /** Props merged onto the gauge track (default: the segmented-arc `<svg>`). */
+  track?: RadialGaugeTrackProps;
+  /** Props merged onto the center readout stack. */
+  readout?: RadialGaugeReadoutProps;
+}
+
 export interface RadialGaugeProps extends RootHTMLAttributes, WithRef {
   /** Controlled percentage (0..100). Omit to self-animate near full. */
   value?: number;
@@ -128,12 +146,20 @@ export interface RadialGaugeProps extends RootHTMLAttributes, WithRef {
   size?: number;
   /** Animate when uncontrolled. @default true */
   animated?: boolean;
+  /**
+   * Replace an internal part: `track` (the arc `<svg>` — a custom one owns the
+   * whole drawing; the `paths` geometry stays internal) or `readout` (the
+   * center value + label stack).
+   */
+  slots?: SlotsOf<'track' | 'readout'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: RadialGaugeSlotProps;
   /** Class overrides by part: `root`, `track` (the arc SVG), `readout` (the center stack), `readoutValue`, `readoutLabel`. */
   classes?: ClassesOf<'root' | 'track' | 'readout' | 'readoutValue' | 'readoutLabel'>;
   sx?: SxProps<Theme>;
 }
 
-export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120, animated = true, classes, className, sx, ...rest }: RadialGaugeProps) {
+export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120, animated = true, slots, slotProps, classes, className, sx, ...rest }: RadialGaugeProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [internal, setInternal] = useState(98);
@@ -159,21 +185,45 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
   }, [segments]);
   const lit = Math.round((pct / 100) * segments);
 
+  // `track` slot (notes/2.2 §3): the consumer owns the whole SVG; the `paths`
+  // memo and the `lit` math stay internal — the slot replaces the rendering,
+  // not the geometry calculation.
+  const [TrackSlot, trackProps] = resolveSlot(slots?.track, 'svg', {
+    defaults: {
+      viewBox: '0 0 120 120',
+      width: '100%',
+      height: '100%',
+      children: paths.map((d, i) => (
+        <path key={i} d={d} fill={i < lit ? t.nerv.hue.mint : t.nerv.hue.greenDim} opacity={i < lit ? 1 : 0.3} />
+      )),
+    },
+    slotProps: slotProps?.track,
+    className: resolveClasses('RadialGauge', 'track', classes),
+  });
+  // `readout` slot: the centered value + label stack, fed the rounded reading.
+  const [ReadoutSlot, readoutProps] = resolveSlot(slots?.readout, Box, {
+    contract: { value: Math.round(pct), label },
+    defaults: {
+      sx: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
+      children: (
+        <>
+          <Box component="b" className={resolveClasses('RadialGauge', 'readoutValue', classes)} sx={{ fontFamily: t.nerv.fonts.display, fontSize: 22, color: t.nerv.hue.mintHi, textShadow: '0 0 4px currentColor' }}>
+            {Math.round(pct)}%
+          </Box>
+          <Box component="span" className={resolveClasses('RadialGauge', 'readoutLabel', classes)} sx={{ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em' }}>
+            {label}
+          </Box>
+        </>
+      ),
+    },
+    slotProps: slotProps?.readout,
+    className: resolveClasses('RadialGauge', 'readout', classes),
+  });
+
   return (
     <Box {...rest} className={resolveClasses('RadialGauge', 'root', classes, className)} sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
-      <svg className={resolveClasses('RadialGauge', 'track', classes)} viewBox="0 0 120 120" width="100%" height="100%">
-        {paths.map((d, i) => (
-          <path key={i} d={d} fill={i < lit ? t.nerv.hue.mint : t.nerv.hue.greenDim} opacity={i < lit ? 1 : 0.3} />
-        ))}
-      </svg>
-      <Box className={resolveClasses('RadialGauge', 'readout', classes)} sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <Box component="b" className={resolveClasses('RadialGauge', 'readoutValue', classes)} sx={{ fontFamily: t.nerv.fonts.display, fontSize: 22, color: t.nerv.hue.mintHi, textShadow: '0 0 4px currentColor' }}>
-          {Math.round(pct)}%
-        </Box>
-        <Box component="span" className={resolveClasses('RadialGauge', 'readoutLabel', classes)} sx={{ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em' }}>
-          {label}
-        </Box>
-      </Box>
+      <TrackSlot {...trackProps} />
+      <ReadoutSlot {...readoutProps} />
     </Box>
   );
 }

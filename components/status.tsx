@@ -2,10 +2,10 @@
  * Status displays — the boxed, color-as-state pieces: the bilingual legend, the
  * selectable unit roster, and the negative-space stat tile.
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, type Tone, resolveClasses, resolveSlot, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -305,6 +305,24 @@ export function RailItem({ title, sub, when, done = false, classes, className, s
 export type GatePriority = 'critical' | 'elevated' | 'routine';
 export type GateVerdict = 'approve' | 'deny' | 'defer';
 
+/**
+ * Props the trailing `action` slot of {@link GateRow} / {@link RoutineRow}
+ * receives (notes/2.2 §3): the press handler bound to the row's `onReview` /
+ * `onRun`, plus the built-in label the consumer may override through
+ * `slotProps.action`.
+ */
+export interface RowActionProps extends RootHTMLAttributes<'button'> {
+  /** Fired on press — bound to the row's `onReview` / `onRun`. */
+  onClick?: () => void;
+  /** The action's label. @default 'REVIEW' / 'RUN' */
+  children?: ReactNode;
+}
+
+export interface GateRowSlotProps {
+  /** Props merged onto the REVIEW action (only rendered while undecided). */
+  action?: RowActionProps;
+}
+
 /** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
 export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Gate id (e.g. `GATE·04`). */
@@ -319,6 +337,10 @@ export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, 
   verdict?: GateVerdict | null;
   /** Fired when the REVIEW button is pressed (only shown while awaiting). */
   onReview?: () => void;
+  /** Replace an internal part: `action` (the REVIEW button). */
+  slots?: SlotsOf<'action'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: GateRowSlotProps;
   /** Class overrides by part: `root`, `id`, `title`, `leader` (the dot leader), `sub`,
    *  `priority` (the stamp), `verdict` (the decided stamp), `action` (the REVIEW button). */
   classes?: ClassesOf<'root' | 'id' | 'title' | 'leader' | 'sub' | 'priority' | 'verdict' | 'action'>;
@@ -339,8 +361,33 @@ const VERDICT: Record<GateVerdict, { label: string; tone: Tone }> = {
  * idle left edge is tinted by priority (1px, per the no-side-stripe rule);
  * approve/deny settle it back to a neutral hairline.
  */
-export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, classes, className, sx, ...rest }: GateRowProps) {
+export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, slots, slotProps, classes, className, sx, ...rest }: GateRowProps) {
   const settled = verdict === 'approve' || verdict === 'deny';
+  // `action` slot (notes/2.2 §3): the REVIEW button is a locked internal part —
+  // `onReview` covers behavior only. The slot renders only while `verdict` is
+  // null; once decided the verdict stamp renders regardless (it is data-driven).
+  const [ActionSlot, actionProps] = resolveSlot(slots?.action, Box, {
+    contract: { onClick: onReview, children: 'REVIEW' },
+    defaults: {
+      component: 'button' as const,
+      onClick: onReview,
+      children: 'REVIEW' as ReactNode,
+      sx: (t: Theme) => ({
+        border: `1px solid ${t.nerv.hue.redHi}`,
+        background: t.nerv.hue.void,
+        color: t.nerv.hue.redHi,
+        p: '5px 12px',
+        fontSize: 10,
+        cursor: 'pointer',
+        flex: 'none',
+        fontFamily: t.nerv.fonts.mono,
+        '&:hover': { background: t.nerv.hue.redHi, color: t.nerv.hue.void },
+        '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+      }),
+    },
+    slotProps: slotProps?.action,
+    className: resolveClasses('GateRow', 'action', classes),
+  });
   return (
     <Box
       {...rest}
@@ -385,25 +432,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
           {VERDICT[verdict].label}
         </Box>
       ) : (
-        <Box
-          component="button"
-          className={resolveClasses('GateRow', 'action', classes)}
-          onClick={onReview}
-          sx={(t) => ({
-            border: `1px solid ${t.nerv.hue.redHi}`,
-            background: t.nerv.hue.void,
-            color: t.nerv.hue.redHi,
-            p: '5px 12px',
-            fontSize: 10,
-            cursor: 'pointer',
-            flex: 'none',
-            fontFamily: t.nerv.fonts.mono,
-            '&:hover': { background: t.nerv.hue.redHi, color: t.nerv.hue.void },
-            '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
-          })}
-        >
-          REVIEW
-        </Box>
+        <ActionSlot {...actionProps} />
       )}
     </Box>
   );
@@ -607,9 +636,18 @@ export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'>, WithRef
   dim?: boolean;
   /** Fires when RUN is pressed. */
   onRun?: () => void;
+  /** Replace an internal part: `action` (the RUN button). */
+  slots?: SlotsOf<'action'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: RoutineRowSlotProps;
   /** Class overrides by part: `root`, `id`, `name`, `kind`, `status` (the stamp), `action` (the RUN button). */
   classes?: ClassesOf<'root' | 'id' | 'name' | 'kind' | 'status' | 'action'>;
   sx?: SxProps<Theme>;
+}
+
+export interface RoutineRowSlotProps {
+  /** Props merged onto the RUN action. */
+  action?: RowActionProps;
 }
 
 const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'mint', RETRIED: 'red' };
@@ -619,8 +657,33 @@ const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'm
  * SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and
  * desaturates it (for filter-rail scoping) without removing it from the list.
  */
-export function RoutineRow({ id, name, kind, status, dim = false, onRun, classes, className, sx, ...rest }: RoutineRowProps) {
+export function RoutineRow({ id, name, kind, status, dim = false, onRun, slots, slotProps, classes, className, sx, ...rest }: RoutineRowProps) {
   const reduced = useReducedMotion();
+  // `action` slot (notes/2.2 §3) — identical shape to GateRow's: the RUN button
+  // is a locked internal affordance, `onRun` covers behavior only.
+  const [ActionSlot, actionProps] = resolveSlot(slots?.action, Box, {
+    contract: { onClick: onRun, children: 'RUN' },
+    defaults: {
+      component: 'button' as const,
+      type: 'button' as const,
+      onClick: onRun,
+      children: 'RUN' as ReactNode,
+      sx: (t: Theme) => ({
+        flex: 'none',
+        border: `1px solid ${t.nerv.hue.mint}`,
+        background: t.nerv.hue.void,
+        color: t.nerv.hue.mint,
+        fontSize: 9,
+        p: '3px 8px',
+        cursor: 'pointer',
+        fontFamily: t.nerv.fonts.mono,
+        '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void },
+        '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
+      }),
+    },
+    slotProps: slotProps?.action,
+    className: resolveClasses('RoutineRow', 'action', classes),
+  });
   return (
     <Box
       {...rest}
@@ -662,26 +725,7 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, classes
       >
         {status}
       </Box>
-      <Box
-        component="button"
-        type="button"
-        className={resolveClasses('RoutineRow', 'action', classes)}
-        onClick={onRun}
-        sx={(t) => ({
-          flex: 'none',
-          border: `1px solid ${t.nerv.hue.mint}`,
-          background: t.nerv.hue.void,
-          color: t.nerv.hue.mint,
-          fontSize: 9,
-          p: '3px 8px',
-          cursor: 'pointer',
-          fontFamily: t.nerv.fonts.mono,
-          '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void },
-          '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
-        })}
-      >
-        RUN
-      </Box>
+      <ActionSlot {...actionProps} />
     </Box>
   );
 }
