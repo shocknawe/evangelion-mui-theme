@@ -9,13 +9,10 @@ places** — when you bump a budget, bump both (bumping the `limit` is the
 
 - **Metric:** gzip bytes (gzip level 9), minified, via `size-limit`
   (`@size-limit/esbuild` + `@size-limit/file`, v13.0.3). Run with `npm run size`.
-- **Accounting:** library-authored bytes only — React, react-dom, `@mui/material`
-  (including deep imports) and `@emotion/*` are peer runtime and are never
-  bundled into any entry. The full accounting rule (shared modules such as
-  `components/util` / `components/hooks` counted inside their dependents
-  rather than as a separate chunk) is stated in `.size-limit.js` and, in prose
-  form, in the shared-runtime accounting note (change
-  `upgrade-theme-quality-maturity`, Task 5.3).
+- **Accounting:** library-authored bytes only. The full accounting rule is
+  stated in the `.size-limit.js` header (the normative home) and explained in
+  prose in the [shared-runtime accounting](#shared-runtime-accounting) section
+  below — that section, not this bullet, is the reference.
 - **Enforcement:** CI fails on over-budget growth unless the same PR updates
   the budget entry here and in `.size-limit.js` (Task 5.4).
 
@@ -61,4 +58,43 @@ Entries mirror the published export map in `package.json` (`.`/`theme`,
 `./tokens`, `./overrides`, `./components`) plus every per-component module file
 in `components/`. `theme` and `components` are the canonical whole-surface
 figures; per-file numbers are per-export deltas against the shared code they
-pull in (see accounting above).
+pull in (see [shared-runtime accounting](#shared-runtime-accounting)).
+
+## Shared-runtime accounting
+
+The normative statement of this rule lives in the `.size-limit.js` header
+comment — a reviewer auditing the budget contract reads it there. This section
+is the human explanation and must not drift from it; if the rule changes, edit
+the config header first and restate it here.
+
+**The rule: every entry measures *library-authored* bytes only.** Shared
+runtime is installed once per consuming app and counted once — in the app, not
+in these figures — so no entry can double-count it:
+
+1. **Peer runtime is excluded everywhere.** `react`, `react-dom`,
+   `@mui/material` (including deep imports like `@mui/material/Box`),
+   `@emotion/*`, and the Emotion cache setup that ships with it are listed in
+   the `PEER_RUNTIME` `ignore` array (esbuild `external`, and root
+   `peerDependencies` are auto-appended by size-limit). No entry bundles or
+   owns a copy of them, so `ThemeProvider` + `CssBaseline` + the theme
+   singleton are paid once per app no matter how many exports are used.
+2. **The theme singleton is never folded into a component number.**
+   `theme/index.ts` is measured as its own entry; no entry in `components/`
+   imports it (components read `theme.nerv.*` off the theme object their
+   consumer passes to MUI), so there is no hidden `theme` bytes inside a
+   component figure.
+3. **Per-file entries are standalone bundles, so library-internal shared code
+   recurs.** `components/util` and `components/hooks` are bundled into every
+   dependent per-file entry rather than being emitted once as a shared chunk.
+   That is deliberate: each per-file number is a self-sufficient "what does
+   importing only this file cost" figure. The consequence is that **per-file
+   numbers are not additive** — summing them over-counts `util`/`hooks` once
+   per dependent file.
+4. **The JSX transform contributes no bytes.** JSX compiles to
+   `react/jsx-runtime`, which matches the `react/*` wildcard and is therefore
+   externalized like the rest of React.
+
+**Canonical whole-surface figures:** `theme` (6112 B) and `components`
+(19972 B). Read every per-file number as a *per-export delta* — its own code
+plus its slice of the shared `util`/`hooks` code — never as a partition of the
+barrel total.

@@ -6,21 +6,33 @@
  * is the figure the budget table (Task 5.2) is seeded from — brotli is not the
  * contract here.
  *
- * Shared-runtime accounting (stated in full by Task 5.3): every entry measures
- * *library-authored* bytes only. React, react-dom, @mui/material (including
- * deep imports such as `@mui/material/Box`) and @emotion/* are peer runtime and
- * are marked `ignore` (esbuild `external`) so they are never bundled into any
- * entry. Each entry is bundled in isolation, so the numbers are additive only
- * at the leaf level: tiny shared modules (`components/util`, `components/hooks`)
- * are counted inside every dependent component file's number instead of being
- * reported as a separate shared chunk — use the `components` barrel and
- * `theme` entries as the canonical whole-surface figures, and per-file numbers
- * as per-export deltas against the shared code they pull in.
+ * Shared-runtime accounting (the normative rule; explained in prose in
+ * `docs/bundle-budgets.md`): every entry measures *library-authored* bytes only
+ * — shared runtime is installed once per consuming app and counted once, in the
+ * app, so it is excluded here and can never be double-counted across entries.
+ * Concretely:
+ *
+ * 1. Peer runtime — `react`, `react-dom`, `@mui/material` (including deep
+ *    imports such as `@mui/material/Box`), `@emotion/*` (and the Emotion cache
+ *    setup that ships with it) — is marked `ignore` (esbuild `external`) and is
+ *    never bundled into any entry. No entry owns a copy of it.
+ * 2. The theme singleton (`theme/index.ts`) is its own entry and no component
+ *    entry imports it, so it is never folded into a component number.
+ * 3. Each entry is bundled in isolation, so the numbers are additive only at
+ *    the leaf level: small library-internal shared modules (`components/util`,
+ *    `components/hooks`) recur inside every dependent per-file entry instead of
+ *    being reported once as a shared chunk. Use the `theme` and `components`
+ *    barrel entries as the canonical whole-surface figures; read per-file
+ *    numbers as per-export deltas that already include their slice of that
+ *    shared code. (Summing per-file numbers therefore over-counts.)
+ * 4. JSX compiles to `react/jsx-runtime`, which matches the `react/*`
+ *    wildcard above, so the JSX transform itself contributes no bytes.
  *
  * Budgets (Task 5.2): every entry carries a byte-precise `limit`, seeded from
  * the first measurement on this branch (`feat/upgrate-ui-library` @ 460674a,
  * 2026-09-02) — the same numbers live in the committed human-readable table
- * `docs/bundle-budgets.md`; keep the two identical when bumping a budget.
+ * `docs/bundle-budgets.md` (which restates the accounting rule above in prose);
+ * keep the two identical when bumping a budget.
  * Seeding rule: measured gzip bytes rounded up to the next 50-byte step with
  * ≥5% headroom (≥10% for entries under 500 B, where a few bytes of drift
  * matter). Bumping a `limit` here is the "budget bump" a CI size-check (Task
