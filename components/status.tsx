@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -19,7 +19,7 @@ export interface LegendItem {
   filled?: boolean;
 }
 
-export interface StatusLegendProps {
+export interface StatusLegendProps extends RootHTMLAttributes {
   items: LegendItem[];
   sx?: SxProps<Theme>;
 }
@@ -34,9 +34,9 @@ export interface StatusLegendProps {
  *   { jp: '阻止', en: 'BLOCKED', tone: 'red', filled: true },
  * ]} />
  */
-export function StatusLegend({ items, sx }: StatusLegendProps) {
+export function StatusLegend({ items, sx, ...rest }: StatusLegendProps) {
   return (
-    <Box sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {items.map((it) => (
         <Box
           key={it.en}
@@ -77,7 +77,8 @@ export interface RosterUnit {
   status: RosterStatus;
 }
 
-export interface RosterProps {
+/** `onSelect` is the tile-selection callback, not the DOM `onSelect`. */
+export interface RosterProps extends Omit<RootHTMLAttributes, 'onSelect'> {
   /** Units to display. Defaults to a sample roster so it renders out of the box. */
   units?: RosterUnit[];
   /** Columns at the `sm`+ breakpoint. @default 4 */
@@ -106,12 +107,13 @@ const DEFAULT_UNITS: RosterUnit[] = [
  * inversion (solid red, black content), CAUTION blinks. Selecting thickens the
  * border.
  */
-export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: RosterProps) {
+export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx, ...rest }: RosterProps) {
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState<string | null>(null);
 
   return (
     <Box
+      {...rest}
       sx={[
         { display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: `repeat(${columns}, 1fr)` }, gap: 1, width: '100%' },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -177,7 +179,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: Ros
 /* ------------------------------------------------------------------ */
 /* StatTile — a big negative-space metric. */
 
-export interface StatTileProps {
+export interface StatTileProps extends RootHTMLAttributes {
   /** Caption above the value. */
   label: string;
   /** The headline metric. */
@@ -196,9 +198,10 @@ export interface StatTileProps {
  * @example
  * <StatTile label="MEMORY NODES" value="2,482" footer="98.4% RETENTION · STABLE" />
  */
-export function StatTile({ label, value, footer, tone = 'mint', sx }: StatTileProps) {
+export function StatTile({ label, value, footer, tone = 'mint', sx, ...rest }: StatTileProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           border: `1px solid ${t.nerv.hue.greenDim}`,
@@ -241,7 +244,8 @@ export function StatTile({ label, value, footer, tone = 'mint', sx }: StatTilePr
 /* ------------------------------------------------------------------ */
 /* RailItem — a reminder / inbox row with a due time. */
 
-export interface RailItemProps {
+/** `title` is this row's display text, not the DOM `title`. */
+export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'> {
   /** Primary line. */
   title: React.ReactNode;
   /** Small subtitle (category / source). */
@@ -257,9 +261,10 @@ export interface RailItemProps {
  * A rail list row: a title with an optional subtitle on the left, a due/time
  * marker on the right, divided by a dotted hairline. `done` dims and strikes it.
  */
-export function RailItem({ title, sub, when, done = false, sx }: RailItemProps) {
+export function RailItem({ title, sub, when, done = false, sx, ...rest }: RailItemProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           display: 'flex',
@@ -288,7 +293,8 @@ export function RailItem({ title, sub, when, done = false, sx }: RailItemProps) 
 export type GatePriority = 'critical' | 'elevated' | 'routine';
 export type GateVerdict = 'approve' | 'deny' | 'defer';
 
-export interface GateRowProps {
+/** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
+export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
   /** Gate id (e.g. `GATE·04`). */
   id: string;
   /** Gate title. */
@@ -318,10 +324,11 @@ const VERDICT: Record<GateVerdict, { label: string; tone: Tone }> = {
  * idle left edge is tinted by priority (1px, per the no-side-stripe rule);
  * approve/deny settle it back to a neutral hairline.
  */
-export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, sx }: GateRowProps) {
+export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, sx, ...rest }: GateRowProps) {
   const settled = verdict === 'approve' || verdict === 'deny';
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           display: 'flex',
@@ -388,7 +395,8 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
 
 export type AgentStatus = 'ACTIVE' | 'REVIEWING' | 'IDLE';
 
-export interface AgentCardProps {
+/** `onSelect` is the card-selection callback, not the DOM `onSelect`. */
+export interface AgentCardProps extends Omit<RootHTMLAttributes<'button'>, 'onSelect'> {
   /** Agent name (e.g. `AGENT·ORION`). */
   name: string;
   status: AgentStatus;
@@ -407,13 +415,14 @@ const AGENT_TONE: Record<AgentStatus, Tone> = { ACTIVE: 'mint', REVIEWING: 'blue
  * with a name, a status stamp, and a task line. Selecting it (to view a console,
  * say) thickens the border and adds an inset glow.
  */
-export function AgentCard({ name, status, task, selected = false, onSelect, sx }: AgentCardProps) {
+export function AgentCard({ name, status, task, selected = false, onSelect, sx, ...rest }: AgentCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
+      {...rest}
       sx={[
         (t) => {
           const c = toneHue(t, AGENT_TONE[status]);
@@ -448,7 +457,8 @@ export function AgentCard({ name, status, task, selected = false, onSelect, sx }
 /* ------------------------------------------------------------------ */
 /* RecallNote — a cited memory / decision-log fragment. */
 
-export interface RecallNoteProps {
+/** `id` is the displayed reference id, not the DOM `id`. */
+export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'> {
   /** Reference id (e.g. `DECISION_LOG_32`). */
   id: string;
   /** The recalled text. */
@@ -463,9 +473,10 @@ export interface RecallNoteProps {
  * left edge (1px, per the no-side-stripe rule), an amber id, and readable body
  * text.
  */
-export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps) {
+export function RecallNote({ id, children, tone = 'teal', sx, ...rest }: RecallNoteProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => {
           const c = toneHue(t, tone);
@@ -490,7 +501,7 @@ export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps)
 
 export type SinkStatus = 'ACTIVE' | 'CONNECTED' | 'OFFLINE';
 
-export interface SinkRowProps {
+export interface SinkRowProps extends RootHTMLAttributes {
   /** Sink name (e.g. `NTFY GATEWAY`). */
   name: React.ReactNode;
   status: SinkStatus;
@@ -511,11 +522,12 @@ const SINK_TONE: Record<SinkStatus, Tone> = { ACTIVE: 'mint', CONNECTED: 'blue',
  * OFFLINE inverts the stamp to a solid red fill with black content (the
  * figure/ground "recorded" grammar). Divided by a dotted hairline.
  */
-export function SinkRow({ name, status, detail, ping, stampLabel, sx }: SinkRowProps) {
+export function SinkRow({ name, status, detail, ping, stampLabel, sx, ...rest }: SinkRowProps) {
   const offline = status === 'OFFLINE';
   const label = stampLabel ?? (offline ? 'DOWN' : 'LIVE');
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.25, borderBottom: `1px dotted ${t.nerv.hue.greenDim}`, py: 1, fontFamily: t.nerv.fonts.mono }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -554,7 +566,8 @@ export function SinkRow({ name, status, detail, ping, stampLabel, sx }: SinkRowP
 
 export type RoutineStatus = 'PENDING' | 'SUCCESS' | 'RETRIED';
 
-export interface RoutineRowProps {
+/** `id` is the displayed routine id, not the DOM `id`. */
+export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'> {
   /** Routine id (e.g. `RT·01`). */
   id: React.ReactNode;
   /** Routine name. */
@@ -576,10 +589,11 @@ const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'm
  * SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and
  * desaturates it (for filter-rail scoping) without removing it from the list.
  */
-export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: RoutineRowProps) {
+export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx, ...rest }: RoutineRowProps) {
   const reduced = useReducedMotion();
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           display: 'flex',
@@ -642,7 +656,9 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
 /* ------------------------------------------------------------------ */
 /* ModuleCard — a pinnable system/product card (jp glyph · code · desc · stamp). */
 
-export interface ModuleCardProps {
+/** `title` is the card's display heading, not the DOM `title`; `onSelect` is
+ *  the pin/selection callback, not the DOM `onSelect`. */
+export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'title' | 'onSelect'> {
   /** Large kanji glyph (the system's mark). */
   jp: string;
   /** System code (e.g. `SYS·01`). */
@@ -671,13 +687,14 @@ export interface ModuleCardProps {
  * (orange) border at rest that lifts on hover; selecting it pins the card with a
  * mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
  */
-export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, sx }: ModuleCardProps) {
+export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, sx, ...rest }: ModuleCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
+      {...rest}
       sx={[
         (t) => ({
           display: 'flex',
@@ -718,7 +735,7 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
 /* ------------------------------------------------------------------ */
 /* AgentDot — a status-bar agent readout: a state dot + label. */
 
-export interface AgentDotProps {
+export interface AgentDotProps extends RootHTMLAttributes<'span'> {
   /** The readout text (e.g. `AGENT·01: NOMINAL`). */
   children: React.ReactNode;
   /** Busy — amber dot + amber text; otherwise a mint dot. @default false */
@@ -731,10 +748,11 @@ export interface AgentDotProps {
  * dot (mint nominal · amber busy) before its label, the whole thing tinted amber
  * when busy.
  */
-export function AgentDot({ children, busy = false, sx }: AgentDotProps) {
+export function AgentDot({ children, busy = false, sx, ...rest }: AgentDotProps) {
   return (
     <Box
       component="span"
+      {...rest}
       sx={[
         (t) => ({ display: 'inline-flex', alignItems: 'center', color: busy ? t.nerv.hue.amber : 'inherit', fontFamily: t.nerv.fonts.mono, whiteSpace: 'nowrap' }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -751,7 +769,8 @@ export function AgentDot({ children, busy = false, sx }: AgentDotProps) {
 
 export type MemoryKind = 'decision' | 'pattern' | 'mistake' | 'learning';
 
-export interface MemoryRowProps {
+/** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
+export interface MemoryRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
   /** Node id (e.g. `MEM-2024-0512`). */
   id: React.ReactNode;
   /** The entry title. */
@@ -768,9 +787,10 @@ const MEMORY_TONE: Record<MemoryKind, Tone> = { decision: 'amber', pattern: 'min
  * stamp colored by type. Hovering lifts the border to orange. Pair with
  * {@link FilterChips} to build a queryable memory list.
  */
-export function MemoryRow({ id, title, kind, sx }: MemoryRowProps) {
+export function MemoryRow({ id, title, kind, sx, ...rest }: MemoryRowProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.75, border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '12px 14px', fontFamily: t.nerv.fonts.mono, '&:hover': { borderColor: t.nerv.hue.orange } }),
         ...(Array.isArray(sx) ? sx : [sx]),

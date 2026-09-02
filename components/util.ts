@@ -1,3 +1,4 @@
+import type { ComponentPropsWithoutRef } from 'react';
 import type { Theme } from '@mui/material/styles';
 import '../theme/augmentation'; // side-effect: theme.nerv / palette.nerv module augmentation
 
@@ -28,6 +29,24 @@ export function toneHue(t: Theme, tone: Tone): string {
     case 'teal': return h.teal;
   }
 }
+
+/**
+ * Native attributes for a component's root element (`div` unless noted).
+ *
+ * Extend a component's props interface with this — omitting any key the
+ * component declares itself, so a consumer prop can never be silently captured
+ * by a like-named display prop — and spread the leftover props onto the root
+ * element. That is what lets `data-testid`, `aria-*`, `onClick`, `className`
+ * and `style` reach the DOM. `children` is always omitted here: components
+ * declare it explicitly or not at all.
+ *
+ *   interface StampProps extends RootHTMLAttributes<'span'> { … }
+ *   <Box {...rest} sx={…}>
+ */
+export type RootHTMLAttributes<Tag extends keyof HTMLElementTagNameMap = 'div'> = Omit<
+  ComponentPropsWithoutRef<Tag>,
+  'children'
+>;
 
 /** The mint-fill focus ring used across interactive console controls. */
 export const focusRing = (t: Theme) => ({

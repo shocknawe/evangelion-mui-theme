@@ -8,9 +8,9 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 
-export interface StampProps {
+export interface StampProps extends RootHTMLAttributes<'span'> {
   children: ReactNode;
   /** Border / text hue (or fill hue when `filled`). @default 'orange' */
   tone?: Tone;
@@ -34,13 +34,14 @@ export interface StampProps {
  * <Stamp tone="mint" glow>SYS:NOMINAL</Stamp>
  * <Stamp tone="red" filled>DOWN</Stamp>
  */
-export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', sx }: StampProps) {
+export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', sx, ...rest }: StampProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const c = toneHue(t, tone);
   return (
     <Box
       component="span"
+      {...rest}
       sx={[
         {
           display: 'inline-block',

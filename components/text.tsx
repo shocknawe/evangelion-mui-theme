@@ -6,12 +6,12 @@
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* BilingualLabel — large kanji + small English caption (the bimodal pair). */
 
-export interface BilingualLabelProps {
+export interface BilingualLabelProps extends RootHTMLAttributes {
   /** The large graphic term (kanji, numeral, or heading). */
   jp: string;
   /** The small caption pinned to it. Required by the "bilingual pairing" rule. */
@@ -43,9 +43,11 @@ export function BilingualLabel({
   size = 40,
   layout = 'row',
   sx,
+  ...rest
 }: BilingualLabelProps) {
   return (
     <Box
+      {...rest}
       sx={[
         {
           display: 'inline-flex',
@@ -89,7 +91,7 @@ export function BilingualLabel({
 /* ------------------------------------------------------------------ */
 /* MetadataBlock — the KEY:VALUE spec block (CODE:, FILE:, EX_MODE:, …). */
 
-export interface MetadataBlockProps {
+export interface MetadataBlockProps extends RootHTMLAttributes {
   /** Key/value pairs, in order. Keys are shown verbatim (already ALL CAPS). */
   entries: Record<string, string> | Array<[string, string]>;
   /** Hue of the keys. @default 'orange' */
@@ -104,10 +106,11 @@ export interface MetadataBlockProps {
  * @example
  * <MetadataBlock entries={{ CODE: '0771', FILE: 'GATE_INTAKE', EX_MODE: 'MANUAL' }} />
  */
-export function MetadataBlock({ entries, keyTone = 'orange', sx }: MetadataBlockProps) {
+export function MetadataBlock({ entries, keyTone = 'orange', sx, ...rest }: MetadataBlockProps) {
   const rows = Array.isArray(entries) ? entries : Object.entries(entries);
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           fontFamily: t.nerv.fonts.mono,
@@ -134,7 +137,7 @@ export function MetadataBlock({ entries, keyTone = 'orange', sx }: MetadataBlock
 /* ------------------------------------------------------------------ */
 /* SectionDivider — index chip · kanji · title · gradient rule. */
 
-export interface SectionDividerProps {
+export interface SectionDividerProps extends RootHTMLAttributes {
   /** Sequence number/label shown in the solid chip (e.g. `"01"`). */
   index: string;
   /** Large kanji term. */
@@ -151,9 +154,10 @@ export interface SectionDividerProps {
  * @example
  * <SectionDivider index="01" jp="個体" title="IDENTITY" />
  */
-export function SectionDivider({ index, jp, title, sx }: SectionDividerProps) {
+export function SectionDivider({ index, jp, title, sx, ...rest }: SectionDividerProps) {
   return (
     <Box
+      {...rest}
       sx={[
         { display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -204,7 +208,7 @@ export function SectionDivider({ index, jp, title, sx }: SectionDividerProps) {
 /* ------------------------------------------------------------------ */
 /* FieldLabel — the bilingual label that captions a form control. */
 
-export interface FieldLabelProps {
+export interface FieldLabelProps extends RootHTMLAttributes {
   /** Kanji tag (e.g. `件名`). */
   jp: string;
   /** English label (ALL CAPS). */
@@ -222,9 +226,9 @@ export interface FieldLabelProps {
  * @example
  * <FieldLabel jp="件名" label="TEXT INPUT"><TextField fullWidth /></FieldLabel>
  */
-export function FieldLabel({ jp, label, children, htmlFor, sx }: FieldLabelProps) {
+export function FieldLabel({ jp, label, children, htmlFor, sx, ...rest }: FieldLabelProps) {
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box
         component="label"
         htmlFor={htmlFor}
@@ -252,7 +256,7 @@ export function FieldLabel({ jp, label, children, htmlFor, sx }: FieldLabelProps
 /* ------------------------------------------------------------------ */
 /* SectionHeading — a marketing section head: index chip · heading · rule · note. */
 
-export interface SectionHeadingProps {
+export interface SectionHeadingProps extends RootHTMLAttributes {
   /** Sequence number shown in the solid chip (e.g. `"01"`). */
   index: string;
   /** The heading text (condensed caps). */
@@ -272,9 +276,9 @@ export interface SectionHeadingProps {
  * @example
  * <SectionHeading index="02" note="LIVE · 1HZ">SYSTEM TELEMETRY</SectionHeading>
  */
-export function SectionHeading({ index, children, note, sx }: SectionHeadingProps) {
+export function SectionHeading({ index, children, note, sx, ...rest }: SectionHeadingProps) {
   return (
-    <Box sx={[{ display: 'flex', alignItems: 'center', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', alignItems: 'center', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box
         component="span"
         sx={(t) => ({ fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 13, color: t.nerv.hue.void, background: t.nerv.hue.orange, p: '3px 8px', letterSpacing: '0.1em', flex: 'none' })}
@@ -306,7 +310,8 @@ export function SectionHeading({ index, children, note, sx }: SectionHeadingProp
 /* DossierSheet — a spec/dossier block: teal-ruled heading · KEY/VALUE rows ·
    signature footer, with an optional rotated watermark stamp. */
 
-export interface DossierSheetProps {
+/** `title` is the sheet's display heading, not the DOM `title`. */
+export interface DossierSheetProps extends Omit<RootHTMLAttributes, 'title'> {
   /** Heading (e.g. `JAIRUS_OS · CORE v2.4.0 — OPERATOR DOSSIER`). */
   title: ReactNode;
   /** Key/value spec rows. Values may be rich (bold via `<b>`). */
@@ -324,9 +329,9 @@ export interface DossierSheetProps {
  * plus an optional rotated red watermark (`PRELIMINARY`). The editorial "official
  * document" surface.
  */
-export function DossierSheet({ title, rows, watermark, signature, sx }: DossierSheetProps) {
+export function DossierSheet({ title, rows, watermark, signature, sx, ...rest }: DossierSheetProps) {
   return (
-    <Box sx={[(t) => ({ border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '26px 30px', position: 'relative', overflow: 'hidden' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(t) => ({ border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '26px 30px', position: 'relative', overflow: 'hidden' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       {watermark && (
         <Box component="span" sx={(t) => ({ position: 'absolute', top: 14, right: -2, transform: 'rotate(4deg)', border: `2px solid ${t.nerv.hue.redHi}`, color: t.nerv.hue.redHi, fontFamily: t.nerv.fonts.display, fontWeight: 700, fontSize: 13, p: '3px 12px', letterSpacing: '0.14em', opacity: 0.85 })}>{watermark}</Box>
       )}

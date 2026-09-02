@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 
 /**
  * A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`; `exec`
@@ -19,7 +19,8 @@ export type TerminalRow =
   | { k: 'chk'; l: string; ok: boolean }
   | { k: 'exec'; ts: string; msg: ReactNode };
 
-export interface TerminalProps {
+/** `title` is the terminal's header caption, not the DOM `title`. */
+export interface TerminalProps extends Omit<RootHTMLAttributes, 'title'> {
   /** Log rows, top→bottom. Defaults to a sample diagnostic. */
   rows?: TerminalRow[];
   /** Header caption. @default 'STDOUT // DIAGNOSTIC' */
@@ -48,7 +49,7 @@ const DEFAULT_ROWS: TerminalRow[] = [
   { k: 'sum', t: '7 CHECKS · 6 PASS · 1 FLAGGED' },
 ];
 
-export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, minBodyHeight = 150, maxBodyHeight = 190, sx }: TerminalProps) {
+export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, minBodyHeight = 150, maxBodyHeight = 190, sx, ...rest }: TerminalProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const still = reduced || !typewriter;
@@ -76,7 +77,7 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
 
   const dim = t.palette.nerv.termDim;
   return (
-    <Box sx={[(th) => ({ border: `1px solid ${th.nerv.hue.amberDim}`, background: 'rgba(244,159,9,.02)', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.amberDim}`, background: 'rgba(244,159,9,.02)', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: '6px 12px', borderBottom: `1px solid ${t.nerv.hue.amberDim}`, fontSize: 9, color: t.nerv.hue.amber, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono }}>
         {title}
         <Box sx={{ display: 'flex', gap: '5px', ml: 'auto' }}>
@@ -134,7 +135,8 @@ export interface LogRow {
   msg: ReactNode;
 }
 
-export interface LogConsoleProps {
+/** `title` is the console's header caption, not the DOM `title`. */
+export interface LogConsoleProps extends Omit<RootHTMLAttributes, 'title'> {
   /** Header caption. @default 'STDOUT' */
   title?: ReactNode;
   /** Rows, oldest→newest. The view auto-scrolls to the newest. */
@@ -163,7 +165,7 @@ const TAG_TONE: Record<LogTag, keyof Theme['nerv']['hue']> = {
  * connection status bar. Presentational — feed it `rows`; it auto-scrolls to the
  * newest and can host an approval bar beneath it.
  */
-export function LogConsole({ title = 'STDOUT', rows, connected = true, status, prompt, cursor = true, sx }: LogConsoleProps) {
+export function LogConsole({ title = 'STDOUT', rows, connected = true, status, prompt, cursor = true, sx, ...rest }: LogConsoleProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -176,7 +178,7 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, status, p
   const Cursor = () => <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', ...blink }} />;
 
   return (
-    <Box sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.12em', border: `1px solid ${t.nerv.hue.amberDim}`, borderBottom: 'none', p: '6px 12px', fontFamily: t.nerv.fonts.mono }}>
         <span>{title}</span>
         {status !== undefined ? (

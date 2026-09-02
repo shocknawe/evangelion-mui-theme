@@ -5,8 +5,9 @@
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type RootHTMLAttributes } from './util';
 
-export interface MarqueeProps {
+export interface MarqueeProps extends RootHTMLAttributes {
   /** Ticker items. Defaults to a sample status feed. */
   items?: string[];
   /** Seconds for one full pass. @default 18 */
@@ -16,7 +17,7 @@ export interface MarqueeProps {
 
 const DEFAULT_ITEMS = ['V2.4.0-STABLE DEPLOYED', '38 LISTENERS UP', 'NO ANOMALIES'];
 
-export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueeProps) {
+export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx, ...rest }: MarqueeProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const track = (
@@ -31,6 +32,7 @@ export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueePro
 
   return (
     <Box
+      {...rest}
       sx={[
         {
           borderTop: `2px solid ${t.nerv.hue.redHi}`,

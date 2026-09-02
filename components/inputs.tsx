@@ -8,7 +8,7 @@ import { useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue, focusRing } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue, focusRing } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ChipRadioGroup — bilingual radio chips with figure/ground inversion. */
@@ -21,7 +21,8 @@ export interface ChipRadioOption {
   tone?: Tone;
 }
 
-export interface ChipRadioGroupProps {
+/** `value`/`onChange` are the controlled selection, not the DOM ones. */
+export interface ChipRadioGroupProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
   options: ChipRadioOption[];
   value: string;
   onChange: (value: string) => void;
@@ -40,9 +41,9 @@ export interface ChipRadioGroupProps {
  *   { value: 'critical', jp: '緊急', en: 'AAA', tone: 'red' },
  * ]} />
  */
-export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx }: ChipRadioGroupProps) {
+export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx, ...rest }: ChipRadioGroupProps) {
   return (
-    <Box role="radiogroup" aria-label={ariaLabel} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="radiogroup" aria-label={ariaLabel} {...rest} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {options.map((opt) => {
         const on = value === opt.value;
         return (
@@ -89,7 +90,8 @@ export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx }: Chip
 /* ------------------------------------------------------------------ */
 /* NumberStepper — −/value/+ with orange chrome controls. */
 
-export interface NumberStepperProps {
+/** `value`/`onChange` are the controlled count, not the DOM ones. */
+export interface NumberStepperProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
   value: number;
   onChange: (value: number) => void;
   min?: number;
@@ -105,7 +107,7 @@ export interface NumberStepperProps {
  *
  * @example <NumberStepper value={n} onChange={setN} min={1} max={16} />
  */
-export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, width = 150, sx }: NumberStepperProps) {
+export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, width = 150, sx, ...rest }: NumberStepperProps) {
   const clamp = (n: number) => Math.max(min, Math.min(max, n));
   const btn = (t: Theme) => ({
     width: 38,
@@ -119,7 +121,7 @@ export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, wi
     '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: -2 },
   });
   return (
-    <Box sx={[(t) => ({ display: 'flex', alignItems: 'stretch', width, border: `1px solid ${t.nerv.hue.greenDim}` }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(t) => ({ display: 'flex', alignItems: 'stretch', width, border: `1px solid ${t.nerv.hue.greenDim}` }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box component="button" aria-label="decrement" onClick={() => onChange(clamp(value - step))} sx={btn}>
         −
       </Box>
@@ -140,7 +142,8 @@ export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, wi
 /* ------------------------------------------------------------------ */
 /* HazardRating — lit segments on a hazard-hatched track. */
 
-export interface HazardRatingProps {
+/** `value`/`onChange` are the controlled rating, not the DOM ones. */
+export interface HazardRatingProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
   value: number;
   onChange: (value: number) => void;
   /** Number of segments. @default 5 */
@@ -152,9 +155,9 @@ export interface HazardRatingProps {
  * A discrete rating: lit mint segments over a hazard-hatched track. Segments are
  * drawn objects, never a continuous fill.
  */
-export function HazardRating({ value, onChange, max = 5, sx }: HazardRatingProps) {
+export function HazardRating({ value, onChange, max = 5, sx, ...rest }: HazardRatingProps) {
   return (
-    <Box role="radiogroup" aria-label="rating" sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="radiogroup" aria-label="rating" {...rest} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
         const lit = n <= value;
         return (
@@ -184,7 +187,8 @@ export function HazardRating({ value, onChange, max = 5, sx }: HazardRatingProps
 /* ------------------------------------------------------------------ */
 /* TagInput — deletable chips + type-to-add. */
 
-export interface TagInputProps {
+/** `onChange` is the tag-list callback, not the DOM `onChange`. */
+export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'> {
   tags: string[];
   onChange: (tags: string[]) => void;
   /** Placeholder for the add-field. @default 'ADD TAG…' */
@@ -198,7 +202,7 @@ export interface TagInputProps {
  * A tag field: mint stamp chips (deletable) with an inline input that adds a tag
  * on Enter and removes the last on Backspace.
  */
-export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, sx }: TagInputProps) {
+export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, sx, ...rest }: TagInputProps) {
   const [draft, setDraft] = useState('');
   const add = () => {
     const v = (uppercase ? draft.toUpperCase() : draft).trim().replace(/\s+/g, '_');
@@ -215,6 +219,7 @@ export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase
   };
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({ border: `1px solid ${t.nerv.hue.greenDim}`, p: '6px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', width: '100%' }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -250,7 +255,7 @@ export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase
 /* ------------------------------------------------------------------ */
 /* DateSegments — glowing monospace date readout. */
 
-export interface DateSegmentsProps {
+export interface DateSegmentsProps extends RootHTMLAttributes {
   /** Ordered segments, largest-first (e.g. `['2026', '07', '18']`). */
   segments: string[];
   /** Separator glyph between segments. @default '/' */
@@ -262,9 +267,9 @@ export interface DateSegmentsProps {
  * A read-only segmented date/number display — glowing mint monospace digits in
  * bordered cells, joined by an orange separator.
  */
-export function DateSegments({ segments, separator = '/', sx }: DateSegmentsProps) {
+export function DateSegments({ segments, separator = '/', sx, ...rest }: DateSegmentsProps) {
   return (
-    <Box sx={[{ display: 'flex', alignItems: 'center', gap: '6px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', alignItems: 'center', gap: '6px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {segments.map((seg, i) => (
         <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {i > 0 && (

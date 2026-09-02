@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type RootHTMLAttributes } from './util';
 import { SegmentBar } from './meters';
 
 export interface StepFlowStep {
@@ -17,7 +18,7 @@ export interface StepFlowStep {
   label: string;
 }
 
-export interface StepFlowProps {
+export interface StepFlowProps extends RootHTMLAttributes {
   steps: StepFlowStep[];
   /** Index of the current step: earlier steps read as done, this one as active. */
   active: number;
@@ -32,9 +33,9 @@ export interface StepFlowProps {
  *   { short: 'LRN', label: 'LEARN' },
  * ]} />
  */
-export function StepFlow({ steps, active, sx }: StepFlowProps) {
+export function StepFlow({ steps, active, sx, ...rest }: StepFlowProps) {
   return (
-    <Box sx={[{ display: 'flex', alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {steps.map((s, i) => {
         const done = i < active;
         const now = i === active;
@@ -100,7 +101,7 @@ export interface AgenticLoopStep {
   en: string;
 }
 
-export interface AgenticLoopProps {
+export interface AgenticLoopProps extends RootHTMLAttributes {
   steps: AgenticLoopStep[];
   /** Small caption in the border notch (e.g. `ACTIVE_LOOP : AUTONOMOUS_LEARN`). */
   caption?: ReactNode;
@@ -117,7 +118,7 @@ export interface AgenticLoopProps {
  * mechanically; under reduced motion it holds the first node. For a *progress*
  * stepper (done-up-to-active) use {@link StepFlow} instead.
  */
-export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx }: AgenticLoopProps) {
+export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx, ...rest }: AgenticLoopProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [internal, setInternal] = useState(0);
@@ -130,7 +131,7 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx }: Agent
   }, [active, reduced, cycleMs, steps.length]);
 
   return (
-    <Box sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '26px 20px 20px', position: 'relative' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '26px 20px 20px', position: 'relative' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       {caption && <Box component="span" sx={(th) => ({ position: 'absolute', top: -9, left: 16, background: th.nerv.hue.void, px: 1, fontSize: 10, color: th.nerv.hue.orange, letterSpacing: '0.14em', fontFamily: th.nerv.fonts.mono })}>{caption}</Box>}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
         {steps.map((n, i) => {
@@ -163,7 +164,8 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx }: Agent
 /* ------------------------------------------------------------------ */
 /* TaskCard — a loop-synchronizer task: id · title · action, a StepFlow, progress. */
 
-export interface TaskCardProps {
+/** `id`/`title` are this card's *display* text, not the DOM `id`/`title`. */
+export interface TaskCardProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
   /** Task id (e.g. `TASK·882`). */
   id: ReactNode;
   /** Task title. */
@@ -189,10 +191,10 @@ const OODA: StepFlowStep[] = [
  * {@link StepFlow}, and a labeled progress bar. The composed task card used on
  * the agent-console dashboard.
  */
-export function TaskCard({ id, title, action, active, pct, steps = OODA, sx }: TaskCardProps) {
+export function TaskCard({ id, title, action, active, pct, steps = OODA, sx, ...rest }: TaskCardProps) {
   const t = useTheme();
   return (
-    <Box sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '10px 14px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '10px 14px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
         <Box component="span" sx={(th) => ({ color: th.nerv.hue.amber, fontSize: 11, whiteSpace: 'nowrap', fontFamily: th.nerv.fonts.mono })}>{id}</Box>
         <Box component="span" sx={(th) => ({ color: th.nerv.hue.paper, fontSize: 13, fontFamily: th.nerv.fonts.mono })}>{title}</Box>

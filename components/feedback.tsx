@@ -6,11 +6,12 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
+import { type RootHTMLAttributes } from './util';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
 
-export interface HazardPromptProps {
+export interface HazardPromptProps extends RootHTMLAttributes {
   /** Large kanji verb (e.g. `裁定`). */
   jp: string;
   /** English action shown in the punched-out band (e.g. `DECIDE`). */
@@ -29,7 +30,7 @@ export interface HazardPromptProps {
  *
  * @example <HazardPrompt jp="裁定" en="DECIDE" onDecide={route} />
  */
-export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromptProps) {
+export function HazardPrompt({ jp, en, onDecide, height = 150, sx, ...rest }: HazardPromptProps) {
   const t = useTheme();
   const [flash, setFlash] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -56,6 +57,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
       aria-label={en.toLowerCase()}
       onClick={trigger}
       onKeyDown={onKey}
+      {...rest}
       sx={[
         (t) => ({
           position: 'relative',
@@ -106,7 +108,9 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
 
 export type GateDecision = 'approve' | 'deny' | 'defer';
 
-export interface GateDecisionDialogProps {
+/** Root is the full-screen surface inside the `Modal` (the component takes no
+ *  `sx` — see the 2.1 inventory finding). */
+export interface GateDecisionDialogProps extends RootHTMLAttributes {
   /** Whether the overlay is shown. */
   open: boolean;
   /** The thing being decided (shown in the ITEM line). */
@@ -133,7 +137,7 @@ const ACTIONS: { kind: GateDecision; jp: string; en: string; tone: 'mint' | 'red
  * item under review, and an approve / deny / defer response rail. One focal job.
  * Focus lands on APPROVE; Escape/backdrop call `onClose`.
  */
-export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE' }: GateDecisionDialogProps) {
+export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE', ...rest }: GateDecisionDialogProps) {
   const approveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -156,6 +160,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
   return (
     <Modal open={open} onClose={onClose} aria-label="Gate decision required" closeAfterTransition={false}>
       <Box
+        {...rest}
         sx={(t) => ({
           position: 'fixed',
           inset: 0,
@@ -220,7 +225,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
 /* ------------------------------------------------------------------ */
 /* YesNoGate — a large marketing Y/N decision with a response line. */
 
-export interface YesNoGateProps {
+export interface YesNoGateProps extends RootHTMLAttributes {
   /** Yes button text. @default 'YES' */
   yesLabel?: string;
   /** No button text. @default 'NO' */
@@ -242,7 +247,7 @@ export interface YesNoGateProps {
  * @example
  * <YesNoGate yesResponse="◉ ACCEPTED" noResponse="✕ DEFERRED" onDecide={track} />
  */
-export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, sx }: YesNoGateProps) {
+export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, sx, ...rest }: YesNoGateProps) {
   const [sel, setSel] = useState<'yes' | 'no' | null>(null);
   const choose = (a: 'yes' | 'no') => { setSel(a); onDecide?.(a); };
 
@@ -267,7 +272,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
   };
 
   return (
-    <Box sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box role="group" aria-label="decision" sx={{ display: 'flex', gap: 2 }}>
         <Box component="button" type="button" aria-pressed={sel === 'yes'} onClick={() => choose('yes')} sx={btn('yes')}>{yesLabel}</Box>
         <Box component="button" type="button" aria-pressed={sel === 'no'} onClick={() => choose('no')} sx={btn('no')}>{noLabel}</Box>
@@ -283,7 +288,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
 /* ------------------------------------------------------------------ */
 /* ApprovalBar — an inline human-in-the-loop gate (approve / deny). */
 
-export interface ApprovalBarProps {
+export interface ApprovalBarProps extends RootHTMLAttributes {
   /** Small caption. @default 'PENDING APPROVAL ·' */
   label?: string;
   /** What awaits approval. */
@@ -304,7 +309,7 @@ export interface ApprovalBarProps {
  * (approve blinks like a primary action). Once decided, the actions disable and
  * a mint/red verdict takes their place. Pairs under {@link LogConsole}.
  */
-export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, sx }: ApprovalBarProps) {
+export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, sx, ...rest }: ApprovalBarProps) {
   const decided = !!verdict;
   const btn = (t: Theme, hue: string, blink = false) => ({
     border: `1px solid ${hue}`,
@@ -322,6 +327,7 @@ export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, on
   });
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', border: `1px solid ${t.nerv.hue.amberDim}`, borderTop: 'none', p: '10px 12px' }),
         ...(Array.isArray(sx) ? sx : [sx]),

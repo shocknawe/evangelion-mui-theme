@@ -8,14 +8,14 @@ import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 
 const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 
 /* ------------------------------------------------------------------ */
 /* SegmentedMeter — vertical LED columns with a drawn threshold line. */
 
-export interface SegmentedMeterProps {
+export interface SegmentedMeterProps extends RootHTMLAttributes {
   /** Controlled per-column levels (0..segments). Omit to self-animate. */
   values?: number[];
   /** Seed levels when uncontrolled. @default [10, 13, 8, 15] */
@@ -42,6 +42,7 @@ export function SegmentedMeter({
   axisLabels = ['+100', '±0', '-100'],
   animated = true,
   sx,
+  ...rest
 }: SegmentedMeterProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
@@ -71,7 +72,7 @@ export function SegmentedMeter({
   };
 
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', gap: 1.5, height: 150 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 9, color: t.nerv.hue.orange, borderRight: `1px solid ${t.nerv.hue.orange}`, pr: '5px', fontFamily: t.nerv.fonts.mono }}>
           {axisLabels.map((a) => (
@@ -112,7 +113,7 @@ const polar = (cx: number, cy: number, r: number, d: number): [number, number] =
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 };
 
-export interface RadialGaugeProps {
+export interface RadialGaugeProps extends RootHTMLAttributes {
   /** Controlled percentage (0..100). Omit to self-animate near full. */
   value?: number;
   /** Caption under the readout. @default 'ARMED' */
@@ -126,7 +127,7 @@ export interface RadialGaugeProps {
   sx?: SxProps<Theme>;
 }
 
-export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120, animated = true, sx }: RadialGaugeProps) {
+export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120, animated = true, sx, ...rest }: RadialGaugeProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [internal, setInternal] = useState(98);
@@ -153,7 +154,7 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
   const lit = Math.round((pct / 100) * segments);
 
   return (
-    <Box sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <svg viewBox="0 0 120 120" width="100%" height="100%">
         {paths.map((d, i) => (
           <path key={i} d={d} fill={i < lit ? t.nerv.hue.mint : t.nerv.hue.greenDim} opacity={i < lit ? 1 : 0.3} />
@@ -180,7 +181,7 @@ function seg(t: Theme, lit: boolean, hot = false) {
   return { background: t.nerv.hue.amber, opacity: 1, boxShadow: '0 0 4px rgba(244,159,9,.5)' };
 }
 
-export interface BarColumnGaugeProps {
+export interface BarColumnGaugeProps extends RootHTMLAttributes {
   /** Controlled column heights (0..10). Omit to self-animate. */
   columns?: number[];
   /** Controlled horizontal-bar fill (0..18). Omit to self-animate. */
@@ -190,7 +191,7 @@ export interface BarColumnGaugeProps {
   sx?: SxProps<Theme>;
 }
 
-export function BarColumnGauge({ columns, bar, animated = true, sx }: BarColumnGaugeProps) {
+export function BarColumnGauge({ columns, bar, animated = true, sx, ...rest }: BarColumnGaugeProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [hbar, setHbar] = useState(9);
@@ -208,7 +209,7 @@ export function BarColumnGauge({ columns, bar, animated = true, sx }: BarColumnG
   }, [columns, bar, animated, reduced]);
 
   return (
-    <Box sx={[{ display: 'flex', flexDirection: 'column', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', flexDirection: 'column', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', gap: '3px', height: 34, width: '100%' }}>
         {Array.from({ length: 18 }, (_, i) => (
           <Box key={i} sx={{ flex: 1, ...(i < barVal ? { background: t.nerv.hue.blue, opacity: 1, boxShadow: '0 0 5px rgba(80,144,208,.5)' } : { background: t.nerv.hue.greenDim, opacity: 0.3 }) }} />
@@ -230,7 +231,7 @@ export function BarColumnGauge({ columns, bar, animated = true, sx }: BarColumnG
 /* ------------------------------------------------------------------ */
 /* ProgressMeter — a horizontal segmented bar with an optional threshold line. */
 
-export interface ProgressMeterProps {
+export interface ProgressMeterProps extends RootHTMLAttributes {
   /** Target completion (0..100). */
   value: number;
   /** Number of discrete segments. @default 25 */
@@ -251,7 +252,7 @@ export interface ProgressMeterProps {
  * fill), with an optional threshold/gate line rendered as its own object. Fills
  * in mechanical steps on mount; jumps straight to `value` under reduced motion.
  */
-export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLETE', readout, animated = true, sx }: ProgressMeterProps) {
+export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLETE', readout, animated = true, sx, ...rest }: ProgressMeterProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const target = Math.round((value / 100) * segments);
@@ -275,7 +276,7 @@ export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLE
   const pct = Math.round((fill / segments) * 100);
 
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ position: 'relative', pt: '2px' }}>
         <Box sx={{ display: 'flex', gap: '3px', height: 18 }}>
           {Array.from({ length: segments }, (_, i) => (
@@ -313,7 +314,7 @@ export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLE
 /* ------------------------------------------------------------------ */
 /* HealthColumns — mini stepped system-health bars for a header. */
 
-export interface HealthColumnsProps {
+export interface HealthColumnsProps extends RootHTMLAttributes {
   /** Number of columns. @default 4 */
   columns?: number;
   /** Cells per column. @default 7 */
@@ -327,7 +328,7 @@ export interface HealthColumnsProps {
 
 /** A tiny system-health readout: stepped mini columns, mostly nominal (mint),
  *  with occasional amber peaks. Static under reduced motion. */
-export function HealthColumns({ columns = 4, cells = 7, animated = true, onSummary, sx }: HealthColumnsProps) {
+export function HealthColumns({ columns = 4, cells = 7, animated = true, onSummary, sx, ...rest }: HealthColumnsProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const seed = () => Array.from({ length: columns }, () => ({ lit: 3 + Math.floor(Math.random() * 3), hot: Math.random() < 0.16 }));
@@ -346,7 +347,7 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, onSumma
   }, [litTotal, columns, cells, onSummary]);
 
   return (
-    <Box sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]} role="img" aria-label="System health">
+    <Box role="img" aria-label="System health" {...rest} sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {cols.map((col, ci) => (
         <Box key={ci} sx={{ width: 9, display: 'flex', flexDirection: 'column-reverse', gap: '2px' }}>
           {Array.from({ length: cells }, (_, i) => {
@@ -376,7 +377,7 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, onSumma
 /* ------------------------------------------------------------------ */
 /* SegmentBar — a thin inline horizontal segmented fill. */
 
-export interface SegmentBarProps {
+export interface SegmentBarProps extends RootHTMLAttributes {
   /** Fill percentage (0..100). */
   value: number;
   /** Number of segments. @default 20 */
@@ -393,12 +394,12 @@ export interface SegmentBarProps {
  * counterpart to {@link ProgressMeter} (no labels or threshold), for a `PROGRESS
  * … 62%` row.
  */
-export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx }: SegmentBarProps) {
+export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx, ...rest }: SegmentBarProps) {
   const t = useTheme();
   const lit = Math.round((value / 100) * segments);
   const c = toneHue(t, tone);
   return (
-    <Box sx={[{ display: 'flex', gap: '2px', height, flex: 1, minWidth: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', gap: '2px', height, flex: 1, minWidth: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {Array.from({ length: segments }, (_, i) => (
         <Box
           key={i}
@@ -418,7 +419,7 @@ export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx
 /* ------------------------------------------------------------------ */
 /* MeterBar — a labeled thin continuous vitals bar (label · value · fill). */
 
-export interface MeterBarProps {
+export interface MeterBarProps extends RootHTMLAttributes {
   /** Left label (e.g. `CPU`). */
   label: React.ReactNode;
   /** Right-aligned readout (e.g. `12.4%`). */
@@ -439,11 +440,11 @@ export interface MeterBarProps {
  * fill (not segmented — the quiet counterpart to {@link SegmentBar}, for a
  * sidebar/cluster stat like CPU or memory). `warn` flips the fill to amber.
  */
-export function MeterBar({ label, value, pct, tone = 'mint', warn = false, height = 5, sx }: MeterBarProps) {
+export function MeterBar({ label, value, pct, tone = 'mint', warn = false, height = 5, sx, ...rest }: MeterBarProps) {
   const t = useTheme();
   const c = warn ? t.nerv.hue.amber : toneHue(t, tone);
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.mint, mb: '4px', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } }}>
         <Box component="span">{label}</Box>
         {value != null && <Box component="b">{value}</Box>}
@@ -458,7 +459,7 @@ export function MeterBar({ label, value, pct, tone = 'mint', warn = false, heigh
 /* ------------------------------------------------------------------ */
 /* LedColumn — a single vertical LED column that fills bottom-up. */
 
-export interface LedColumnProps {
+export interface LedColumnProps extends RootHTMLAttributes {
   /** Fill percentage (0..100). */
   value: number;
   /** Number of stacked segments. @default 14 */
@@ -481,13 +482,13 @@ export interface LedColumnProps {
  * segments switch to the critical (red) hue, so a draining gauge reads as an
  * alarm without a separate control.
  */
-export function LedColumn({ value, segments = 14, tone = 'amber', hotBelow, height = 104, width = 44, sx }: LedColumnProps) {
+export function LedColumn({ value, segments = 14, tone = 'amber', hotBelow, height = 104, width = 44, sx, ...rest }: LedColumnProps) {
   const t = useTheme();
   const lit = Math.round((value / 100) * segments);
   const hot = hotBelow !== undefined && value < hotBelow;
   const c = hot ? t.nerv.hue.redHi : toneHue(t, tone);
   return (
-    <Box sx={[{ display: 'flex', flexDirection: 'column-reverse', gap: '3px', width, height }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', flexDirection: 'column-reverse', gap: '3px', width, height }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {Array.from({ length: segments }, (_, i) => (
         <Box
           key={i}

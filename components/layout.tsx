@@ -6,13 +6,13 @@
 import type { ElementType, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ConsoleFrame — the chamfered command shell: full-bleed header over a
    sidebar · main · rail grid, one orange double-frame, internal scroll. */
 
-export interface ConsoleFrameProps {
+export interface ConsoleFrameProps extends RootHTMLAttributes {
   /** Full-width top band. */
   header: ReactNode;
   /** Optional full-width band directly under the header (e.g. a separator). */
@@ -65,6 +65,7 @@ export function ConsoleFrame({
   bandHeight = 96,
   footerHeight = 44,
   sx,
+  ...rest
 }: ConsoleFrameProps) {
   const cols = [sidebar ? `${sidebarWidth}px` : null, '1fr', rail ? `${railWidth}px` : null].filter(Boolean).join(' ');
   const spanRow = (area: string) => [sidebar ? area : null, area, rail ? area : null].filter(Boolean).join(' ');
@@ -89,6 +90,7 @@ export function ConsoleFrame({
 
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           position: 'relative',
@@ -169,7 +171,7 @@ export function ConsoleFrame({
 /* ------------------------------------------------------------------ */
 /* ZoneTitle — an orange section label over a hairline rule. */
 
-export interface ZoneTitleProps {
+export interface ZoneTitleProps extends RootHTMLAttributes {
   children: ReactNode;
   /** Right-aligned meta (e.g. a count chip). Rendered in amber. */
   aside?: ReactNode;
@@ -187,10 +189,11 @@ export interface ZoneTitleProps {
  * A zone header: condensed orange caps over a dim-green rule, with optional
  * right-aligned amber meta (a due count, an item total).
  */
-export function ZoneTitle({ children, aside, component = 'div', sx }: ZoneTitleProps) {
+export function ZoneTitle({ children, aside, component = 'div', sx, ...rest }: ZoneTitleProps) {
   return (
     <Box
       component={component}
+      {...rest}
       sx={[
         (t) => ({
           display: 'flex',
@@ -222,7 +225,7 @@ export function ZoneTitle({ children, aside, component = 'div', sx }: ZoneTitleP
 /* ------------------------------------------------------------------ */
 /* Monogram — a boxed kanji with a small caption (masthead grammar). */
 
-export interface MonogramProps {
+export interface MonogramProps extends RootHTMLAttributes {
   /** The kanji monogram. */
   jp: string;
   /** Small caption below. */
@@ -238,9 +241,10 @@ export interface MonogramProps {
  * A boxed bilingual monogram — a glowing kanji over a tiny caption, in a 1px
  * chrome box. The masthead identity mark (磁 MAGI · 統制 COMMAND).
  */
-export function Monogram({ jp, label, tone = 'orange', size = 26, sx }: MonogramProps) {
+export function Monogram({ jp, label, tone = 'orange', size = 26, sx, ...rest }: MonogramProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => {
           const c = toneHue(t, tone);
@@ -272,7 +276,7 @@ export function Monogram({ jp, label, tone = 'orange', size = 26, sx }: Monogram
 /* ------------------------------------------------------------------ */
 /* Stat — a compact label/value pair (dashboard vitals). */
 
-export interface StatProps {
+export interface StatProps extends RootHTMLAttributes {
   /** Small caption. */
   label: string;
   /** The value. */
@@ -286,9 +290,9 @@ export interface StatProps {
  * A compact vital: a tiny mono label above a condensed value. Lighter than
  * {@link StatTile} — for a row of readouts in a header or hero.
  */
-export function Stat({ label, value, tone = 'paper', sx }: StatProps) {
+export function Stat({ label, value, tone = 'paper', sx, ...rest }: StatProps) {
   return (
-    <Box sx={[{ minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={(t) => ({ fontSize: 10, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono })}>{label}</Box>
       <Box
         sx={(t) => ({
@@ -310,7 +314,7 @@ export function Stat({ label, value, tone = 'paper', sx }: StatProps) {
 /* ------------------------------------------------------------------ */
 /* GaugeCard — a chamfered card framing one gauge (a trigger / channel). */
 
-export interface GaugeCardProps {
+export interface GaugeCardProps extends RootHTMLAttributes {
   /** Small kanji-tagged channel label (e.g. `CRON · 定時`), tinted by `tone`. */
   kind: ReactNode;
   /** Condensed channel name (e.g. `NIGHTLY REVIEW`). */
@@ -338,9 +342,10 @@ export interface GaugeCardProps {
  *   <SegmentBar value={45} tone="blue" height={36} />
  * </GaugeCard>
  */
-export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', sx }: GaugeCardProps) {
+export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', sx, ...rest }: GaugeCardProps) {
   return (
     <Box
+      {...rest}
       sx={[
         (t) => ({
           border: `1px solid ${toneHue(t, tone)}`,
@@ -368,7 +373,7 @@ export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', s
 /* ------------------------------------------------------------------ */
 /* TelemetryCard — a bordered telemetry panel (title/type header · body · foot). */
 
-export interface TelemetryCardProps {
+export interface TelemetryCardProps extends Omit<RootHTMLAttributes, 'title'> {
   /** Left header caption (e.g. `◐ VAULT RETENTION`). */
   title: ReactNode;
   /** Right header tag (e.g. `ARC` / `BAR` / `COL`). */
@@ -388,9 +393,9 @@ export interface TelemetryCardProps {
  * shell for a landing-page metric — drop a {@link RadialGauge}, {@link SegmentBar},
  * or {@link LedColumn} row inside.
  */
-export function TelemetryCard({ title, type, children, foot, tone = 'orange', sx }: TelemetryCardProps) {
+export function TelemetryCard({ title, type, children, foot, tone = 'orange', sx, ...rest }: TelemetryCardProps) {
   return (
-    <Box sx={[(t) => ({ border: `1px solid ${toneHue(t, tone)}`, background: t.nerv.hue.void, p: '18px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(t) => ({ border: `1px solid ${toneHue(t, tone)}`, background: t.nerv.hue.void, p: '18px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={(t) => ({ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.1em', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 1, mb: 2, fontFamily: t.nerv.fonts.mono })}>
         <span>{title}</span>{type != null && <span>{type}</span>}
       </Box>

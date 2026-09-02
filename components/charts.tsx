@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type RootHTMLAttributes } from './util';
 
 function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, frame: number) => void,
@@ -48,7 +49,7 @@ function useCanvas(
 /* ------------------------------------------------------------------ */
 /* LineChart — a glowing sparse trend line over a dotted field. */
 
-export interface LineChartProps {
+export interface LineChartProps extends RootHTMLAttributes {
   /** Corner caption; the highlighted word is `status`. @default 'RESONANCE' */
   label?: string;
   /** Highlighted status word. @default 'STABLE' */
@@ -58,7 +59,7 @@ export interface LineChartProps {
   sx?: SxProps<Theme>;
 }
 
-export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150, sx }: LineChartProps) {
+export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150, sx, ...rest }: LineChartProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const data = useRef<number[]>(Array.from({ length: 48 }, (_, i) => 50 + Math.sin(i / 4) * 18));
@@ -87,7 +88,7 @@ export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150
   }, 140, reduced);
 
   return (
-    <Box sx={[(th) => ({ position: 'relative', height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ position: 'relative', height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
       <Box sx={{ position: 'absolute', left: 10, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', zIndex: 2, fontFamily: t.nerv.fonts.mono }}>
         {label} · <Box component="b" sx={{ color: t.nerv.hue.mint }}>{status}</Box>
@@ -99,7 +100,7 @@ export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150
 /* ------------------------------------------------------------------ */
 /* Waveform — a braided oscilloscope separator. */
 
-export interface WaveformProps {
+export interface WaveformProps extends RootHTMLAttributes {
   /** Left caption. @default 'INFERENCE FIELD' */
   label?: React.ReactNode;
   /** Right caption. @default '共振 / RESONANCE' */
@@ -111,7 +112,7 @@ export interface WaveformProps {
   sx?: SxProps<Theme>;
 }
 
-export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONANCE', height = 96, frame = true, sx }: WaveformProps) {
+export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONANCE', height = 96, frame = true, sx, ...rest }: WaveformProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const time = useRef(0);
@@ -138,7 +139,7 @@ export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONA
   }, 83, reduced);
 
   return (
-    <Box sx={[(th) => ({ position: 'relative', height, border: frame ? `1px solid ${th.nerv.hue.greenDim}` : 0, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ position: 'relative', height, border: frame ? `1px solid ${th.nerv.hue.greenDim}` : 0, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
       <Box sx={{ position: 'absolute', left: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mint, fontWeight: 400 } }}>{label}</Box>
       <Box sx={{ position: 'absolute', right: 12, top: 8, fontSize: 9, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>{caption}</Box>
@@ -149,7 +150,7 @@ export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONA
 /* ------------------------------------------------------------------ */
 /* ScanLattice — a static schematic grid with a targeting reticle. */
 
-export interface ScanLatticeProps {
+export interface ScanLatticeProps extends RootHTMLAttributes {
   /** Height (px). @default 110 */
   height?: number;
   /** Reticle label. @default 'NODE·0x512' */
@@ -157,11 +158,11 @@ export interface ScanLatticeProps {
   sx?: SxProps<Theme>;
 }
 
-export function ScanLattice({ height = 110, nodeLabel = 'NODE·0x512', sx }: ScanLatticeProps) {
+export function ScanLattice({ height = 110, nodeLabel = 'NODE·0x512', sx, ...rest }: ScanLatticeProps) {
   const t = useTheme();
   const cx = 300, cy = 55;
   return (
-    <Box sx={[(th) => ({ height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[(th) => ({ height, border: `1px solid ${th.nerv.hue.greenDim}`, overflow: 'hidden', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <svg viewBox="0 0 600 110" preserveAspectRatio="none" width="100%" height="100%" style={{ display: 'block' }}>
         {Array.from({ length: Math.ceil((600 - 20) / 42) }, (_, i) => 20 + i * 42).map((x) => (
           <line key={`v${x}`} x1={x} y1={0} x2={x} y2={110} stroke={t.nerv.hue.greenDim} strokeWidth={1} opacity={0.5} />

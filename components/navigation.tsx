@@ -7,11 +7,13 @@ import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type RootHTMLAttributes } from './util';
 
 /* ------------------------------------------------------------------ */
 /* FilterChips — a row of orange scope chips (active = solid inversion). */
 
-export interface FilterChipsProps {
+/** `value`/`onChange` are the controlled filter, not the DOM ones. */
+export interface FilterChipsProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
   /** Chip values. */
   filters: string[];
   /** The active chip. */
@@ -28,9 +30,9 @@ export interface FilterChipsProps {
  * with your own rows (dimming non-matches) or use {@link FilterRail} for the
  * bundled list.
  */
-export function FilterChips({ filters, value, onChange, ariaLabel, sx }: FilterChipsProps) {
+export function FilterChips({ filters, value, onChange, ariaLabel, sx, ...rest }: FilterChipsProps) {
   return (
-    <Box role="group" aria-label={ariaLabel} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="group" aria-label={ariaLabel} {...rest} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {filters.map((k) => {
         const on = value === k;
         return (
@@ -69,7 +71,8 @@ export interface FilterRow {
   kind: string;
 }
 
-export interface FilterRailProps {
+/** `value`/`onChange` are the controlled filter, not the DOM ones. */
+export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
   /** Filter values. The `allValue` entry clears the filter (shows everything). */
   filters: string[];
   rows: FilterRow[];
@@ -87,7 +90,7 @@ export interface FilterRailProps {
  * A filter rail that *dims and desaturates* non-matching rows instead of hiding
  * them — the operator never loses their place. Uncontrolled by default.
  */
-export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], sx }: FilterRailProps) {
+export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], sx, ...rest }: FilterRailProps) {
   const [internal, setInternal] = useState(defaultValue ?? allValue);
   const active = value ?? internal;
   const setActive = (v: string) => {
@@ -96,7 +99,7 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
   };
 
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <FilterChips filters={filters} value={active} onChange={setActive} sx={{ mb: 1.25 }} />
       {rows.map((r) => {
         const dim = active !== allValue && r.kind !== active;
@@ -143,7 +146,8 @@ export interface ConsoleNavItem {
   en: string;
 }
 
-export interface ConsoleNavProps {
+/** `value`/`onChange` are the controlled nav selection, not the DOM ones. */
+export interface ConsoleNavProps extends Omit<RootHTMLAttributes<'nav'>, 'value' | 'onChange'> {
   items: ConsoleNavItem[];
   value: string;
   onChange: (value: string) => void;
@@ -168,12 +172,13 @@ export interface ConsoleNavProps {
  * <ConsoleNav value={s} onChange={setS} items={[{ value: 'eng', jp: '工学', en: 'ENGINEERING' }]} />
  * <ConsoleNav variant="rail" value={s} onChange={setS} items={items} />
  */
-export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed', sx }: ConsoleNavProps) {
+export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed', sx, ...rest }: ConsoleNavProps) {
   const rail = variant === 'rail';
   return (
     <Box
       component="nav"
       aria-label={ariaLabel}
+      {...rest}
       sx={[{ display: 'flex', flexDirection: 'column', gap: rail ? '3px' : '6px', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {items.map((item) => {
@@ -247,7 +252,7 @@ export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed
 /* ------------------------------------------------------------------ */
 /* Brand — the diamond mark + wordmark + version lockup. */
 
-export interface BrandProps {
+export interface BrandProps extends RootHTMLAttributes {
   /** Wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Version / tag (orange chrome). */
@@ -264,11 +269,11 @@ export interface BrandProps {
  * condensed caps, and an optional orange version tag (inline or stacked). The
  * shared masthead mark for the site header and the app-shell rails.
  */
-export function Brand({ name, version, size = 'md', stackVersion = false, sx }: BrandProps) {
+export function Brand({ name, version, size = 'md', stackVersion = false, sx, ...rest }: BrandProps) {
   const mk = size === 'sm' ? 15 : 16;
   const word = size === 'sm' ? 18 : 20;
   return (
-    <Box sx={[{ display: 'flex', minWidth: 0, flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} sx={[{ display: 'flex', minWidth: 0, flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
         <Box sx={(t) => ({ width: mk, height: mk, flex: 'none', background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
         {/* The wordmark is the only elastic part of the lockup: it truncates
@@ -292,7 +297,7 @@ export interface SiteHeaderLink {
   href: string;
 }
 
-export interface SiteHeaderProps {
+export interface SiteHeaderProps extends RootHTMLAttributes<'header'> {
   /** Brand wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Small version/tag after the wordmark (orange chrome). */
@@ -312,7 +317,7 @@ export interface SiteHeaderProps {
  * links smooth-scroll to their target (instant under reduced motion); other hrefs
  * behave normally.
  */
-export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, sx }: SiteHeaderProps) {
+export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, sx, ...rest }: SiteHeaderProps) {
   const reduced = useReducedMotion();
   const onLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (!href.startsWith('#')) return;
@@ -325,6 +330,7 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
   return (
     <Box
       component="header"
+      {...rest}
       sx={[
         (t) => ({
           position: 'sticky',
@@ -402,7 +408,10 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
 /* ------------------------------------------------------------------ */
 /* WikiLink — a [[cross-reference]] that inverts on hover. */
 
-export interface WikiLinkProps {
+/** `href`/`onClick` are the link target/handler the component itself renders;
+ *  `children` is the link text. Root is an `<a>` when `href` is given, else a
+ *  `<button>`. */
+export interface WikiLinkProps extends Omit<RootHTMLAttributes<'a'>, 'href' | 'onClick'> {
   children: ReactNode;
   href?: string;
   onClick?: () => void;
@@ -414,12 +423,13 @@ export interface WikiLinkProps {
  * solid mint fill with black text on hover. Renders as an anchor when `href` is
  * given, otherwise a button.
  */
-export function WikiLink({ children, href, onClick, sx }: WikiLinkProps) {
+export function WikiLink({ children, href, onClick, sx, ...rest }: WikiLinkProps) {
   return (
     <Box
       component={href ? 'a' : 'button'}
       href={href}
       onClick={onClick}
+      {...rest}
       sx={[
         (t) => ({
           color: t.nerv.hue.mintHi,
