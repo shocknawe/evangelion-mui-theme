@@ -1,6 +1,6 @@
 {
   "name": "phosphor-console-theme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Phosphor Console — a NERV/MAGI tactical Material UI (v9+) theme plus a paired console component library. Dark-only CRT command deck: color is state, active = figure/ground inversion, mechanical motion, bimodal bilingual type.",
   "type": "module",
   "license": "MIT",

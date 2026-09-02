@@ -1,133 +1,133 @@
 # phosphor-console-theme — Phosphor Console docs
 
-> NERV/MAGI tactical UI system: an Evangelion-inspired design language, a dark-only Material UI theme, and a React component library. Black CRT surfaces, phosphor mint / safety orange / blood red, bilingual EN + JP, mechanical motion. Docs are for v0.1.0; the site is a single-page hash-routed app, so every page below lives at /evangelion-mui-theme/#/<route>. Every component page carries edge cases, performance notes, and a customization recipe (sx, classes keys, slots/slotProps, and the single-class Nerv*-root theme override).
+> NERV/MAGI tactical UI system: an Evangelion-inspired design language, a dark-only Material UI theme, and a React component library. Black CRT surfaces, phosphor mint / safety orange / blood red, bilingual EN + JP, mechanical motion. Docs are for v0.1.0; the site is a single-page hash-routed app, so every page below lives at /#/<route>. Every component page carries edge cases, performance notes, and a customization recipe (sx, classes keys, slots/slotProps, and the single-class Nerv*-root theme override).
 
 ## Overview
 
-- [Overview](/evangelion-mui-theme/#/): Overview of the Phosphor Console design language and what the library ships.
-- [Getting started](/evangelion-mui-theme/#/getting-started): Install the theme, mount ThemeProvider + CssBaseline, load the fonts, set dark mode.
-- [The pipeline](/evangelion-mui-theme/#/pipeline): How the system was made — video references, throwaway experiments, sample layouts, then the theme.
+- [Overview](/#/): Overview of the Phosphor Console design language and what the library ships.
+- [Getting started](/#/getting-started): Install the theme, mount ThemeProvider + CssBaseline, load the fonts, set dark mode.
+- [The pipeline](/#/pipeline): How the system was made — video references, throwaway experiments, sample layouts, then the theme.
 
 ## Foundations
 
-- [Color & state](/evangelion-mui-theme/#/foundations/color): Color is state: mint nominal, orange chrome-only, blue pending, amber caution, red critical.
-- [Typography](/evangelion-mui-theme/#/foundations/typography): Bimodal type — condensed ALL CAPS display, monospace data, Mincho JP — with pairing rules.
-- [Spacing & shape](/evangelion-mui-theme/#/foundations/spacing-shape): Spacing scale, radius 0, chamfered corners, and border discipline on a single black surface.
-- [Depth & glow](/evangelion-mui-theme/#/foundations/depth-glow): Elevation is none: depth comes from border, glow, and hue — never a drop shadow.
-- [Motion](/evangelion-mui-theme/#/foundations/motion): Mechanical motion only — steps(), blink, linear — with a reduced-motion path that renders the final state.
+- [Color & state](/#/foundations/color): Color is state: mint nominal, orange chrome-only, blue pending, amber caution, red critical.
+- [Typography](/#/foundations/typography): Bimodal type — condensed ALL CAPS display, monospace data, Mincho JP — with pairing rules.
+- [Spacing & shape](/#/foundations/spacing-shape): Spacing scale, radius 0, chamfered corners, and border discipline on a single black surface.
+- [Depth & glow](/#/foundations/depth-glow): Elevation is none: depth comes from border, glow, and hue — never a drop shadow.
+- [Motion](/#/foundations/motion): Mechanical motion only — steps(), blink, linear — with a reduced-motion path that renders the final state.
 
 ## Themed MUI
 
-- [Buttons & actions](/evangelion-mui-theme/#/mui/buttons): Button variants the theme adds: ghost, alt, stamp, and the nerv-live accent.
-- [Everything else](/evangelion-mui-theme/#/mui/gallery): Every stock MUI component carrying the Phosphor Console theme, in one place.
+- [Buttons & actions](/#/mui/buttons): Button variants the theme adds: ghost, alt, stamp, and the nerv-live accent.
+- [Everything else](/#/mui/gallery): Every stock MUI component carrying the Phosphor Console theme, in one place.
 
 ## Patterns
 
-- [Forms](/evangelion-mui-theme/#/patterns/forms): The numbered console form: SectionDivider + FieldLabel + console controls.
-- [Screens](/evangelion-mui-theme/#/patterns/screens): ConsoleFrame shell assembly — header · sidebar · main · rail · footer.
+- [Forms](/#/patterns/forms): The numbered console form: SectionDivider + FieldLabel + console controls.
+- [Screens](/#/patterns/screens): ConsoleFrame shell assembly — header · sidebar · main · rail · footer.
 
 ## Components — Atoms
 
-- [Stamp](/evangelion-mui-theme/#/components/stamp): A boxed stamp/pill. Idle = outline on black; `filled` inverts to a solid hue fill with black content. `blink` marks in-progress; `glow` adds a phosphor halo to the outline form.
+- [Stamp](/#/components/stamp): A boxed stamp/pill. Idle = outline on black; `filled` inverts to a solid hue fill with black content. `blink` marks in-progress; `glow` adds a phosphor halo to the outline form.
 
 ## Components — Text
 
-- [BilingualLabel](/evangelion-mui-theme/#/components/bilingual-label): The signature bimodal pair — a big Mincho graphic term carrying a tiny monospace caption. Satisfies the "large kanji always carries a small English caption" rule for you.
-- [MetadataBlock](/evangelion-mui-theme/#/components/metadata-block): A monospace `KEY:VALUE` metadata block. Keys read as chrome; values are the dim rust ink the terminal uses for non-text chrome.
-- [SectionDivider](/evangelion-mui-theme/#/components/section-divider): A numbered section divider: a filled index chip, the bilingual heading, and a fading orange rule. Number a sequence only when it *is* one.
-- [FieldLabel](/evangelion-mui-theme/#/components/field-label): The shared field grammar: a bilingual caption above its control.
-- [SectionHeading](/evangelion-mui-theme/#/components/section-heading): A numbered landing-section header: a filled orange index chip, a large condensed heading, a fading orange rule, and an optional right-aligned note. Bigger and looser than (which is for numbered form sequences); use this for marketing section breaks. Number a sequence only when it *is* one.
-- [DossierSheet](/evangelion-mui-theme/#/components/dossier-sheet): A dossier / deployment-spec block: a mint heading over a teal double-rule, a grid of KEY/VALUE rows on dashed separators, and an optional signature footer — plus an optional rotated red watermark (`PRELIMINARY`). The editorial "official document" surface.
+- [BilingualLabel](/#/components/bilingual-label): The signature bimodal pair — a big Mincho graphic term carrying a tiny monospace caption. Satisfies the "large kanji always carries a small English caption" rule for you.
+- [MetadataBlock](/#/components/metadata-block): A monospace `KEY:VALUE` metadata block. Keys read as chrome; values are the dim rust ink the terminal uses for non-text chrome.
+- [SectionDivider](/#/components/section-divider): A numbered section divider: a filled index chip, the bilingual heading, and a fading orange rule. Number a sequence only when it *is* one.
+- [FieldLabel](/#/components/field-label): The shared field grammar: a bilingual caption above its control.
+- [SectionHeading](/#/components/section-heading): A numbered landing-section header: a filled orange index chip, a large condensed heading, a fading orange rule, and an optional right-aligned note. Bigger and looser than (which is for numbered form sequences); use this for marketing section breaks. Number a sequence only when it *is* one.
+- [DossierSheet](/#/components/dossier-sheet): A dossier / deployment-spec block: a mint heading over a teal double-rule, a grid of KEY/VALUE rows on dashed separators, and an optional signature footer — plus an optional rotated red watermark (`PRELIMINARY`). The editorial "official document" surface.
 
 ## Components — Layout
 
-- [ConsoleFrame](/evangelion-mui-theme/#/components/console-frame): The single chamfered frame that holds a whole screen: a full-width header over a `sidebar · main · rail` grid, with the orange double-frame, glow, and CRT (from the theme) doing the depth. Each region scrolls independently on desktop; the layout stacks and scrolls as one on narrow screens.
-- [ZoneTitle](/evangelion-mui-theme/#/components/zone-title): A zone header: condensed orange caps over a dim-green rule, with optional right-aligned amber meta (a due count, an item total).
-- [Monogram](/evangelion-mui-theme/#/components/monogram): A boxed bilingual monogram — a glowing kanji over a tiny caption, in a 1px chrome box. The masthead identity mark (磁 MAGI · 統制 COMMAND).
-- [Stat](/evangelion-mui-theme/#/components/stat): A compact vital: a tiny mono label above a condensed value. Lighter than — for a row of readouts in a header or hero.
-- [GaugeCard](/evangelion-mui-theme/#/components/gauge-card): A single-corner-chamfered card that frames one gauge as a monitored channel: a tinted channel label, a condensed name, the gauge, an optional readout, and an optional footer. The border carries the channel's state hue (color = state) — so a row of these reads as a legible trigger/channel bank.
-- [TelemetryCard](/evangelion-mui-theme/#/components/telemetry-card): A bordered telemetry panel: an orange header (title left, type tag right) over a hairline rule, the gauge body, and an optional two-slot footer. The card shell for a landing-page metric — drop a , , or row inside.
+- [ConsoleFrame](/#/components/console-frame): The single chamfered frame that holds a whole screen: a full-width header over a `sidebar · main · rail` grid, with the orange double-frame, glow, and CRT (from the theme) doing the depth. Each region scrolls independently on desktop; the layout stacks and scrolls as one on narrow screens.
+- [ZoneTitle](/#/components/zone-title): A zone header: condensed orange caps over a dim-green rule, with optional right-aligned amber meta (a due count, an item total).
+- [Monogram](/#/components/monogram): A boxed bilingual monogram — a glowing kanji over a tiny caption, in a 1px chrome box. The masthead identity mark (磁 MAGI · 統制 COMMAND).
+- [Stat](/#/components/stat): A compact vital: a tiny mono label above a condensed value. Lighter than — for a row of readouts in a header or hero.
+- [GaugeCard](/#/components/gauge-card): A single-corner-chamfered card that frames one gauge as a monitored channel: a tinted channel label, a condensed name, the gauge, an optional readout, and an optional footer. The border carries the channel's state hue (color = state) — so a row of these reads as a legible trigger/channel bank.
+- [TelemetryCard](/#/components/telemetry-card): A bordered telemetry panel: an orange header (title left, type tag right) over a hairline rule, the gauge body, and an optional two-slot footer. The card shell for a landing-page metric — drop a , , or row inside.
 
 ## Components — Flow
 
-- [StepFlow](/evangelion-mui-theme/#/components/step-flow): StepFlow component — see the page for props and usage.
-- [AgenticLoop](/evangelion-mui-theme/#/components/agentic-loop): The agentic loop as a bordered ring of bilingual nodes with `→` connectors and a caption notch, one node lit (mint glow) at a time. Uncontrolled, it cycles mechanically; under reduced motion it holds the first node. For a *progress* stepper (done-up-to-active) use instead.
-- [TaskCard](/evangelion-mui-theme/#/components/task-card): A loop-synchronizer task row: an id · title · action header, an OODA , and a labeled progress bar. The composed task card used on the agent-console dashboard.
+- [StepFlow](/#/components/step-flow): StepFlow component — see the page for props and usage.
+- [AgenticLoop](/#/components/agentic-loop): The agentic loop as a bordered ring of bilingual nodes with `→` connectors and a caption notch, one node lit (mint glow) at a time. Uncontrolled, it cycles mechanically; under reduced motion it holds the first node. For a *progress* stepper (done-up-to-active) use instead.
+- [TaskCard](/#/components/task-card): A loop-synchronizer task row: an id · title · action header, an OODA , and a labeled progress bar. The composed task card used on the agent-console dashboard.
 
 ## Components — Status
 
-- [StatusLegend](/evangelion-mui-theme/#/components/status-legend): The status key: each state boxed, bilingual, and colored by its tone. Filled = active; outline = idle.
-- [Roster](/evangelion-mui-theme/#/components/roster): Unit roster — status tiles that each own a hue; OFFLINE uses the figure/ground inversion (solid red, black content), CAUTION blinks. Selecting thickens the border.
-- [StatTile](/evangelion-mui-theme/#/components/stat-tile): A negative-space stat: a tiny label, one giant numeral, a tiny footer — the bimodal type rule as a KPI tile.
-- [RailItem](/evangelion-mui-theme/#/components/rail-item): A rail list row: a title with an optional subtitle on the left, a due/time marker on the right, divided by a dotted hairline. `done` dims and strikes it.
-- [GateRow](/evangelion-mui-theme/#/components/gate-row): A "blocked on you" decision row: id · title · dot leader · sub · priority stamp, ending in a REVIEW action or — once decided — the verdict stamp. The idle left edge is tinted by priority (1px, per the no-side-stripe rule); approve/deny settle it back to a neutral hairline.
-- [AgentCard](/evangelion-mui-theme/#/components/agent-card): A boxed agent card colored by status (ACTIVE mint · REVIEWING blue · IDLE dim), with a name, a status stamp, and a task line. Selecting it (to view a console, say) thickens the border and adds an inset glow.
-- [RecallNote](/evangelion-mui-theme/#/components/recall-note): A recalled reference — a cited decision-log or memory fragment with a tinted left edge (1px, per the no-side-stripe rule), an amber id, and readable body text.
-- [SinkRow](/evangelion-mui-theme/#/components/sink-row): A delivery-sink row: name over a state line, a ping readout, and a state stamp. The hue is the sink's state (ACTIVE mint · CONNECTED blue · OFFLINE red); OFFLINE inverts the stamp to a solid red fill with black content (the figure/ground "recorded" grammar). Divided by a dotted hairline.
-- [RoutineRow](/evangelion-mui-theme/#/components/routine-row): A routine-manager row: id · name · kind · a state stamp (PENDING blue · SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and desaturates it (for filter-rail scoping) without removing it from the list.
-- [ModuleCard](/evangelion-mui-theme/#/components/module-card): A product/system card for landing pages: a glowing kanji glyph with a `SYS·NN` code, a title, body copy, and a footer state stamp (tinted by `tone`). Chrome (orange) border at rest that lifts on hover; selecting it pins the card with a mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
-- [MemoryRow](/evangelion-mui-theme/#/components/memory-row): A memory-vault entry row: a fixed-width node id, a readable title, and a kind stamp colored by type. Hovering lifts the border to orange. Pair with to build a queryable memory list.
-- [AgentDot](/evangelion-mui-theme/#/components/agent-dot): A single agent status readout for a footer / status bar: a small round state dot (mint nominal · amber busy) before its label, the whole thing tinted amber when busy.
+- [StatusLegend](/#/components/status-legend): The status key: each state boxed, bilingual, and colored by its tone. Filled = active; outline = idle.
+- [Roster](/#/components/roster): Unit roster — status tiles that each own a hue; OFFLINE uses the figure/ground inversion (solid red, black content), CAUTION blinks. Selecting thickens the border.
+- [StatTile](/#/components/stat-tile): A negative-space stat: a tiny label, one giant numeral, a tiny footer — the bimodal type rule as a KPI tile.
+- [RailItem](/#/components/rail-item): A rail list row: a title with an optional subtitle on the left, a due/time marker on the right, divided by a dotted hairline. `done` dims and strikes it.
+- [GateRow](/#/components/gate-row): A "blocked on you" decision row: id · title · dot leader · sub · priority stamp, ending in a REVIEW action or — once decided — the verdict stamp. The idle left edge is tinted by priority (1px, per the no-side-stripe rule); approve/deny settle it back to a neutral hairline.
+- [AgentCard](/#/components/agent-card): A boxed agent card colored by status (ACTIVE mint · REVIEWING blue · IDLE dim), with a name, a status stamp, and a task line. Selecting it (to view a console, say) thickens the border and adds an inset glow.
+- [RecallNote](/#/components/recall-note): A recalled reference — a cited decision-log or memory fragment with a tinted left edge (1px, per the no-side-stripe rule), an amber id, and readable body text.
+- [SinkRow](/#/components/sink-row): A delivery-sink row: name over a state line, a ping readout, and a state stamp. The hue is the sink's state (ACTIVE mint · CONNECTED blue · OFFLINE red); OFFLINE inverts the stamp to a solid red fill with black content (the figure/ground "recorded" grammar). Divided by a dotted hairline.
+- [RoutineRow](/#/components/routine-row): A routine-manager row: id · name · kind · a state stamp (PENDING blue · SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and desaturates it (for filter-rail scoping) without removing it from the list.
+- [ModuleCard](/#/components/module-card): A product/system card for landing pages: a glowing kanji glyph with a `SYS·NN` code, a title, body copy, and a footer state stamp (tinted by `tone`). Chrome (orange) border at rest that lifts on hover; selecting it pins the card with a mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
+- [MemoryRow](/#/components/memory-row): A memory-vault entry row: a fixed-width node id, a readable title, and a kind stamp colored by type. Hovering lifts the border to orange. Pair with to build a queryable memory list.
+- [AgentDot](/#/components/agent-dot): A single agent status readout for a footer / status bar: a small round state dot (mint nominal · amber busy) before its label, the whole thing tinted amber when busy.
 
 ## Components — Inputs
 
-- [ChipRadioGroup](/evangelion-mui-theme/#/components/chip-radio-group): A single-select group of bilingual chips. Selected = solid tone fill with black content (the inversion) + glow; idle = outline on black.
-- [NumberStepper](/evangelion-mui-theme/#/components/number-stepper): An integer stepper: orange chrome buttons flanking a monospace readout.
-- [HazardRating](/evangelion-mui-theme/#/components/hazard-rating): A discrete rating: lit mint segments over a hazard-hatched track. Segments are drawn objects, never a continuous fill.
-- [TagInput](/evangelion-mui-theme/#/components/tag-input): A tag field: mint stamp chips (deletable) with an inline input that adds a tag on Enter and removes the last on Backspace.
-- [DateSegments](/evangelion-mui-theme/#/components/date-segments): A read-only segmented date/number display — glowing mint monospace digits in bordered cells, joined by an orange separator.
+- [ChipRadioGroup](/#/components/chip-radio-group): A single-select group of bilingual chips. Selected = solid tone fill with black content (the inversion) + glow; idle = outline on black.
+- [NumberStepper](/#/components/number-stepper): An integer stepper: orange chrome buttons flanking a monospace readout.
+- [HazardRating](/#/components/hazard-rating): A discrete rating: lit mint segments over a hazard-hatched track. Segments are drawn objects, never a continuous fill.
+- [TagInput](/#/components/tag-input): A tag field: mint stamp chips (deletable) with an inline input that adds a tag on Enter and removes the last on Backspace.
+- [DateSegments](/#/components/date-segments): A read-only segmented date/number display — glowing mint monospace digits in bordered cells, joined by an orange separator.
 
 ## Components — Navigation
 
-- [FilterChips](/evangelion-mui-theme/#/components/filter-chips): A scope-filter chip row: orange outline chips where the active one inverts to a solid orange fill with black content. The chrome half of a filter — pair it with your own rows (dimming non-matches) or use for the bundled list.
-- [FilterRail](/evangelion-mui-theme/#/components/filter-rail): A filter rail that *dims and desaturates* non-matching rows instead of hiding them — the operator never loses their place. Uncontrolled by default.
-- [WikiLink](/evangelion-mui-theme/#/components/wiki-link): A `[[wikilink]]`-style cross reference: dashed mint underline that inverts to a solid mint fill with black text on hover. Renders as an anchor when `href` is given, otherwise a button.
-- [ConsoleNav](/evangelion-mui-theme/#/components/console-nav): The sidebar navigation used across console screens. `boxed` stacks bilingual buttons and inverts the current one to a solid mint fill with black content; `rail` renders quieter one-line links (kanji glyph + label) with a mint left-edge indicator — the app-shell sidebar grammar.
-- [SiteHeader](/evangelion-mui-theme/#/components/site-header): The sticky top bar for a landing page: the diamond brand mark + wordmark + version, a row of nav links, and a right-hand actions slot. In-page `#anchor` links smooth-scroll to their target (instant under reduced motion); other hrefs behave normally.
-- [Brand](/evangelion-mui-theme/#/components/brand): The Jairus OS brand lockup: a glowing mint diamond mark, the wordmark in condensed caps, and an optional orange version tag (inline or stacked). The shared masthead mark for the site header and the app-shell rails.
+- [FilterChips](/#/components/filter-chips): A scope-filter chip row: orange outline chips where the active one inverts to a solid orange fill with black content. The chrome half of a filter — pair it with your own rows (dimming non-matches) or use for the bundled list.
+- [FilterRail](/#/components/filter-rail): A filter rail that *dims and desaturates* non-matching rows instead of hiding them — the operator never loses their place. Uncontrolled by default.
+- [WikiLink](/#/components/wiki-link): A `[[wikilink]]`-style cross reference: dashed mint underline that inverts to a solid mint fill with black text on hover. Renders as an anchor when `href` is given, otherwise a button.
+- [ConsoleNav](/#/components/console-nav): The sidebar navigation used across console screens. `boxed` stacks bilingual buttons and inverts the current one to a solid mint fill with black content; `rail` renders quieter one-line links (kanji glyph + label) with a mint left-edge indicator — the app-shell sidebar grammar.
+- [SiteHeader](/#/components/site-header): The sticky top bar for a landing page: the diamond brand mark + wordmark + version, a row of nav links, and a right-hand actions slot. In-page `#anchor` links smooth-scroll to their target (instant under reduced motion); other hrefs behave normally.
+- [Brand](/#/components/brand): The Jairus OS brand lockup: a glowing mint diamond mark, the wordmark in condensed caps, and an optional orange version tag (inline or stacked). The shared masthead mark for the site header and the app-shell rails.
 
 ## Components — Feedback
 
-- [HazardPrompt](/evangelion-mui-theme/#/components/hazard-prompt): The tri-channel hazard prompt: a solid red decision surface, hazard-striped top and bottom, with a boxed kanji verb over a punched-out English action band. It flashes (color-inverts) for one frame on activation. Keep it to one job.
-- [GateDecisionDialog](/evangelion-mui-theme/#/components/gate-decision-dialog): The gate decision surface as a modal: a full-screen red hazard field with corner GATE markers, a boxed kanji verb over a punched-out action band, the item under review, and an approve / deny / defer response rail. One focal job. Focus lands on APPROVE; Escape/backdrop call `onClose`.
-- [ApprovalBar](/evangelion-mui-theme/#/components/approval-bar): The human gate: a bar naming what's pending, with approve / deny actions (approve blinks like a primary action). Once decided, the actions disable and a mint/red verdict takes their place. Pairs under .
-- [YesNoGate](/evangelion-mui-theme/#/components/yes-no-gate): A big Y/N call-to-action gate: a mint YES beside a red NO (each fills on hover or once chosen), with an aria-live response line beneath. Self-contained — pass the two response messages; it tracks the selection.
+- [HazardPrompt](/#/components/hazard-prompt): The tri-channel hazard prompt: a solid red decision surface, hazard-striped top and bottom, with a boxed kanji verb over a punched-out English action band. It flashes (color-inverts) for one frame on activation. Keep it to one job.
+- [GateDecisionDialog](/#/components/gate-decision-dialog): The gate decision surface as a modal: a full-screen red hazard field with corner GATE markers, a boxed kanji verb over a punched-out action band, the item under review, and an approve / deny / defer response rail. One focal job. Focus lands on APPROVE; Escape/backdrop call `onClose`.
+- [ApprovalBar](/#/components/approval-bar): The human gate: a bar naming what's pending, with approve / deny actions (approve blinks like a primary action). Once decided, the actions disable and a mint/red verdict takes their place. Pairs under .
+- [YesNoGate](/#/components/yes-no-gate): A big Y/N call-to-action gate: a mint YES beside a red NO (each fills on hover or once chosen), with an aria-live response line beneath. Self-contained — pass the two response messages; it tracks the selection.
 
 ## Components — Data viz
 
-- [SegmentedMeter](/evangelion-mui-theme/#/components/segmented-meter): SegmentedMeter component — see the page for props and usage.
-- [RadialGauge](/evangelion-mui-theme/#/components/radial-gauge): RadialGauge component — see the page for props and usage.
-- [BarColumnGauge](/evangelion-mui-theme/#/components/bar-column-gauge): BarColumnGauge component — see the page for props and usage.
-- [ProgressMeter](/evangelion-mui-theme/#/components/progress-meter): A horizontal progress meter drawn as discrete LED segments (never a continuous fill), with an optional threshold/gate line rendered as its own object. Fills in mechanical steps on mount; jumps straight to `value` under reduced motion.
-- [HealthColumns](/evangelion-mui-theme/#/components/health-columns): A tiny system-health readout: stepped mini columns, mostly nominal (mint), with occasional amber peaks. Static under reduced motion.
-- [SegmentBar](/evangelion-mui-theme/#/components/segment-bar): A compact horizontal progress bar drawn as discrete lit segments — the inline counterpart to (no labels or threshold), for a `PROGRESS … 62%` row.
-- [LedColumn](/evangelion-mui-theme/#/components/led-column): A single vertical LED column that fills from the bottom — the vertical counterpart to . When `value` falls under `hotBelow`, the lit segments switch to the critical (red) hue, so a draining gauge reads as an alarm without a separate control.
-- [MeterBar](/evangelion-mui-theme/#/components/meter-bar): A compact vitals meter: a label + value row over a thin **continuous** glowing fill (not segmented — the quiet counterpart to , for a sidebar/cluster stat like CPU or memory). `warn` flips the fill to amber.
-- [Terminal](/evangelion-mui-theme/#/components/terminal): Terminal component — see the page for props and usage.
-- [LogConsole](/evangelion-mui-theme/#/components/log-console): A streaming agent console: an amber-framed log of timestamped, tagged rows (`[INFO]` amber · `[WARN]` red · `[GIT]` green · `[GATE]` mint) under a title + connection status bar. Presentational — feed it `rows`; it auto-scrolls to the newest and can host an approval bar beneath it.
-- [SevenSegClock](/evangelion-mui-theme/#/components/seven-seg-clock): The tactical clock. `chip` = a mint timestamp badge; `countdown` = the glowing orange readout; `both` stacks them. Pass `digits` to drive it from an arbitrary `HHMMSS` value (uptime, elapsed) rather than the current time.
-- [DigitalClock](/evangelion-mui-theme/#/components/digital-clock): A lightweight tabular-numeral wall clock (`HH:MM:SS`) with 1 Hz blinking colons — the header/nav clock. For the seven-segment skins use .
-- [Marquee](/evangelion-mui-theme/#/components/marquee): Marquee component — see the page for props and usage.
-- [LineChart](/evangelion-mui-theme/#/components/line-chart): LineChart component — see the page for props and usage.
-- [Waveform](/evangelion-mui-theme/#/components/waveform): Waveform component — see the page for props and usage.
-- [ScanLattice](/evangelion-mui-theme/#/components/scan-lattice): ScanLattice component — see the page for props and usage.
+- [SegmentedMeter](/#/components/segmented-meter): SegmentedMeter component — see the page for props and usage.
+- [RadialGauge](/#/components/radial-gauge): RadialGauge component — see the page for props and usage.
+- [BarColumnGauge](/#/components/bar-column-gauge): BarColumnGauge component — see the page for props and usage.
+- [ProgressMeter](/#/components/progress-meter): A horizontal progress meter drawn as discrete LED segments (never a continuous fill), with an optional threshold/gate line rendered as its own object. Fills in mechanical steps on mount; jumps straight to `value` under reduced motion.
+- [HealthColumns](/#/components/health-columns): A tiny system-health readout: stepped mini columns, mostly nominal (mint), with occasional amber peaks. Static under reduced motion.
+- [SegmentBar](/#/components/segment-bar): A compact horizontal progress bar drawn as discrete lit segments — the inline counterpart to (no labels or threshold), for a `PROGRESS … 62%` row.
+- [LedColumn](/#/components/led-column): A single vertical LED column that fills from the bottom — the vertical counterpart to . When `value` falls under `hotBelow`, the lit segments switch to the critical (red) hue, so a draining gauge reads as an alarm without a separate control.
+- [MeterBar](/#/components/meter-bar): A compact vitals meter: a label + value row over a thin **continuous** glowing fill (not segmented — the quiet counterpart to , for a sidebar/cluster stat like CPU or memory). `warn` flips the fill to amber.
+- [Terminal](/#/components/terminal): Terminal component — see the page for props and usage.
+- [LogConsole](/#/components/log-console): A streaming agent console: an amber-framed log of timestamped, tagged rows (`[INFO]` amber · `[WARN]` red · `[GIT]` green · `[GATE]` mint) under a title + connection status bar. Presentational — feed it `rows`; it auto-scrolls to the newest and can host an approval bar beneath it.
+- [SevenSegClock](/#/components/seven-seg-clock): The tactical clock. `chip` = a mint timestamp badge; `countdown` = the glowing orange readout; `both` stacks them. Pass `digits` to drive it from an arbitrary `HHMMSS` value (uptime, elapsed) rather than the current time.
+- [DigitalClock](/#/components/digital-clock): A lightweight tabular-numeral wall clock (`HH:MM:SS`) with 1 Hz blinking colons — the header/nav clock. For the seven-segment skins use .
+- [Marquee](/#/components/marquee): Marquee component — see the page for props and usage.
+- [LineChart](/#/components/line-chart): LineChart component — see the page for props and usage.
+- [Waveform](/#/components/waveform): Waveform component — see the page for props and usage.
+- [ScanLattice](/#/components/scan-lattice): ScanLattice component — see the page for props and usage.
 
 ## Components — Hooks & utils
 
-- [toneHue](/evangelion-mui-theme/#/components/tone-hue): Resolve a to its canonical `theme.nerv.hue` value.
-- [useReducedMotion](/evangelion-mui-theme/#/components/use-reduced-motion): Live `prefers-reduced-motion` flag. Every animated Phosphor Console component reads this and settles to its final state (no ticking) when it is `true`, so the design system's reduced-motion contract holds automatically.
-- [pad2](/evangelion-mui-theme/#/components/pad2): Zero-pad a number to two digits (`7` → `"07"`).
+- [toneHue](/#/components/tone-hue): Resolve a to its canonical `theme.nerv.hue` value.
+- [useReducedMotion](/#/components/use-reduced-motion): Live `prefers-reduced-motion` flag. Every animated Phosphor Console component reads this and settles to its final state (no ticking) when it is `true`, so the design system's reduced-motion contract holds automatically.
+- [pad2](/#/components/pad2): Zero-pad a number to two digits (`7` → `"07"`).
 
 ## Standalone reference screens
 
 Self-contained HTML files served verbatim under `pipeline/` — full reference implementations, no build.
 
-- [Design system gallery](/evangelion-mui-theme/pipeline/design-system.html): The living design-system.html — tokens, atoms, and patterns in one self-contained page.
-- [Dashboard 01](/evangelion-mui-theme/pipeline/dashboard-01.html): Reference implementation — tactical overview dashboard.
-- [Dashboard 02](/evangelion-mui-theme/pipeline/dashboard-02.html): Reference implementation — agent roster / operations dashboard.
-- [Dashboard 03](/evangelion-mui-theme/pipeline/dashboard-03.html): Reference implementation — telemetry dashboard.
-- [Form 01](/evangelion-mui-theme/pipeline/form-01.html): Reference implementation — numbered console form.
-- [Form 02](/evangelion-mui-theme/pipeline/form-02.html): Reference implementation — gate / approval form.
-- [Landing page 01](/evangelion-mui-theme/pipeline/landing-page-01.html): Reference implementation — brand landing surface.
-- [Landing page 02](/evangelion-mui-theme/pipeline/landing-page-02.html): Reference implementation — alternate brand landing surface.
-- [Wiki](/evangelion-mui-theme/pipeline/wiki.html): Reference implementation — documentation wiki with WikiLink navigation.
+- [Design system gallery](/pipeline/design-system.html): The living design-system.html — tokens, atoms, and patterns in one self-contained page.
+- [Dashboard 01](/pipeline/dashboard-01.html): Reference implementation — tactical overview dashboard.
+- [Dashboard 02](/pipeline/dashboard-02.html): Reference implementation — agent roster / operations dashboard.
+- [Dashboard 03](/pipeline/dashboard-03.html): Reference implementation — telemetry dashboard.
+- [Form 01](/pipeline/form-01.html): Reference implementation — numbered console form.
+- [Form 02](/pipeline/form-02.html): Reference implementation — gate / approval form.
+- [Landing page 01](/pipeline/landing-page-01.html): Reference implementation — brand landing surface.
+- [Landing page 02](/pipeline/landing-page-02.html): Reference implementation — alternate brand landing surface.
+- [Wiki](/pipeline/wiki.html): Reference implementation — documentation wiki with WikiLink navigation.
