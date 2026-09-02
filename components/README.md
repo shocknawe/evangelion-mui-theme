@@ -35,6 +35,14 @@ import { StatusLegend, SegmentedMeter, HazardPrompt } from 'phosphor-console-the
 Reduced motion is automatic: every animated component reads `useReducedMotion`
 and settles to its final frame when the user prefers reduced motion.
 
+**Refs & root attributes.** Every component forwards `ref` to its outermost DOM
+node (React 19 ref-as-prop — typed against the root tag via `WithRef<Tag>` in
+[`util.ts`](util.ts), no `forwardRef` wrappers), and every component spreads its
+leftover props (`data-*`, `aria-*`, `onClick`, `className`, `style`, …) onto that
+same root element. Exceptions: `GateDecisionDialog` refs the full-screen surface
+inside its `Modal` portal, and `WikiLink` refs whichever root renders (`<a>` when
+`href` is set, else `<button>`).
+
 ## Components
 
 ### Atoms

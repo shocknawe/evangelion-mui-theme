@@ -24,7 +24,20 @@ export function Atoms() {
         {/* stamps */}
         <SpecCard label="STAMP / CHIP" src="MuiChip">
           <Chip label="NOMINAL" color="success" />
-          <Chip label="審査中" color="info" sx={{ animation: `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
+          {/* Blink as animation longhands: interpolating `motion.snap` into the
+              `animation` SHORTHAND dropped the whole declaration, and Chromium
+              also rejects `steps(1, jump-none)` for animation-timing-function
+              (n >= 2 required) — so the nearest valid hard snap is emitted. */}
+          <Chip
+            label="審査中"
+            color="info"
+            sx={{
+              animationName: 'nervBlink',
+              animationDuration: `${t.nerv.motion.durations.blink}ms`,
+              animationTimingFunction: t.nerv.motion.snap.replace('jump-none', 'end'),
+              animationIterationCount: 'infinite',
+            }}
+          />
           <Chip label="DOWN" variant="stamp" color="error" />
         </SpecCard>
 

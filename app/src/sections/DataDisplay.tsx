@@ -28,13 +28,15 @@ export function DataDisplay() {
     <Section id="data" idx="04" kanji="図表" title="DATA DISPLAY" note="Meters use discrete LED segments (never a continuous fill); thresholds are drawn objects. Terminal is amber at two brightness levels with dot-leader status. Every piece here is a @components import.">
       <SpecGrid cols={3}>
         <SpecCard label="SEGMENTED METER + THRESHOLD" src="<SegmentedMeter/>" verdict="keep" verdictText="✅ BAR" column>
-          <SegmentedMeter />
+          {/* self-driving demo: `role="img"` is the stopgap (the value is not exposed
+              to AT — recorded as a gap in src/a11y/aria-patterns.ts) */}
+          <SegmentedMeter role="img" aria-label="ANIMATED LEVEL DEMO · A B C D" />
         </SpecCard>
         <SpecCard label="RADIAL ARC" src="<RadialGauge/>" verdict="keep" verdictText="✅ GAUGE">
-          <RadialGauge />
+          <RadialGauge role="img" aria-label="ANIMATED ARC DEMO" />
         </SpecCard>
         <SpecCard label="BAR + COLUMN GAUGE" src="<BarColumnGauge/>" verdict="keep" verdictText="✅ GAUGE" column>
-          <BarColumnGauge />
+          <BarColumnGauge role="img" aria-label="ANIMATED BAR + COLUMN DEMO" />
         </SpecCard>
         <SpecCard label="NEGATIVE-SPACE STAT" src="<StatTile/>" verdict="keep" verdictText="✅ SPACE" column flush>
           <StatTile label="MEMORY NODES" value="2,482" footer="98.4% RETENTION · STABLE" />

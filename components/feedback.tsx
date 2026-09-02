@@ -5,12 +5,14 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
+import { useReducedMotion } from './hooks';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, animSnap, resolveClasses } from './util';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
 
-export interface HazardPromptProps {
+export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
   /** Large kanji verb (e.g. `裁定`). */
   jp: string;
   /** English action shown in the punched-out band (e.g. `DECIDE`). */
@@ -19,6 +21,8 @@ export interface HazardPromptProps {
   onDecide?: () => void;
   /** Height of the surface (px). @default 150 */
   height?: number;
+  /** Class overrides by part: `root` (the hazard surface). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -29,14 +33,30 @@ export interface HazardPromptProps {
  *
  * @example <HazardPrompt jp="裁定" en="DECIDE" onDecide={route} />
  */
-export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromptProps) {
+export function HazardPrompt({ jp, en, onDecide, height = 150, classes, className, sx, ...rest }: HazardPromptProps) {
+  const t = useTheme();
+  const reduced = useReducedMotion();
   const [flash, setFlash] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  useEffect(() => {
+    if (reduced) {
+      if (timer.current) clearTimeout(timer.current);
+      setFlash(false);
+    }
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [reduced]);
+
   const trigger = () => {
-    setFlash(true);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setFlash(false), 120);
+    if (reduced) {
+      setFlash(false);
+    } else {
+      setFlash(true);
+      timer.current = setTimeout(() => setFlash(false), t.nerv.motion.durations.fast);
+    }
     onDecide?.();
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -46,7 +66,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
     }
   };
 
-  const stripe = { position: 'absolute' as const, left: 0, right: 0, height: 14, background: 'repeating-linear-gradient(-45deg, #000 0 10px, transparent 10px 20px)' };
+  const stripe = (th: Theme) => ({ position: 'absolute' as const, left: 0, right: 0, height: 14, background: `repeating-linear-gradient(-45deg, ${th.nerv.hue.black} 0 10px, transparent 10px 20px)` });
 
   return (
     <Box
@@ -55,6 +75,8 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
       aria-label={en.toLowerCase()}
       onClick={trigger}
       onKeyDown={onKey}
+      {...rest}
+      className={resolveClasses('HazardPrompt', 'root', classes, className)}
       sx={[
         (t) => ({
           position: 'relative',
@@ -75,7 +97,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box sx={{ ...stripe, top: 0 }} />
+      <Box sx={(th) => ({ ...stripe(th), top: 0 })} />
       <Box
         sx={(t) => ({
           fontFamily: t.nerv.fonts.jp,
@@ -95,7 +117,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
           {en}
         </Box>
       </Box>
-      <Box sx={{ ...stripe, bottom: 0 }} />
+      <Box sx={(th) => ({ ...stripe(th), bottom: 0 })} />
     </Box>
   );
 }
@@ -105,7 +127,9 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
 
 export type GateDecision = 'approve' | 'deny' | 'defer';
 
-export interface GateDecisionDialogProps {
+/** Root is the full-screen surface inside the `Modal` (the component takes no
+ *  `sx` — see the 2.1 inventory finding). */
+export interface GateDecisionDialogProps extends RootHTMLAttributes, WithRef {
   /** Whether the overlay is shown. */
   open: boolean;
   /** The thing being decided (shown in the ITEM line). */
@@ -118,6 +142,8 @@ export interface GateDecisionDialogProps {
   jp?: string;
   /** English action. @default 'DECIDE' */
   en?: string;
+  /** Class overrides by part: `root` (the full-screen surface), `rail` (the response bar), `marker` (a corner GATE chip). */
+  classes?: ClassesOf<'root' | 'rail' | 'marker'>;
 }
 
 const ACTIONS: { kind: GateDecision; jp: string; en: string; tone: 'mint' | 'red' | 'blue' }[] = [
@@ -132,29 +158,36 @@ const ACTIONS: { kind: GateDecision; jp: string; en: string; tone: 'mint' | 'red
  * item under review, and an approve / deny / defer response rail. One focal job.
  * Focus lands on APPROVE; Escape/backdrop call `onClose`.
  */
-export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE' }: GateDecisionDialogProps) {
+export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE', classes, className, ...rest }: GateDecisionDialogProps) {
   const approveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (open) approveRef.current?.focus();
   }, [open]);
 
-  const stripes = { flex: 'none', height: 22, background: 'repeating-linear-gradient(-45deg, #000 0 14px, transparent 14px 28px)' };
+  const stripes = (th: Theme) => ({ flex: 'none' as const, height: 22, background: `repeating-linear-gradient(-45deg, ${th.nerv.hue.black} 0 14px, transparent 14px 28px)` });
   const cornerChip = (t: Theme) => ({
     position: 'absolute' as const,
-    border: '3px solid #fff',
-    color: '#fff',
+    border: `3px solid ${t.nerv.hue.white}`,
+    color: t.nerv.hue.white,
     fontFamily: t.nerv.fonts.display,
     fontWeight: 700,
     fontSize: 20,
     letterSpacing: '0.12em',
     p: '1px 14px',
-    animation: `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite`,
+    // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
+    // `animation` SHORTHAND — the whole declaration would be dropped.
+    animationName: 'nervBlink',
+    animationDuration: `${t.nerv.motion.durations.blink}ms`,
+    animationTimingFunction: animSnap(t),
+    animationIterationCount: 'infinite',
   });
 
   return (
     <Modal open={open} onClose={onClose} aria-label="Gate decision required" closeAfterTransition={false}>
       <Box
+        {...rest}
+        className={resolveClasses('GateDecisionDialog', 'root', classes, className)}
         sx={(t) => ({
           position: 'fixed',
           inset: 0,
@@ -164,8 +197,8 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
           outline: 'none',
         })}
       >
-        <Box sx={stripes} />
-        <Box component="span" sx={(t) => ({ ...cornerChip(t), top: 36, left: 26 })}>GATE</Box>
+        <Box sx={(th) => stripes(th)} />
+        <Box component="span" className={resolveClasses('GateDecisionDialog', 'marker', classes)} sx={(t) => ({ ...cornerChip(t), top: 36, left: 26 })}>GATE</Box>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.4vh', px: 2 }}>
           <Box sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: '4.2vh', color: t.nerv.hue.void, border: `3px solid ${t.nerv.hue.void}`, p: '2px 24px', letterSpacing: '0.5em', textIndent: '0.5em' })}>
             {jp}
@@ -177,8 +210,8 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
             ITEM: <Box component="b" sx={(t) => ({ background: t.nerv.hue.void, color: t.nerv.hue.redHi, p: '2px 10px' })}>{item ?? '—'}</Box>
           </Box>
         </Box>
-        <Box component="span" sx={(t) => ({ ...cornerChip(t), bottom: 110, right: 26 })}>GATE</Box>
-        <Box sx={(t) => ({ flex: 'none', display: 'flex', gap: 1.25, alignItems: 'stretch', background: t.nerv.hue.void, borderTop: `2px solid ${t.nerv.hue.orange}`, p: '12px 16px' })}>
+        <Box component="span" className={resolveClasses('GateDecisionDialog', 'marker', classes)} sx={(t) => ({ ...cornerChip(t), bottom: 110, right: 26 })}>GATE</Box>
+        <Box className={resolveClasses('GateDecisionDialog', 'rail', classes)} sx={(t) => ({ flex: 'none', display: 'flex', gap: 1.25, alignItems: 'stretch', background: t.nerv.hue.void, borderTop: `2px solid ${t.nerv.hue.orange}`, p: '12px 16px' })}>
           <Box component="span" sx={(t) => ({ display: 'flex', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.18em', fontFamily: t.nerv.fonts.mono })}>
             RESPONSE REQUIRED:
           </Box>
@@ -219,7 +252,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
 /* ------------------------------------------------------------------ */
 /* YesNoGate — a large marketing Y/N decision with a response line. */
 
-export interface YesNoGateProps {
+export interface YesNoGateProps extends RootHTMLAttributes, WithRef {
   /** Yes button text. @default 'YES' */
   yesLabel?: string;
   /** No button text. @default 'NO' */
@@ -230,6 +263,8 @@ export interface YesNoGateProps {
   noResponse?: React.ReactNode;
   /** Fired with the chosen answer. */
   onDecide?: (answer: 'yes' | 'no') => void;
+  /** Class overrides by part: `root` (the gate). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -241,7 +276,7 @@ export interface YesNoGateProps {
  * @example
  * <YesNoGate yesResponse="◉ ACCEPTED" noResponse="✕ DEFERRED" onDecide={track} />
  */
-export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, sx }: YesNoGateProps) {
+export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, classes, className, sx, ...rest }: YesNoGateProps) {
   const [sel, setSel] = useState<'yes' | 'no' | null>(null);
   const choose = (a: 'yes' | 'no') => { setSel(a); onDecide?.(a); };
 
@@ -266,7 +301,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
   };
 
   return (
-    <Box sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('YesNoGate', 'root', classes, className)} sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box role="group" aria-label="decision" sx={{ display: 'flex', gap: 2 }}>
         <Box component="button" type="button" aria-pressed={sel === 'yes'} onClick={() => choose('yes')} sx={btn('yes')}>{yesLabel}</Box>
         <Box component="button" type="button" aria-pressed={sel === 'no'} onClick={() => choose('no')} sx={btn('no')}>{noLabel}</Box>
@@ -282,7 +317,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
 /* ------------------------------------------------------------------ */
 /* ApprovalBar — an inline human-in-the-loop gate (approve / deny). */
 
-export interface ApprovalBarProps {
+export interface ApprovalBarProps extends RootHTMLAttributes, WithRef {
   /** Small caption. @default 'PENDING APPROVAL ·' */
   label?: string;
   /** What awaits approval. */
@@ -295,6 +330,8 @@ export interface ApprovalBarProps {
   denyLabel?: string;
   /** Once decided, replaces the buttons with a verdict (buttons disable). */
   verdict?: { ok: boolean; text: React.ReactNode } | null;
+  /** Class overrides by part: `root` (the bar). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -303,7 +340,7 @@ export interface ApprovalBarProps {
  * (approve blinks like a primary action). Once decided, the actions disable and
  * a mint/red verdict takes their place. Pairs under {@link LogConsole}.
  */
-export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, sx }: ApprovalBarProps) {
+export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, classes, className, sx, ...rest }: ApprovalBarProps) {
   const decided = !!verdict;
   const btn = (t: Theme, hue: string, blink = false) => ({
     border: `1px solid ${hue}`,
@@ -314,13 +351,24 @@ export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, on
     cursor: decided ? 'default' : 'pointer',
     fontFamily: t.nerv.fonts.mono,
     opacity: decided ? 0.35 : 1,
-    animation: blink && !decided ? `nervBtnBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+    // Longhands — see the GateDecisionDialog note above (`motion.snap` breaks
+    // the `animation` shorthand).
+    ...(blink && !decided
+      ? {
+          animationName: 'nervBtnBlink',
+          animationDuration: `${t.nerv.motion.durations.blink}ms`,
+          animationTimingFunction: animSnap(t),
+          animationIterationCount: 'infinite',
+        }
+      : { animation: 'none' }),
     '&:hover': decided ? null : { background: hue, color: t.nerv.hue.void },
     '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
     '&:disabled': { opacity: 0.35, cursor: 'default', animation: 'none' },
   });
   return (
     <Box
+      {...rest}
+      className={resolveClasses('ApprovalBar', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', border: `1px solid ${t.nerv.hue.amberDim}`, borderTop: 'none', p: '10px 12px' }),
         ...(Array.isArray(sx) ? sx : [sx]),

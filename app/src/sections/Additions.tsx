@@ -91,25 +91,28 @@ export function Additions() {
       <SpecGrid cols={3}>
         <SpecCard label="GAUGE CARD" src="<GaugeCard/>" column>
           <GaugeCard tone="blue" kind="WATCHER · 監視" name="MEDIA WATCHER" readout={<><b>45</b>% BUFFER</>} sub="POLLING: 10S">
-            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} />
+            {/* WAI-ARIA meter/progressbar semantics are attached at the usage site —
+                the components spread their root attributes, so the consumer names
+                and values the gauge. */}
+            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} role="progressbar" aria-label="MEDIA BUFFER" aria-valuenow={45} aria-valuemin={0} aria-valuemax={100} />
           </GaugeCard>
         </SpecCard>
         <SpecCard label="TELEMETRY CARD" src="<TelemetryCard/>" column>
           <TelemetryCard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <RadialGauge value={98} label="HELD" size={120} animated={false} />
+              <RadialGauge value={98} label="HELD" size={120} animated={false} role="meter" aria-label="VAULT RETENTION" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
             </Box>
           </TelemetryCard>
         </SpecCard>
         <SpecCard label="LED COLUMN · HOT UNDER 35" src="<LedColumn/>">
-          <LedColumn value={72} tone="mint" />
-          <LedColumn value={26} tone="amber" hotBelow={35} />
+          <LedColumn value={72} tone="mint" role="meter" aria-label="FUEL · VEGA·1" aria-valuenow={72} aria-valuemin={0} aria-valuemax={100} />
+          <LedColumn value={26} tone="amber" hotBelow={35} role="meter" aria-label="COOLANT · PUMP·B" aria-valuenow={26} aria-valuemin={0} aria-valuemax={100} />
         </SpecCard>
         <SpecCard label="METER BAR" src="<MeterBar/>" column>
           <Box sx={{ width: '100%' }}>
-            <MeterBar label="CPU" value="12.4%" pct={12} sx={{ mb: 1.5 }} />
-            <MeterBar label="MEMORY" value="2.1 / 32GB" pct={7} sx={{ mb: 1.5 }} />
-            <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn />
+            <MeterBar label="CPU" value="12.4%" pct={12} sx={{ mb: 1.5 }} role="meter" aria-label="CPU" aria-valuenow={12} aria-valuemin={0} aria-valuemax={100} />
+            <MeterBar label="MEMORY" value="2.1 / 32GB" pct={7} sx={{ mb: 1.5 }} role="meter" aria-label="MEMORY" aria-valuenow={7} aria-valuemin={0} aria-valuemax={100} />
+            <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn role="meter" aria-label="VAULT LOAD" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
           </Box>
         </SpecCard>
       </SpecGrid>
@@ -143,25 +146,26 @@ export function Additions() {
           </Box>
         </SpecCard>
         <SpecCard label="MEMORY ROW" src="<MemoryRow/>" column>
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <MemoryRow id="MEM-2024-0512" title="Recursive feedback loop optimization" kind="pattern" />
-            <MemoryRow id="MEM-2024-0495" title="Inefficient vector search in ENG-392" kind="mistake" />
+          {/* rows carry `role="listitem"` from the consumer's `role="list"` wrapper */}
+          <Box role="list" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <MemoryRow id="MEM-2024-0512" title="Recursive feedback loop optimization" kind="pattern" role="listitem" />
+            <MemoryRow id="MEM-2024-0495" title="Inefficient vector search in ENG-392" kind="mistake" role="listitem" />
           </Box>
         </SpecCard>
       </SpecGrid>
       <SpecGrid cols={2}>
         <SpecCard label="SINK ROW · OFFLINE INVERTS" src="<SinkRow/>" column>
-          <Box sx={{ width: '100%' }}>
-            <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: 14MS</>} />
-            <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: 82MS</>} />
-            <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" />
+          <Box role="list" sx={{ width: '100%' }}>
+            <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: 14MS</>} role="listitem" />
+            <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: 82MS</>} role="listitem" />
+            <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" role="listitem" />
           </Box>
         </SpecCard>
         <SpecCard label="ROUTINE ROW · FILTER-DIMMED" src="<RoutineRow/>" column>
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <RoutineRow id="RT·02" name="JOURNAL SYNC" kind="CRON" status="SUCCESS" onRun={() => {}} />
-            <RoutineRow id="RT·03" name="SYSTEM BACKUP" kind="CRON" status="RETRIED" onRun={() => {}} />
-            <RoutineRow id="RT·04" name="MEDIA PIPELINE" kind="WATCHER" status="PENDING" dim onRun={() => {}} />
+          <Box role="list" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <RoutineRow id="RT·02" name="JOURNAL SYNC" kind="CRON" status="SUCCESS" onRun={() => {}} role="listitem" />
+            <RoutineRow id="RT·03" name="SYSTEM BACKUP" kind="CRON" status="RETRIED" onRun={() => {}} role="listitem" />
+            <RoutineRow id="RT·04" name="MEDIA PIPELINE" kind="WATCHER" status="PENDING" dim onRun={() => {}} role="listitem" />
           </Box>
         </SpecCard>
       </SpecGrid>
@@ -188,7 +192,7 @@ export function Additions() {
 /* ---- stateful demos ---- */
 function FilterChipsDemo() {
   const [v, setV] = useState('ALL');
-  return <FilterChips filters={['ALL', 'CRON', 'WATCHER', 'EVENT']} value={v} onChange={setV} sx={{ flexWrap: 'wrap' }} />;
+  return <FilterChips filters={['ALL', 'CRON', 'WATCHER', 'EVENT']} value={v} onChange={setV} ariaLabel="scope filter" sx={{ flexWrap: 'wrap' }} />;
 }
 function RailNavDemo() {
   const [v, setV] = useState('eng');

@@ -35,6 +35,100 @@ export default function App() {
 }
 ```
 
+## Extending the theme
+
+Extend with a **shallow object spread**. `theme` is a plain object, so each
+top-level key (`palette`, `typography`, `components`, `transitions`, …) is
+replaced one key at a time — spread the base value at *that key* when you want
+to add to it, never splice into something nested deeper. Define the result once
+at module scope (outside your component), never per render:
+
+```tsx
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import { theme } from 'phosphor-console-theme';
+
+// One level per key. `components` is a top-level key, so spread the base
+// override map and add or replace whole component entries.
+const consoleTheme: Theme = {
+  ...theme,
+  components: {
+    ...theme.components,
+    MuiButton: {
+      ...theme.components?.MuiButton,
+      defaultProps: {
+        ...theme.components?.MuiButton?.defaultProps,
+        // keep the console grammar, tighten your own app's defaults
+        size: 'small',
+      },
+    },
+  },
+};
+
+export default function App() {
+  return (
+    <ThemeProvider theme={consoleTheme} defaultMode="dark">
+      <CssBaseline />
+      {/* … */}
+    </ThemeProvider>
+  );
+}
+```
+
+A shallow spread keeps the whole base theme intact — including the structural
+`theme.nerv.*` tokens that the override callbacks read (`theme.nerv.motion`,
+`theme.nerv.radius`, …) and the `--mui-*` variables `cssVariables` already
+emitted. Replace a top-level key only when you mean to replace it wholesale.
+
+> **Do not deep-merge.** There is no deep-merge helper in this package, on
+> purpose:
+>
+> - **First-render cost.** A deep merge walks every key of a fully built theme
+>   (palette, typography variants, ~40 component override objects) on every
+>   call. MUI's own guidance is to build the theme once and spread — and note
+>   that `createTheme(baseTheme, patch)` inside MUI *is* a deepmerge, so prefer
+>   the explicit spread above, where every replaced key is visible.
+> - **It breaks the single-source token guarantee.** `tokens.ts` is the only
+>   place a hex, size, or timing value may live. Deep-merging silently writes
+>   new values into nested groups (`theme.nerv.hue`,
+>   `components.MuiButton.styleOverrides`), so styles no longer trace to a
+>   token and you have two sources of truth.
+> - **It desyncs the CSS variables.** `cssVariables` is on, so palette values
+>   were resolved to `--mui-*` vars when the theme was created. Merging a new
+>   color into the built theme object does not regenerate `theme.vars` — the
+>   stylesheet and the object disagree.
+>
+> If a change you're making feels like it needs a deep merge, it's a token or
+> override change: make it in `theme/` (or open an issue), not in a consumer.
+
+### Tokens and overrides are separately importable
+
+For per-component customization — `sx` on the root, the `classes` keys,
+`slots`/`slotProps`, and the single-class `Nerv*-root` theme override — see the
+**CUSTOMIZE · 改変** section on each component's doc-site page (one runnable
+recipe per component — e.g.
+[Stamp](https://shocknawe.github.io/evangelion-mui-theme/#/components/stamp)).
+[Per-component documentation](#per-component-documentation) below describes the
+approach those recipes take.
+
+`phosphor-console-theme/tokens` is the raw, import-safe token module — usable
+with no theme and no overrides at all:
+
+```tsx
+import { createTheme } from '@mui/material/styles';
+import { hue, motion } from 'phosphor-console-theme/tokens';
+
+const myTheme = createTheme({
+  palette: { mode: 'dark', primary: { main: hue.mint } },
+  transitions: { duration: { standard: motion.durations.fast } },
+});
+```
+
+`phosphor-console-theme/overrides` is the bare `components` override map. Its
+style callbacks read `theme.nerv.*`, so if you feed it to your own
+`createTheme`, pair it with the structural tokens — the quickest way is the
+spread above, starting from the full theme.
+
 ## Developing in this repo
 
 If you're editing the theme *source* (not consuming the published package),
@@ -117,6 +211,54 @@ Status colors map to `color` props: `success`=mint, `info`=blue,
 `warning`=amber, `error`=red across Chip/Alert/Button — the "subtle / outlined /
 elevated / ghost / destructive / success / warning" intents are expressed
 through these semantic colors + variants rather than one-off styles.
+
+> **Live-example coverage (honest).** Six of the ten custom variants above are
+> exercised by no `app/` route — Button `stamp`, Paper `frame`, and the
+> Typography `jp` / `terminal` / `stamp` / `data` variant props. They *are*
+> verified rendering (token/color/geometry asserted against the real theme in a
+> throwaway harness), just not on a demo screen; the variant-by-variant matrix,
+> method, and evidence live in
+> [`openspec/changes/upgrade-theme-quality-maturity/notes/4.3-variant-rendering.md`](../openspec/changes/upgrade-theme-quality-maturity/notes/4.3-variant-rendering.md).
+> Follow-ups that add them to an `app/src/sections/*` card should tick that
+> route-coverage gap — no new routes were built for this note.
+
+## Per-component documentation
+
+Every one of the 59 components has a page in the docs site with a live
+playground, the generated props table, and three contract sections:
+
+- **Edge cases** — reduced-motion behavior (hook-gated vs. the global CssBaseline
+  guard), portal rendering (`GateDecisionDialog`), controlled/uncontrolled
+  modes, clamping, and the props-spread/ref conventions (Tasks 3.2–3.3).
+- **Performance notes** — what the component actually runs: intervals, canvas
+  repaint rates, memoization, and per-module gzip weight
+  ([`docs/bundle-budgets.md`](../docs/bundle-budgets.md)).
+- **Customize** — a runnable recipe per component: `sx` on the root, the
+  `classes` keys (parsed from the props interface, so they cannot drift),
+  `slots`/`slotProps` where the component has them, and the theme-wide
+  single-class `Nerv*-root` override.
+
+Component pages live at `/components/<slug>` on the
+[doc site](https://shocknawe.github.io/evangelion-mui-theme/#/components/stamp)
+(source: `doc-site/src/components/ComponentPage.tsx` + the per-component notes in
+`doc-site/src/registry.tsx`, rendered against the generated
+`doc-site/src/generated/site-data.json`), and the machine-readable spine — name, module,
+props summary, `classes` keys, consumed tokens, and example `app/` route per
+component — is [`registry.json`](../registry.json), generated from source by
+`npm run registry`. `llms.txt` at the doc-site root indexes the same pages for
+agent consumption.
+
+The theme-wide half of every recipe is one class of specificity: the library
+emits `Nerv<Component>-root` (and `Nerv<Component>-<part>`) on its own elements,
+defines **zero** selectors against those classes, and puts no `!important` on
+any `Nerv*` class — its only three `!important` declarations sit inside the
+sanctioned global `prefers-reduced-motion: reduce` reset in
+`theme/components/cssBaseline.ts` (the accessibility backstop, targeting `*`,
+`*::before`, and `*::after`; see the
+[reduced-motion exception](../openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md)).
+So a consumer rule on `.NervStamp-root` wins without escalation (see the selector
+audit in
+[`openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md`](../openspec/changes/upgrade-theme-quality-maturity/notes/3.5-selector-specificity.md)).
 
 ## Fonts
 

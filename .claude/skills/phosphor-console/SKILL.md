@@ -2,7 +2,7 @@
 name: phosphor-console
 description: >-
   How to build UI with the Phosphor Console — the NERV/MAGI tactical Material UI
-  (v7) theme in `theme/` plus the ~60 custom console components in `components/`
+  (v9) theme in `theme/` plus the ~60 custom console components in `components/`
   (imported via `@theme` and `@components`). A black CRT command deck where color
   IS state (mint nominal · orange chrome · blue pending · amber caution · red
   critical), active = figure/ground inversion, depth = border + glow + hue (no
@@ -20,7 +20,8 @@ description: >-
 
 # Building UI with the Phosphor Console
 
-The Phosphor Console is a two-part system: a **Material UI v7 theme** in
+The Phosphor Console is a two-part system: a **Material UI v9 theme** (peer deps:
+MUI ≥ 9, React ≥ 19) in
 [`theme/`](../../../theme) (imported as `@theme`) that dresses the entire MUI
 surface in the NERV/MAGI tactical identity, and a **library of ~60 house
 components** in [`components/`](../../../components) (imported as `@components`)
@@ -31,7 +32,8 @@ pair.
 
 **Before building, prefer what already exists.** Stock MUI components are already
 themed (§Stock MUI just works). A house component probably already covers your
-need (§Component catalog / [`references/components.md`](references/components.md)).
+need (§Component catalog / the [`components/README.md`](../../../components/README.md)
+prop tables).
 Reimplementing one inline with `sx` is drift. The living reference for every
 component is the **design-system gallery** at the app's `/` route
 ([`app/src/pages/DesignSystemPage.tsx`](../../../app/src/pages/DesignSystemPage.tsx))
@@ -139,11 +141,21 @@ In **library components**, take a semantic `tone` (`'mint' | 'green' | 'amber' |
 resolve it with `toneHue(theme, tone)` (exported from `@components`). That keeps a
 component colorway-parameterized so the same box means any state.
 
+**Standalone entry points.** As a published package the theme splits into
+side-entry imports that never pull each other in: `phosphor-console-theme/tokens`
+(raw token objects), `phosphor-console-theme/overrides` (the MUI override map),
+`phosphor-console-theme/components` (the house components). The root entry
+(`.`) re-exports `theme`, components, and `tokens`, so consumers only need
+subpaths when they're optimizing bundle size. A W3C **DTCG** token export is
+generated alongside: `node scripts/verify-dtcg.mjs` checks it stays in sync
+with `theme/tokens.ts`.
+
 ## Component catalog (house components)
 
-All import from `@components`. This is the map; **[`references/components.md`](references/components.md)
-has the full prop signatures and the `components/README.md` prop tables** — read
-it before using one you don't know.
+All import from `@components`. This is the map; **[`components/README.md`](../../../components/README.md)
+has the full prop tables** — read it before using a component you don't know.
+A generated machine-readable manifest of every component, prop, and tone lives
+at [`registry.json`](../../../registry.json) (regenerate with `npm run registry`).
 
 - **Atom:** `Stamp` — the boxed pill (`tone`, `filled`, `blink`, `glow`, `size`)
   for every id/status/tag. The most-reached-for piece.
@@ -172,6 +184,28 @@ it before using one you don't know.
 **Controlled vs. self-driving:** the meters, gauges, charts, clocks, and
 `AgenticLoop` animate a demo feed when uncontrolled; pass `value(s)` / `active`
 (etc.) to drive them from your own data, which also stops the internal animation.
+
+## Refs, slots & root attributes
+
+Since the v9/0.2.x line, **every house component forwards `ref` to its outermost
+DOM node** (React 19 ref-as-prop — typed against the root tag via `WithRef<Tag>`
+in `components/util.ts`, no `forwardRef` wrappers) and **spreads leftover props**
+(`data-*`, `aria-*`, `onClick`, `className`, `style`, …) onto that same root.
+So this works everywhere:
+
+```tsx
+<Stamp ref={el} tone="mint" data-testid="status" aria-live="polite">NOMINAL</Stamp>
+```
+
+Two exceptions: `GateDecisionDialog` refs the full-screen surface inside its
+`Modal` portal, and `WikiLink` refs whichever root renders (`<a>` when `href`
+is set, else `<button>`). No-op refs/ARIA props are a smell — reach through the
+root, not a wrapper `<div>`.
+
+Composite components (rows, meters, inputs, navigation) also accept a **`slots`
+prop** to swap their sub-element tags (typed `SlotsOf<…>` in
+`components/util.ts`) — e.g. render a row as `<li>` inside a `<ul>` without
+breaking semantics. Per-component slot names are in the prop tables.
 
 ## Recipes
 
@@ -256,9 +290,23 @@ section breaks, `ModuleCard` product grid, `Marquee` ticker, `AgenticLoop` /
 ## Verifying your work
 
 Run the app to check a change: `cd app && npm run dev` (or the browser-preview
-tools). Type-check the theme + components in context with `cd app && npx tsc -b`
-and build with `npx vite build` — both must be clean. `verbatimModuleSyntax` and
+tools). Type-check the theme + components in context with `cd app && npm run typecheck`
+and build with `npm run build` — both must be clean. `verbatimModuleSyntax` and
 `noUnusedLocals/Parameters` are on, so use `import type`, no unused imports.
+
+**A11y gate.** The app has a vitest a11y suite — `cd app && npm run test:a11y`
+runs axe scans ([`app/src/a11y/axe.test.tsx`](../../../app/src/a11y/axe.test.tsx)),
+shared ARIA-pattern assertions
+([`aria-patterns.test.tsx`](../../../app/src/a11y/aria-patterns.test.tsx)), and
+reduced-motion checks over the house components. Run it whenever you change a
+component in `components/`; keep your new render paths passing (WCAG 2.1 AA is
+the bar, see [PRODUCT.md](../../../PRODUCT.md)).
+
+**Package-level gates** (repo root, for theme/component/distribution changes):
+`npm run typecheck` (theme + components against MUI v9 types), `npm run size`
+(bundle budget via size-limit), `node scripts/verify-dtcg.mjs` (DTCG token
+export in sync with `theme/tokens.ts`), and `npm run registry` when component
+props change (regenerates `registry.json`).
 
 Verify visually against the reference screens — `/` (the component gallery),
 `/dashboard-0{1,2,3}`, `/landing-0{1,2}`. **Screenshot quirk:** the in-app

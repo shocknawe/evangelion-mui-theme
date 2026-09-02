@@ -1,6 +1,6 @@
 {
   "name": "phosphor-console-theme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Phosphor Console — a NERV/MAGI tactical Material UI (v9+) theme plus a paired console component library. Dark-only CRT command deck: color is state, active = figure/ground inversion, mechanical motion, bimodal bilingual type.",
   "type": "module",
   "license": "MIT",
@@ -25,6 +25,14 @@
       "types": "./dist/theme.d.ts",
       "import": "./dist/theme.js"
     },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "import": "./dist/tokens.js"
+    },
+    "./overrides": {
+      "types": "./dist/overrides.d.ts",
+      "import": "./dist/overrides.js"
+    },
     "./components": {
       "types": "./dist/components.d.ts",
       "import": "./dist/components.js"
@@ -41,16 +49,19 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/generate-dtcg.mjs && node scripts/generate-registry.mjs",
+    "registry": "node scripts/generate-registry.mjs",
+    "maturity:refresh": "node scripts/maturity-refresh.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "size": "size-limit",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "@emotion/react": ">=11",
     "@emotion/styled": ">=11",
     "@mui/material": ">=9",
-    "react": ">=18",
-    "react-dom": ">=18"
+    "react": ">=19",
+    "react-dom": ">=19"
   },
   "peerDependenciesMeta": {
     "@mui/icons-material": {
@@ -65,10 +76,13 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
+    "@size-limit/esbuild": "13.0.3",
+    "@size-limit/file": "13.0.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "size-limit": "13.0.3",
     "tsup": "^8.3.5",
     "typescript": "~5.9.0"
   },

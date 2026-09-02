@@ -8,9 +8,9 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type Tone, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type Tone, type WithRef, animSnap, resolveClasses, toneHue } from './util';
 
-export interface StampProps {
+export interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> {
   children: ReactNode;
   /** Border / text hue (or fill hue when `filled`). @default 'orange' */
   tone?: Tone;
@@ -22,6 +22,8 @@ export interface StampProps {
   glow?: boolean;
   /** `sm` (9px) or `md` (11px). @default 'md' */
   size?: 'sm' | 'md';
+  /** Class overrides by part: `root` (the stamp itself). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -34,13 +36,15 @@ export interface StampProps {
  * <Stamp tone="mint" glow>SYS:NOMINAL</Stamp>
  * <Stamp tone="red" filled>DOWN</Stamp>
  */
-export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', sx }: StampProps) {
+export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', classes, className, sx, ...rest }: StampProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const c = toneHue(t, tone);
   return (
     <Box
       component="span"
+      {...rest}
+      className={resolveClasses('Stamp', 'root', classes, className)}
       sx={[
         {
           display: 'inline-block',
@@ -56,7 +60,16 @@ export function Stamp({ children, tone = 'orange', filled = false, blink = false
           letterSpacing: '0.06em',
           fontFamily: t.nerv.fonts.mono,
           textShadow: glow && !filled ? '0 0 4px currentColor' : 'none',
-          animation: blink && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+          // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
+          // `animation` SHORTHAND — the whole declaration would be dropped.
+          ...(blink && !reduced
+            ? {
+                animationName: 'nervBlink',
+                animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                animationTimingFunction: animSnap(t),
+                animationIterationCount: 'infinite',
+              }
+            : { animation: 'none' }),
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

@@ -224,16 +224,18 @@ export function Dashboard03Page() {
     <Box sx={{ p: '12px 16px', display: 'flex', flexDirection: 'column', gap: 2, height: { xs: 'auto', md: '100%' }, minHeight: 0 }}>
       <Box component="section">
         <ZoneTitle>NOTIF SINKS · 送達</ZoneTitle>
-        <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: {ntfyPing}MS</>} />
-        <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: {slackPing}MS</>} />
-        <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" />
+        <Box role="list">
+          <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: {ntfyPing}MS</>} role="listitem" />
+          <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: {slackPing}MS</>} role="listitem" />
+          <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" role="listitem" />
+        </Box>
       </Box>
       <Box component="section" sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
         <ZoneTitle>ROUTINE MANAGER · 手順</ZoneTitle>
         <FilterChips ariaLabel="Filter routines by trigger type" filters={SCOPES} value={scope} onChange={setScopeFiltered} sx={{ mb: 1.125 }} />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: { xs: 'visible', md: 'auto' }, flex: 1, minHeight: 0 }}>
+        <Box role="list" sx={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: { xs: 'visible', md: 'auto' }, flex: 1, minHeight: 0 }}>
           {routines.map((r) => (
-            <RoutineRow key={r.id} id={r.id} name={r.name} kind={r.kind} status={r.status} dim={visible(r.kind)} onRun={() => runRoutine(r.id)} />
+            <RoutineRow key={r.id} id={r.id} name={r.name} kind={r.kind} status={r.status} dim={visible(r.kind)} onRun={() => runRoutine(r.id)} role="listitem" />
           ))}
         </Box>
       </Box>
@@ -283,7 +285,7 @@ export function Dashboard03Page() {
             />
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.75 }}>
               <GaugeCard tone="mint" kind="CRON · 定時" name="NIGHTLY REVIEW" sub="NEXT: 02:00:00">
-                <RadialGauge value={cronPct} label="ARMED" />
+                <RadialGauge value={cronPct} label="ARMED" role="meter" aria-label="NIGHTLY REVIEW" aria-valuenow={Math.round(cronPct)} aria-valuemin={0} aria-valuemax={100} />
               </GaugeCard>
               <GaugeCard
                 tone="blue"
@@ -292,7 +294,7 @@ export function Dashboard03Page() {
                 readout={<><b>{Math.round(watchPct)}</b>% BUFFER</>}
                 sub="POLLING: 10S"
               >
-                <SegmentBar value={watchPct} tone="blue" segments={18} height={36} sx={{ width: '100%', mt: 1 }} />
+                <SegmentBar value={watchPct} tone="blue" segments={18} height={36} sx={{ width: '100%', mt: 1 }} role="progressbar" aria-label="MEDIA BUFFER" aria-valuenow={Math.round(watchPct)} aria-valuemin={0} aria-valuemax={100} />
               </GaugeCard>
               <GaugeCard
                 tone="amber"
@@ -301,7 +303,7 @@ export function Dashboard03Page() {
                 readout={<><b>{Math.round(fresh)}</b>% FRESH</>}
                 sub={`LAST: ${lastPollLabel}`}
               >
-                <LedColumn value={fresh} tone="amber" hotBelow={35} segments={14} sx={{ mt: 1 }} />
+                <LedColumn value={fresh} tone="amber" hotBelow={35} segments={14} sx={{ mt: 1 }} role="meter" aria-label="GITLAB FRESHNESS" aria-valuenow={Math.round(fresh)} aria-valuemin={0} aria-valuemax={100} />
               </GaugeCard>
             </Box>
           </Box>

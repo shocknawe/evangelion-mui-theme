@@ -57,6 +57,24 @@ export const isApi = (doc: ComponentDoc): boolean => doc.group === 'Hooks & util
 export const importLine = (doc: ComponentDoc): string =>
   `import { ${doc.name} } from '${pkgName}/components';`;
 
+/** Read the quoted keys out of a generated union type string, e.g.
+ *  `ClassesOf<'root' | 'header'>` → `['root', 'header']`. */
+const unionKeys = (type: string | undefined): string[] =>
+  type?.match(/'([^']+)'/g)?.map((s) => s.slice(1, -1)) ?? [];
+
+/**
+ * The part keys of a component's `classes` prop, parsed straight from the
+ * generated `ClassesOf<'root' | '…'>` type text in site-data.json — so the
+ * customization recipe on the page cannot drift from the props interface.
+ * `root` is always the first key and always targets the outermost element.
+ */
+export const classKeys = (doc: ComponentDoc): string[] =>
+  unionKeys(doc.props.find((p) => p.name === 'classes')?.type);
+
+/** The slot keys of a component's `slots` prop (`SlotsOf<'tag'>`), same source. */
+export const slotKeys = (doc: ComponentDoc): string[] =>
+  unionKeys(doc.props.find((p) => p.name === 'slots')?.type);
+
 /** Source link — the deploy workflow sets VITE_REPO_URL; falls back to the bare path. */
 const repoUrl = import.meta.env.VITE_REPO_URL as string | undefined;
 export const sourceHref = (c: ComponentDoc): string | undefined =>

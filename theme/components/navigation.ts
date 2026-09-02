@@ -5,7 +5,7 @@
  * stepper renders chamfered OODA-style nodes (done = mint fill, active = blink).
  */
 import type { Components, Theme } from '@mui/material/styles';
-import { KEYFRAMES, v } from './util';
+import { KEYFRAMES, snapForAnimation, v } from './util';
 
 export const navigation: Pick<
   Components<Theme>,
@@ -121,7 +121,7 @@ export const navigation: Pick<
     },
   },
 
-  MuiPagination: { styleOverrides: { root: { '& .MuiPagination-ul': { gap: 4 } } } },
+  MuiPagination: { styleOverrides: { ul: { gap: 4 } } },
   MuiPaginationItem: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -168,7 +168,6 @@ export const navigation: Pick<
         border: `2px solid ${theme.nerv.hue.greenDim}`,
         borderRadius: 0,
         clipPath: theme.nerv.chamfer(7),
-        '& .MuiStepIcon-text': { fill: theme.nerv.hue.greenMap, fontFamily: theme.nerv.fonts.mono },
         '&.Mui-completed': {
           color: theme.nerv.hue.mint,
           borderColor: theme.nerv.hue.mint,
@@ -177,9 +176,17 @@ export const navigation: Pick<
         '&.Mui-active': {
           color: theme.nerv.hue.blue,
           borderColor: theme.nerv.hue.blue,
-          animation: `${KEYFRAMES.blink} ${theme.nerv.motion.durations.blink}ms ${theme.nerv.motion.snap} infinite`,
-          '& .MuiStepIcon-text': { fill: theme.nerv.hue.void },
+          // Longhands — `steps(1, jump-none)` (motion.snap) is rejected inside
+          // the `animation` SHORTHAND; see theme/components/buttons.ts.
+          animationName: KEYFRAMES.blink,
+          animationDuration: `${theme.nerv.motion.durations.blink}ms`,
+          animationTimingFunction: snapForAnimation(theme),
+          animationIterationCount: 'infinite',
         },
+      }),
+      text: ({ theme, ownerState }) => ({
+        fill: ownerState.active ? theme.nerv.hue.void : theme.nerv.hue.greenMap,
+        fontFamily: theme.nerv.fonts.mono,
       }),
     },
   },

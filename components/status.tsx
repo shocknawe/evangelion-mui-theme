@@ -2,10 +2,10 @@
  * Status displays — the boxed, color-as-state pieces: the bilingual legend, the
  * selectable unit roster, and the negative-space stat tile.
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, type Tone, animSnap, resolveClasses, resolveSlot, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -19,8 +19,10 @@ export interface LegendItem {
   filled?: boolean;
 }
 
-export interface StatusLegendProps {
+export interface StatusLegendProps extends RootHTMLAttributes, WithRef {
   items: LegendItem[];
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -34,9 +36,9 @@ export interface StatusLegendProps {
  *   { jp: '阻止', en: 'BLOCKED', tone: 'red', filled: true },
  * ]} />
  */
-export function StatusLegend({ items, sx }: StatusLegendProps) {
+export function StatusLegend({ items, classes, className, sx, ...rest }: StatusLegendProps) {
   return (
-    <Box sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('StatusLegend', 'root', classes, className)} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {items.map((it) => (
         <Box
           key={it.en}
@@ -77,13 +79,16 @@ export interface RosterUnit {
   status: RosterStatus;
 }
 
-export interface RosterProps {
+/** `onSelect` is the tile-selection callback, not the DOM `onSelect`. */
+export interface RosterProps extends Omit<RootHTMLAttributes, 'onSelect'>, WithRef {
   /** Units to display. Defaults to a sample roster so it renders out of the box. */
   units?: RosterUnit[];
   /** Columns at the `sm`+ breakpoint. @default 4 */
   columns?: number;
   /** Fires with the selected unit id (or `null` when toggled off). */
   onSelect?: (id: string | null) => void;
+  /** Class overrides by part: `root` (the grid), `tile` (a unit button). */
+  classes?: ClassesOf<'root' | 'tile'>;
   sx?: SxProps<Theme>;
 }
 
@@ -106,12 +111,14 @@ const DEFAULT_UNITS: RosterUnit[] = [
  * inversion (solid red, black content), CAUTION blinks. Selecting thickens the
  * border.
  */
-export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: RosterProps) {
+export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, classes, className, sx, ...rest }: RosterProps) {
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState<string | null>(null);
 
   return (
     <Box
+      {...rest}
+      className={resolveClasses('Roster', 'root', classes, className)}
       sx={[
         { display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: `repeat(${columns}, 1fr)` }, gap: 1, width: '100%' },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -124,6 +131,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: Ros
           <Box
             key={u.id}
             component="button"
+            className={resolveClasses('Roster', 'tile', classes)}
             aria-pressed={on}
             onClick={() => {
               const next = on ? null : u.id;
@@ -162,7 +170,16 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: Ros
                 p: '1px 6px',
                 fontSize: 9,
                 borderRadius: `${t.nerv.radius.chip}px`,
-                animation: u.status === 'CAUTION' && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+                // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside
+                // the `animation` SHORTHAND — it would be dropped.
+                ...(u.status === 'CAUTION' && !reduced
+                  ? {
+                      animationName: 'nervBlink',
+                      animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                      animationTimingFunction: animSnap(t),
+                      animationIterationCount: 'infinite',
+                    }
+                  : { animation: 'none' }),
               })}
             >
               {u.status}
@@ -177,7 +194,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx }: Ros
 /* ------------------------------------------------------------------ */
 /* StatTile — a big negative-space metric. */
 
-export interface StatTileProps {
+export interface StatTileProps extends RootHTMLAttributes, WithRef {
   /** Caption above the value. */
   label: string;
   /** The headline metric. */
@@ -186,6 +203,8 @@ export interface StatTileProps {
   footer?: React.ReactNode;
   /** Hue of the big value. @default 'mint' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the tile). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -196,9 +215,11 @@ export interface StatTileProps {
  * @example
  * <StatTile label="MEMORY NODES" value="2,482" footer="98.4% RETENTION · STABLE" />
  */
-export function StatTile({ label, value, footer, tone = 'mint', sx }: StatTileProps) {
+export function StatTile({ label, value, footer, tone = 'mint', classes, className, sx, ...rest }: StatTileProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('StatTile', 'root', classes, className)}
       sx={[
         (t) => ({
           border: `1px solid ${t.nerv.hue.greenDim}`,
@@ -241,7 +262,8 @@ export function StatTile({ label, value, footer, tone = 'mint', sx }: StatTilePr
 /* ------------------------------------------------------------------ */
 /* RailItem — a reminder / inbox row with a due time. */
 
-export interface RailItemProps {
+/** `title` is this row's display text, not the DOM `title`. */
+export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Primary line. */
   title: React.ReactNode;
   /** Small subtitle (category / source). */
@@ -250,6 +272,8 @@ export interface RailItemProps {
   when?: React.ReactNode;
   /** Completed — dims and strikes the title. @default false */
   done?: boolean;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -257,9 +281,11 @@ export interface RailItemProps {
  * A rail list row: a title with an optional subtitle on the left, a due/time
  * marker on the right, divided by a dotted hairline. `done` dims and strikes it.
  */
-export function RailItem({ title, sub, when, done = false, sx }: RailItemProps) {
+export function RailItem({ title, sub, when, done = false, classes, className, sx, ...rest }: RailItemProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('RailItem', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -288,7 +314,26 @@ export function RailItem({ title, sub, when, done = false, sx }: RailItemProps) 
 export type GatePriority = 'critical' | 'elevated' | 'routine';
 export type GateVerdict = 'approve' | 'deny' | 'defer';
 
-export interface GateRowProps {
+/**
+ * Props the trailing `action` slot of {@link GateRow} / {@link RoutineRow}
+ * receives (notes/2.2 §3): the press handler bound to the row's `onReview` /
+ * `onRun`, plus the built-in label the consumer may override through
+ * `slotProps.action`.
+ */
+export interface RowActionProps extends RootHTMLAttributes<'button'> {
+  /** Fired on press — bound to the row's `onReview` / `onRun`. */
+  onClick?: () => void;
+  /** The action's label. @default 'REVIEW' / 'RUN' */
+  children?: ReactNode;
+}
+
+export interface GateRowSlotProps {
+  /** Props merged onto the REVIEW action (only rendered while undecided). */
+  action?: RowActionProps;
+}
+
+/** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
+export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Gate id (e.g. `GATE·04`). */
   id: string;
   /** Gate title. */
@@ -301,6 +346,13 @@ export interface GateRowProps {
   verdict?: GateVerdict | null;
   /** Fired when the REVIEW button is pressed (only shown while awaiting). */
   onReview?: () => void;
+  /** Replace an internal part: `action` (the REVIEW button). */
+  slots?: SlotsOf<'action'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: GateRowSlotProps;
+  /** Class overrides by part: `root`, `id`, `title`, `leader` (the dot leader), `sub`,
+   *  `priority` (the stamp), `verdict` (the decided stamp), `action` (the REVIEW button). */
+  classes?: ClassesOf<'root' | 'id' | 'title' | 'leader' | 'sub' | 'priority' | 'verdict' | 'action'>;
   sx?: SxProps<Theme>;
 }
 
@@ -318,10 +370,37 @@ const VERDICT: Record<GateVerdict, { label: string; tone: Tone }> = {
  * idle left edge is tinted by priority (1px, per the no-side-stripe rule);
  * approve/deny settle it back to a neutral hairline.
  */
-export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, sx }: GateRowProps) {
+export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, slots, slotProps, classes, className, sx, ...rest }: GateRowProps) {
   const settled = verdict === 'approve' || verdict === 'deny';
+  // `action` slot (notes/2.2 §3): the REVIEW button is a locked internal part —
+  // `onReview` covers behavior only. The slot renders only while `verdict` is
+  // null; once decided the verdict stamp renders regardless (it is data-driven).
+  const [ActionSlot, actionProps] = resolveSlot(slots?.action, Box, {
+    contract: { onClick: onReview, children: 'REVIEW' },
+    defaults: {
+      component: 'button' as const,
+      onClick: onReview,
+      children: 'REVIEW' as ReactNode,
+      sx: (t: Theme) => ({
+        border: `1px solid ${t.nerv.hue.redHi}`,
+        background: t.nerv.hue.void,
+        color: t.nerv.hue.redHi,
+        p: '5px 12px',
+        fontSize: 10,
+        cursor: 'pointer',
+        flex: 'none',
+        fontFamily: t.nerv.fonts.mono,
+        '&:hover': { background: t.nerv.hue.redHi, color: t.nerv.hue.void },
+        '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
+      }),
+    },
+    slotProps: slotProps?.action,
+    className: resolveClasses('GateRow', 'action', classes),
+  });
   return (
     <Box
+      {...rest}
+      className={resolveClasses('GateRow', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -336,12 +415,13 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap', fontSize: 11 })}>{id}</Box>
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, whiteSpace: 'nowrap', fontSize: 12 })}>{title}</Box>
-      <Box aria-hidden sx={(t) => ({ flex: 1, minWidth: 16, overflow: 'hidden', whiteSpace: 'nowrap', color: t.nerv.hue.greenDim, letterSpacing: '2px', '&::after': { content: '"' + '.'.repeat(64) + '"' } })} />
-      {sub && <Box component="span" sx={(t) => ({ color: t.nerv.hue.greenMap, fontSize: 10, whiteSpace: 'nowrap' })}>{sub}</Box>}
+      <Box component="span" className={resolveClasses('GateRow', 'id', classes)} sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap', fontSize: 11 })}>{id}</Box>
+      <Box component="span" className={resolveClasses('GateRow', 'title', classes)} sx={(t) => ({ color: t.nerv.hue.paper, whiteSpace: 'nowrap', fontSize: 12 })}>{title}</Box>
+      <Box aria-hidden className={resolveClasses('GateRow', 'leader', classes)} sx={(t) => ({ flex: 1, minWidth: 16, overflow: 'hidden', whiteSpace: 'nowrap', color: t.nerv.hue.greenDim, letterSpacing: '2px', '&::after': { content: '"' + '.'.repeat(64) + '"' } })} />
+      {sub && <Box component="span" className={resolveClasses('GateRow', 'sub', classes)} sx={(t) => ({ color: t.nerv.hue.greenMap, fontSize: 10, whiteSpace: 'nowrap' })}>{sub}</Box>}
       <Box
         component="span"
+        className={resolveClasses('GateRow', 'priority', classes)}
         sx={(t) => {
           const c = toneHue(t, PRIO_TONE[priority]);
           return { border: `1px solid ${c}`, color: c, borderRadius: `${t.nerv.radius.chip}px`, fontSize: 9, p: '2px 7px', letterSpacing: '0.08em', flex: 'none' };
@@ -352,6 +432,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
       {verdict ? (
         <Box
           component="span"
+          className={resolveClasses('GateRow', 'verdict', classes)}
           sx={(t) => {
             const c = toneHue(t, VERDICT[verdict].tone);
             return { border: `1px solid ${c}`, color: c, borderRadius: `${t.nerv.radius.chip}px`, fontSize: 11, p: '2px 8px', whiteSpace: 'nowrap', flex: 'none' };
@@ -360,24 +441,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
           {VERDICT[verdict].label}
         </Box>
       ) : (
-        <Box
-          component="button"
-          onClick={onReview}
-          sx={(t) => ({
-            border: `1px solid ${t.nerv.hue.redHi}`,
-            background: t.nerv.hue.void,
-            color: t.nerv.hue.redHi,
-            p: '5px 12px',
-            fontSize: 10,
-            cursor: 'pointer',
-            flex: 'none',
-            fontFamily: t.nerv.fonts.mono,
-            '&:hover': { background: t.nerv.hue.redHi, color: t.nerv.hue.void },
-            '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
-          })}
-        >
-          REVIEW
-        </Box>
+        <ActionSlot {...actionProps} />
       )}
     </Box>
   );
@@ -388,7 +452,8 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
 
 export type AgentStatus = 'ACTIVE' | 'REVIEWING' | 'IDLE';
 
-export interface AgentCardProps {
+/** `onSelect` is the card-selection callback, not the DOM `onSelect`. */
+export interface AgentCardProps extends Omit<RootHTMLAttributes<'button'>, 'onSelect'>, WithRef<'button'> {
   /** Agent name (e.g. `AGENT·ORION`). */
   name: string;
   status: AgentStatus;
@@ -397,6 +462,8 @@ export interface AgentCardProps {
   /** Selected = the console currently shown (thicker border + inset glow). */
   selected?: boolean;
   onSelect?: () => void;
+  /** Class overrides by part: `root` (the card button). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -407,13 +474,15 @@ const AGENT_TONE: Record<AgentStatus, Tone> = { ACTIVE: 'mint', REVIEWING: 'blue
  * with a name, a status stamp, and a task line. Selecting it (to view a console,
  * say) thickens the border and adds an inset glow.
  */
-export function AgentCard({ name, status, task, selected = false, onSelect, sx }: AgentCardProps) {
+export function AgentCard({ name, status, task, selected = false, onSelect, classes, className, sx, ...rest }: AgentCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
+      {...rest}
+      className={resolveClasses('AgentCard', 'root', classes, className)}
       sx={[
         (t) => {
           const c = toneHue(t, AGENT_TONE[status]);
@@ -448,13 +517,16 @@ export function AgentCard({ name, status, task, selected = false, onSelect, sx }
 /* ------------------------------------------------------------------ */
 /* RecallNote — a cited memory / decision-log fragment. */
 
-export interface RecallNoteProps {
+/** `id` is the displayed reference id, not the DOM `id`. */
+export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'>, WithRef {
   /** Reference id (e.g. `DECISION_LOG_32`). */
   id: string;
   /** The recalled text. */
   children: React.ReactNode;
   /** Left-edge + tint accent. @default 'teal' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the note). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -463,9 +535,11 @@ export interface RecallNoteProps {
  * left edge (1px, per the no-side-stripe rule), an amber id, and readable body
  * text.
  */
-export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps) {
+export function RecallNote({ id, children, tone = 'teal', classes, className, sx, ...rest }: RecallNoteProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('RecallNote', 'root', classes, className)}
       sx={[
         (t) => {
           const c = toneHue(t, tone);
@@ -490,7 +564,7 @@ export function RecallNote({ id, children, tone = 'teal', sx }: RecallNoteProps)
 
 export type SinkStatus = 'ACTIVE' | 'CONNECTED' | 'OFFLINE';
 
-export interface SinkRowProps {
+export interface SinkRowProps extends RootHTMLAttributes, WithRef {
   /** Sink name (e.g. `NTFY GATEWAY`). */
   name: React.ReactNode;
   status: SinkStatus;
@@ -500,6 +574,8 @@ export interface SinkRowProps {
   ping?: React.ReactNode;
   /** Stamp label. @default `DOWN` when OFFLINE, else `LIVE` */
   stampLabel?: string;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -511,11 +587,13 @@ const SINK_TONE: Record<SinkStatus, Tone> = { ACTIVE: 'mint', CONNECTED: 'blue',
  * OFFLINE inverts the stamp to a solid red fill with black content (the
  * figure/ground "recorded" grammar). Divided by a dotted hairline.
  */
-export function SinkRow({ name, status, detail, ping, stampLabel, sx }: SinkRowProps) {
+export function SinkRow({ name, status, detail, ping, stampLabel, classes, className, sx, ...rest }: SinkRowProps) {
   const offline = status === 'OFFLINE';
   const label = stampLabel ?? (offline ? 'DOWN' : 'LIVE');
   return (
     <Box
+      {...rest}
+      className={resolveClasses('SinkRow', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.25, borderBottom: `1px dotted ${t.nerv.hue.greenDim}`, py: 1, fontFamily: t.nerv.fonts.mono }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -554,7 +632,8 @@ export function SinkRow({ name, status, detail, ping, stampLabel, sx }: SinkRowP
 
 export type RoutineStatus = 'PENDING' | 'SUCCESS' | 'RETRIED';
 
-export interface RoutineRowProps {
+/** `id` is the displayed routine id, not the DOM `id`. */
+export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'>, WithRef {
   /** Routine id (e.g. `RT·01`). */
   id: React.ReactNode;
   /** Routine name. */
@@ -566,7 +645,18 @@ export interface RoutineRowProps {
   dim?: boolean;
   /** Fires when RUN is pressed. */
   onRun?: () => void;
+  /** Replace an internal part: `action` (the RUN button). */
+  slots?: SlotsOf<'action'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: RoutineRowSlotProps;
+  /** Class overrides by part: `root`, `id`, `name`, `kind`, `status` (the stamp), `action` (the RUN button). */
+  classes?: ClassesOf<'root' | 'id' | 'name' | 'kind' | 'status' | 'action'>;
   sx?: SxProps<Theme>;
+}
+
+export interface RoutineRowSlotProps {
+  /** Props merged onto the RUN action. */
+  action?: RowActionProps;
 }
 
 const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'mint', RETRIED: 'red' };
@@ -576,10 +666,37 @@ const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'm
  * SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and
  * desaturates it (for filter-rail scoping) without removing it from the list.
  */
-export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: RoutineRowProps) {
+export function RoutineRow({ id, name, kind, status, dim = false, onRun, slots, slotProps, classes, className, sx, ...rest }: RoutineRowProps) {
   const reduced = useReducedMotion();
+  // `action` slot (notes/2.2 §3) — identical shape to GateRow's: the RUN button
+  // is a locked internal affordance, `onRun` covers behavior only.
+  const [ActionSlot, actionProps] = resolveSlot(slots?.action, Box, {
+    contract: { onClick: onRun, children: 'RUN' },
+    defaults: {
+      component: 'button' as const,
+      type: 'button' as const,
+      onClick: onRun,
+      children: 'RUN' as ReactNode,
+      sx: (t: Theme) => ({
+        flex: 'none',
+        border: `1px solid ${t.nerv.hue.mint}`,
+        background: t.nerv.hue.void,
+        color: t.nerv.hue.mint,
+        fontSize: 9,
+        p: '3px 8px',
+        cursor: 'pointer',
+        fontFamily: t.nerv.fonts.mono,
+        '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void },
+        '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
+      }),
+    },
+    slotProps: slotProps?.action,
+    className: resolveClasses('RoutineRow', 'action', classes),
+  });
   return (
     <Box
+      {...rest}
+      className={resolveClasses('RoutineRow', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -590,16 +707,17 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
           fontFamily: t.nerv.fonts.mono,
           opacity: dim ? 0.25 : 1,
           filter: dim ? 'grayscale(.6)' : 'none',
-          transition: 'opacity 120ms linear',
+          transition: `opacity ${t.nerv.motion.durations.fast}ms linear`,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, fontSize: 10, whiteSpace: 'nowrap' })}>{id}</Box>
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })}>{name}</Box>
-      <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', whiteSpace: 'nowrap' })}>{kind}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'id', classes)} sx={(t) => ({ color: t.nerv.hue.amber, fontSize: 10, whiteSpace: 'nowrap' })}>{id}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'name', classes)} sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })}>{name}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'kind', classes)} sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', whiteSpace: 'nowrap' })}>{kind}</Box>
       <Box
         component="span"
+        className={resolveClasses('RoutineRow', 'status', classes)}
         sx={(t) => {
           const c = toneHue(t, ROUTINE_TONE[status]);
           return {
@@ -610,31 +728,22 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
             p: '2px 8px',
             borderRadius: `${t.nerv.radius.chip}px`,
             textShadow: status === 'RETRIED' ? '0 0 4px currentColor' : 'none',
-            animation: status === 'RETRIED' && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+            // Longhands — see the CAUTION note above (`motion.snap` breaks the
+            // `animation` shorthand).
+            ...(status === 'RETRIED' && !reduced
+              ? {
+                  animationName: 'nervBlink',
+                  animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                  animationTimingFunction: animSnap(t),
+                  animationIterationCount: 'infinite',
+                }
+              : { animation: 'none' }),
           };
         }}
       >
         {status}
       </Box>
-      <Box
-        component="button"
-        type="button"
-        onClick={onRun}
-        sx={(t) => ({
-          flex: 'none',
-          border: `1px solid ${t.nerv.hue.mint}`,
-          background: t.nerv.hue.void,
-          color: t.nerv.hue.mint,
-          fontSize: 9,
-          p: '3px 8px',
-          cursor: 'pointer',
-          fontFamily: t.nerv.fonts.mono,
-          '&:hover': { background: t.nerv.hue.mint, color: t.nerv.hue.void },
-          '&:focus-visible': { outline: `2px solid ${t.nerv.hue.amber}`, outlineOffset: 2 },
-        })}
-      >
-        RUN
-      </Box>
+      <ActionSlot {...actionProps} />
     </Box>
   );
 }
@@ -642,7 +751,9 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
 /* ------------------------------------------------------------------ */
 /* ModuleCard — a pinnable system/product card (jp glyph · code · desc · stamp). */
 
-export interface ModuleCardProps {
+/** `title` is the card's display heading, not the DOM `title`; `onSelect` is
+ *  the pin/selection callback, not the DOM `onSelect`. */
+export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'title' | 'onSelect'>, WithRef<'button'> {
   /** Large kanji glyph (the system's mark). */
   jp: string;
   /** System code (e.g. `SYS·01`). */
@@ -662,6 +773,8 @@ export interface ModuleCardProps {
   /** Pinned/selected — mint border + glow. @default false */
   selected?: boolean;
   onSelect?: () => void;
+  /** Class overrides by part: `root` (the card button). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -671,13 +784,15 @@ export interface ModuleCardProps {
  * (orange) border at rest that lifts on hover; selecting it pins the card with a
  * mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
  */
-export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, sx }: ModuleCardProps) {
+export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, classes, className, sx, ...rest }: ModuleCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
+      {...rest}
+      className={resolveClasses('ModuleCard', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -691,7 +806,7 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
           p: '16px',
           fontFamily: t.nerv.fonts.mono,
           boxShadow: selected ? '0 0 16px rgba(82,242,154,.4)' : 'none',
-          transition: 'box-shadow 120ms linear, border-color 120ms linear',
+          transition: `box-shadow ${t.nerv.motion.durations.fast}ms linear, border-color ${t.nerv.motion.durations.fast}ms linear`,
           '&:hover': selected ? null : { boxShadow: '0 0 14px rgba(242,100,0,.35), inset 0 0 16px rgba(242,100,0,.06)' },
           '&:focus-visible': { outline: `2px solid ${t.nerv.hue.paper}`, outlineOffset: 3 },
         }),
@@ -718,11 +833,13 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
 /* ------------------------------------------------------------------ */
 /* AgentDot — a status-bar agent readout: a state dot + label. */
 
-export interface AgentDotProps {
+export interface AgentDotProps extends RootHTMLAttributes<'span'>, WithRef<'span'> {
   /** The readout text (e.g. `AGENT·01: NOMINAL`). */
   children: React.ReactNode;
   /** Busy — amber dot + amber text; otherwise a mint dot. @default false */
   busy?: boolean;
+  /** Class overrides by part: `root` (the readout). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -731,10 +848,12 @@ export interface AgentDotProps {
  * dot (mint nominal · amber busy) before its label, the whole thing tinted amber
  * when busy.
  */
-export function AgentDot({ children, busy = false, sx }: AgentDotProps) {
+export function AgentDot({ children, busy = false, classes, className, sx, ...rest }: AgentDotProps) {
   return (
     <Box
       component="span"
+      {...rest}
+      className={resolveClasses('AgentDot', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'inline-flex', alignItems: 'center', color: busy ? t.nerv.hue.amber : 'inherit', fontFamily: t.nerv.fonts.mono, whiteSpace: 'nowrap' }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -751,13 +870,16 @@ export function AgentDot({ children, busy = false, sx }: AgentDotProps) {
 
 export type MemoryKind = 'decision' | 'pattern' | 'mistake' | 'learning';
 
-export interface MemoryRowProps {
+/** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
+export interface MemoryRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Node id (e.g. `MEM-2024-0512`). */
   id: React.ReactNode;
   /** The entry title. */
   title: React.ReactNode;
   /** Entry kind — colors the stamp (decision amber · pattern mint · mistake red · learning blue). */
   kind: MemoryKind;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -768,9 +890,11 @@ const MEMORY_TONE: Record<MemoryKind, Tone> = { decision: 'amber', pattern: 'min
  * stamp colored by type. Hovering lifts the border to orange. Pair with
  * {@link FilterChips} to build a queryable memory list.
  */
-export function MemoryRow({ id, title, kind, sx }: MemoryRowProps) {
+export function MemoryRow({ id, title, kind, classes, className, sx, ...rest }: MemoryRowProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('MemoryRow', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.75, border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '12px 14px', fontFamily: t.nerv.fonts.mono, '&:hover': { borderColor: t.nerv.hue.orange } }),
         ...(Array.isArray(sx) ? sx : [sx]),

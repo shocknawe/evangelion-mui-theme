@@ -35,6 +35,12 @@ const PREVIEW_GROUPS = groups
   .map((g) => ({ title: g.title, items: g.items.filter((c) => examples[c.slug]) }))
   .filter((g) => g.items.length);
 
+/**
+ * Families for the browse grid. Each card deep-links to its first component, so
+ * a group with no items has nothing to point at — drop it rather than throw.
+ */
+const FAMILY_CARDS = groups.filter((g) => g.items.length);
+
 const previewCount = PREVIEW_GROUPS.reduce((n, g) => n + g.items.length, 0);
 const propCount = allComponents.reduce((n, c) => n + c.props.length, 0);
 
@@ -73,7 +79,19 @@ export default function Landing() {
 
       <Box sx={{ display: 'grid', gap: 5 }}>
         <DocSection id="install" title="INSTALL · 導入">
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
+          {/* `minmax(0, …)` on every track: the install line is one unbreakable
+              76-char string under `white-space: pre`, and a bare `1fr` floors a
+              track at its content width — which pushes the whole page wide.
+              `alignItems: start` keeps the one-liner from stretching to match
+              the mount snippet. */}
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              alignItems: 'start',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' },
+            }}
+          >
             <CodeBlock code={INSTALL} filename="terminal" />
             <CodeBlock code={MOUNT} filename="App.tsx" />
           </Box>
@@ -109,10 +127,12 @@ export default function Landing() {
           {PREVIEW_GROUPS.map((g) => (
             <Box key={g.title} sx={{ mt: 3.5 }}>
               <Box
+                component="h3"
                 sx={(t) => ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
+                  mt: 0,
                   mb: 1.5,
                   fontFamily: t.nerv.fonts.display,
                   fontWeight: 700,
@@ -123,7 +143,10 @@ export default function Landing() {
                 })}
               >
                 {g.title}
-                <Box sx={(t) => ({ flex: 1, height: 1, background: t.nerv.hue.greenDim })} />
+                {/* `height: '1px'` as a string, not `1` — a numeric `height` in
+                    `sx` where 0 < n <= 1 is a *percentage*, and 100% against
+                    this row's indefinite height computes to 0. */}
+                <Box sx={(t) => ({ flex: 1, height: '1px', background: t.nerv.hue.greenDim })} />
                 <Stamp tone="dim" size="sm">
                   {g.items.length}
                 </Stamp>
@@ -153,10 +176,14 @@ export default function Landing() {
             sx={{
               display: 'grid',
               gap: 2,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+              gridTemplateColumns: {
+                xs: 'minmax(0, 1fr)',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                lg: 'repeat(3, minmax(0, 1fr))',
+              },
             }}
           >
-            {groups.map((g) => (
+            {FAMILY_CARDS.map((g) => (
               <Box
                 key={g.title}
                 component="a"

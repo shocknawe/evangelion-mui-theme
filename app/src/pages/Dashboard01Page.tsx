@@ -131,15 +131,19 @@ export function Dashboard01Page() {
     <Box sx={{ p: '14px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box component="section">
         <ZoneTitle aside="2 DUE">VAULT REMINDERS</ZoneTitle>
-        <RailItem title="RENEW SERVER CLUSTER CERTS" sub="SYSTEM · NODE 01-09" when="14:00" />
-        <RailItem title="COFFEE WITH UNIT·731" sub="PERSONAL" when="08:30" done />
-        <RailItem title="NOON SYNC — PIPELINE V3" sub="ENGINEERING" when="12:00" />
+        <Box role="list">
+          <RailItem title="RENEW SERVER CLUSTER CERTS" sub="SYSTEM · NODE 01-09" when="14:00" role="listitem" />
+          <RailItem title="COFFEE WITH UNIT·731" sub="PERSONAL" when="08:30" done role="listitem" />
+          <RailItem title="NOON SYNC — PIPELINE V3" sub="ENGINEERING" when="12:00" role="listitem" />
+        </Box>
       </Box>
       <Box component="section">
         <ZoneTitle aside="8 ITEMS">INBOX (K-OS)</ZoneTitle>
-        <RailItem title="THE FUTURE OF RISC-V ORBITS" sub="LINK · UNREAD" when="2H" />
-        <RailItem title="WHITEPAPER: LLAMA CONSENSUS" sub="DOC · UNREAD" when="6H" />
-        <RailItem title="PR-442 REVIEW THREAD" sub="GIT · 3 REPLIES" when="9H" />
+        <Box role="list">
+          <RailItem title="THE FUTURE OF RISC-V ORBITS" sub="LINK · UNREAD" when="2H" role="listitem" />
+          <RailItem title="WHITEPAPER: LLAMA CONSENSUS" sub="DOC · UNREAD" when="6H" role="listitem" />
+          <RailItem title="PR-442 REVIEW THREAD" sub="GIT · 3 REPLIES" when="9H" role="listitem" />
+        </Box>
       </Box>
       <Box component="section">
         <ZoneTitle aside="12 DUE">LEARNING REVIEW</ZoneTitle>
@@ -192,7 +196,9 @@ export function Dashboard01Page() {
               <Stamp tone="orange">JRS·902</Stamp>
             </Box>
             <Box sx={{ my: 1.5 }}>
-              <ProgressMeter value={68} threshold={{ pct: 80, label: 'REVIEW GATE · 80' }} readout="REVIEW OPENS AT 80% · ETA NOON SYNC" />
+              {/* progressbar semantics are attached at the usage site (the component
+                  spreads its root attributes) — see src/a11y/aria-patterns.ts */}
+              <ProgressMeter value={68} threshold={{ pct: 80, label: 'REVIEW GATE · 80' }} readout="REVIEW OPENS AT 80% · ETA NOON SYNC" role="progressbar" aria-label="BRIEF PIPELINE" aria-valuenow={68} aria-valuemin={0} aria-valuemax={100} />
             </Box>
             <Typography sx={{ fontSize: 11, lineHeight: 1.6, color: t.nerv.hue.greenMap, textTransform: 'none', maxWidth: '64ch', m: '10px 0 12px', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mint, fontWeight: 400 } }}>
               CURRENT STATE: MODULARIZING THE INFERENCE ENGINE FOR DISTRIBUTED LOW-LATENCY NODES. FOCUS ON THE <b>COREDISPATCHER</b> INTERFACE LOGIC BEFORE NOON SYNC.
@@ -206,9 +212,9 @@ export function Dashboard01Page() {
           {/* blocked on you */}
           <Box component="section">
             <ZoneTitle>BLOCKED ON YOU · 裁定待ち</ZoneTitle>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            <Box role="list" sx={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
               {gates.map((g, i) => (
-                <GateRow key={g.id} id={g.id} title={g.title} sub={g.sub} priority={g.priority} verdict={g.verdict} onReview={() => setActive(i)} />
+                <GateRow key={g.id} id={g.id} title={g.title} sub={g.sub} priority={g.priority} verdict={g.verdict} onReview={() => setActive(i)} role="listitem" />
               ))}
             </Box>
           </Box>
@@ -220,6 +226,9 @@ export function Dashboard01Page() {
         item={active !== null ? `${gates[active].id} — ${gates[active].title}` : undefined}
         onDecide={decide}
         onClose={() => decide('defer')}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Gate decision required"
       />
     </Box>
   );

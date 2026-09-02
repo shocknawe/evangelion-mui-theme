@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "generate": "node scripts/generate-metadata.mjs",
+    "llms": "node scripts/generate-llms.mjs",
     "sandbox": "vite build --config vite.sandbox.config.ts --outDir public",
-    "predev": "npm run generate && npm run sandbox",
+    "predev": "npm run generate && npm run sandbox && npm run llms",
     "dev": "vite",
-    "prebuild": "npm run generate && npm run sandbox",
+    "prebuild": "npm run generate && npm run sandbox && npm run llms",
     "build": "tsc --noEmit && vite build",
     "typecheck": "npm run generate && tsc --noEmit",
     "preview": "vite preview"

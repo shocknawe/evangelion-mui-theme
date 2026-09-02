@@ -30,6 +30,12 @@ export const hue = {
   crimson: '#E60225', // hazard stripes only
   teal: '#0C6C80', // header double-rules · hardware bezel
   blue: '#5090D0', // pending / deliberating / in-review
+  /* ---- augment / hazard accents (not sampled from the references) ---- */
+  orangeHi: '#FF8A3C', // chrome-orange peak (hover; palette secondary.light)
+  orangeDeep: '#C25400', // chrome-orange pressed (palette secondary.dark)
+  hazardBg: '#170303', // hazard ticker field (status-marquee background)
+  black: '#000', // pure black — hazard stripes & hazard fields only
+  white: '#fff', // hazard-field content (corner chips on the red field)
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -62,6 +68,12 @@ export const surfaces = {
   field: hue.void,
   /** Field background once focused. */
   fieldFocus: hue.void,
+  /** Neutral overlay over black — meter / progress track. */
+  overlay: 'rgba(255,255,255,.06)',
+  /** Fainter neutral overlay — hazard hatch fill. */
+  overlayFaint: 'rgba(255,255,255,.04)',
+  /** Modal backdrop — dimmed to black, no blur. */
+  backdrop: 'rgba(0,0,0,0.82)',
 } as const;
 
 export const ink = {
@@ -156,6 +168,8 @@ export const motion = {
     snap: 80, // state snap
     fast: 120, // hover / focus
     blink: 1000, // 1 Hz blink loop
+    complex: 160, // MUI "complex" structural transition
+    slide: 300, // continuous meter fill
   },
 } as const;
 

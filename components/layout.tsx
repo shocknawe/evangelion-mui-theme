@@ -3,16 +3,16 @@
  * the boxed monogram, and the compact stat pair. These are the scaffolding a
  * full console screen (dashboard, form, wiki) is built on.
  */
-import type { ReactNode } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type Tone, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ConsoleFrame — the chamfered command shell: full-bleed header over a
    sidebar · main · rail grid, one orange double-frame, internal scroll. */
 
-export interface ConsoleFrameProps {
+export interface ConsoleFrameProps extends RootHTMLAttributes, WithRef {
   /** Full-width top band. */
   header: ReactNode;
   /** Optional full-width band directly under the header (e.g. a separator). */
@@ -37,6 +37,8 @@ export interface ConsoleFrameProps {
   bandHeight?: number;
   /** Height of the optional footer row (px). @default 44 */
   footerHeight?: number;
+  /** Class overrides by part: `root`, `header`, `band`, `sidebar`, `main`, `rail`, `footer`. */
+  classes?: ClassesOf<'root' | 'header' | 'band' | 'sidebar' | 'main' | 'rail' | 'footer'>;
   sx?: SxProps<Theme>;
 }
 
@@ -64,7 +66,10 @@ export function ConsoleFrame({
   headerHeight = 100,
   bandHeight = 96,
   footerHeight = 44,
+  classes,
+  className,
   sx,
+  ...rest
 }: ConsoleFrameProps) {
   const cols = [sidebar ? `${sidebarWidth}px` : null, '1fr', rail ? `${railWidth}px` : null].filter(Boolean).join(' ');
   const spanRow = (area: string) => [sidebar ? area : null, area, rail ? area : null].filter(Boolean).join(' ');
@@ -89,6 +94,8 @@ export function ConsoleFrame({
 
   return (
     <Box
+      {...rest}
+      className={resolveClasses('ConsoleFrame', 'root', classes, className)}
       sx={[
         (t) => ({
           position: 'relative',
@@ -136,29 +143,29 @@ export function ConsoleFrame({
           })}
         />
       )}
-      <Box component="header" sx={(t) => ({ gridArea: 'head', position: 'relative', zIndex: 1, borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
+      <Box component="header" className={resolveClasses('ConsoleFrame', 'header', classes)} sx={(t) => ({ gridArea: 'head', position: 'relative', zIndex: 1, borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
         {header}
       </Box>
       {band && (
-        <Box sx={(t) => ({ gridArea: 'band', position: 'relative', zIndex: 1, overflow: 'hidden', borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
+        <Box className={resolveClasses('ConsoleFrame', 'band', classes)} sx={(t) => ({ gridArea: 'band', position: 'relative', zIndex: 1, overflow: 'hidden', borderBottom: `1px solid ${t.nerv.hue.orange}` })}>
           {band}
         </Box>
       )}
       {sidebar && (
-        <Box component="aside" sx={(t) => ({ ...region, gridArea: 'side', borderRight: { md: `1px solid ${t.nerv.hue.orange}` }, borderBottom: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
+        <Box component="aside" className={resolveClasses('ConsoleFrame', 'sidebar', classes)} sx={(t) => ({ ...region, gridArea: 'side', borderRight: { md: `1px solid ${t.nerv.hue.orange}` }, borderBottom: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
           {sidebar}
         </Box>
       )}
-      <Box component="main" sx={{ ...region, gridArea: 'main' }}>
+      <Box component="main" className={resolveClasses('ConsoleFrame', 'main', classes)} sx={{ ...region, gridArea: 'main' }}>
         {children}
       </Box>
       {rail && (
-        <Box component="aside" sx={(t) => ({ ...region, gridArea: 'rail', borderLeft: { md: `1px solid ${t.nerv.hue.orange}` }, borderTop: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
+        <Box component="aside" className={resolveClasses('ConsoleFrame', 'rail', classes)} sx={(t) => ({ ...region, gridArea: 'rail', borderLeft: { md: `1px solid ${t.nerv.hue.orange}` }, borderTop: { xs: `1px solid ${t.nerv.hue.orange}`, md: 0 } })}>
           {rail}
         </Box>
       )}
       {footer && (
-        <Box component="footer" sx={(t) => ({ gridArea: 'foot', position: 'relative', zIndex: 1, borderTop: `1px solid ${t.nerv.hue.orange}` })}>
+        <Box component="footer" className={resolveClasses('ConsoleFrame', 'footer', classes)} sx={(t) => ({ gridArea: 'foot', position: 'relative', zIndex: 1, borderTop: `1px solid ${t.nerv.hue.orange}` })}>
           {footer}
         </Box>
       )}
@@ -169,10 +176,19 @@ export function ConsoleFrame({
 /* ------------------------------------------------------------------ */
 /* ZoneTitle — an orange section label over a hairline rule. */
 
-export interface ZoneTitleProps {
+export interface ZoneTitleProps extends RootHTMLAttributes, WithRef {
   children: ReactNode;
   /** Right-aligned meta (e.g. a count chip). Rendered in amber. */
   aside?: ReactNode;
+  /**
+   * The element to render. Pass a heading (`h2`, `h3`…) when the zone is a real
+   * document section so the page carries an outline (WCAG 1.3.1). The type
+   * ramp is set here, so a heading looks identical to the default `div`.
+   * @default 'div'
+   */
+  component?: ElementType;
+  /** Class overrides by part: `root` (the zone row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -180,9 +196,12 @@ export interface ZoneTitleProps {
  * A zone header: condensed orange caps over a dim-green rule, with optional
  * right-aligned amber meta (a due count, an item total).
  */
-export function ZoneTitle({ children, aside, sx }: ZoneTitleProps) {
+export function ZoneTitle({ children, aside, component = 'div', classes, className, sx, ...rest }: ZoneTitleProps) {
   return (
     <Box
+      component={component}
+      {...rest}
+      className={resolveClasses('ZoneTitle', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -197,6 +216,9 @@ export function ZoneTitle({ children, aside, sx }: ZoneTitleProps) {
           textTransform: 'uppercase',
           borderBottom: `1px solid ${t.nerv.hue.greenDim}`,
           pb: 0.5,
+          // Zero the UA heading margin — CssBaseline does not reset it, so an
+          // `h2` would otherwise sit lower than the default `div`.
+          mt: 0,
           mb: 1,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -211,7 +233,7 @@ export function ZoneTitle({ children, aside, sx }: ZoneTitleProps) {
 /* ------------------------------------------------------------------ */
 /* Monogram — a boxed kanji with a small caption (masthead grammar). */
 
-export interface MonogramProps {
+export interface MonogramProps extends RootHTMLAttributes, WithRef {
   /** The kanji monogram. */
   jp: string;
   /** Small caption below. */
@@ -220,6 +242,8 @@ export interface MonogramProps {
   tone?: Tone;
   /** Kanji size (px). @default 26 */
   size?: number;
+  /** Class overrides by part: `root` (the boxed mark). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -227,9 +251,11 @@ export interface MonogramProps {
  * A boxed bilingual monogram — a glowing kanji over a tiny caption, in a 1px
  * chrome box. The masthead identity mark (磁 MAGI · 統制 COMMAND).
  */
-export function Monogram({ jp, label, tone = 'orange', size = 26, sx }: MonogramProps) {
+export function Monogram({ jp, label, tone = 'orange', size = 26, classes, className, sx, ...rest }: MonogramProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('Monogram', 'root', classes, className)}
       sx={[
         (t) => {
           const c = toneHue(t, tone);
@@ -261,13 +287,15 @@ export function Monogram({ jp, label, tone = 'orange', size = 26, sx }: Monogram
 /* ------------------------------------------------------------------ */
 /* Stat — a compact label/value pair (dashboard vitals). */
 
-export interface StatProps {
+export interface StatProps extends RootHTMLAttributes, WithRef {
   /** Small caption. */
   label: string;
   /** The value. */
   value: ReactNode;
   /** Value hue; `mint` also gets a glow. @default 'paper' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the pair). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -275,9 +303,9 @@ export interface StatProps {
  * A compact vital: a tiny mono label above a condensed value. Lighter than
  * {@link StatTile} — for a row of readouts in a header or hero.
  */
-export function Stat({ label, value, tone = 'paper', sx }: StatProps) {
+export function Stat({ label, value, tone = 'paper', classes, className, sx, ...rest }: StatProps) {
   return (
-    <Box sx={[{ minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('Stat', 'root', classes, className)} sx={[{ minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={(t) => ({ fontSize: 10, color: t.nerv.hue.greenMap, letterSpacing: '0.14em', fontFamily: t.nerv.fonts.mono })}>{label}</Box>
       <Box
         sx={(t) => ({
@@ -299,7 +327,7 @@ export function Stat({ label, value, tone = 'paper', sx }: StatProps) {
 /* ------------------------------------------------------------------ */
 /* GaugeCard — a chamfered card framing one gauge (a trigger / channel). */
 
-export interface GaugeCardProps {
+export interface GaugeCardProps extends RootHTMLAttributes, WithRef {
   /** Small kanji-tagged channel label (e.g. `CRON · 定時`), tinted by `tone`. */
   kind: ReactNode;
   /** Condensed channel name (e.g. `NIGHTLY REVIEW`). */
@@ -312,6 +340,8 @@ export interface GaugeCardProps {
   sub?: ReactNode;
   /** Border / accent hue — the channel's state color. @default 'mint' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the card). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -327,9 +357,11 @@ export interface GaugeCardProps {
  *   <SegmentBar value={45} tone="blue" height={36} />
  * </GaugeCard>
  */
-export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', sx }: GaugeCardProps) {
+export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', classes, className, sx, ...rest }: GaugeCardProps) {
   return (
     <Box
+      {...rest}
+      className={resolveClasses('GaugeCard', 'root', classes, className)}
       sx={[
         (t) => ({
           border: `1px solid ${toneHue(t, tone)}`,
@@ -357,7 +389,7 @@ export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', s
 /* ------------------------------------------------------------------ */
 /* TelemetryCard — a bordered telemetry panel (title/type header · body · foot). */
 
-export interface TelemetryCardProps {
+export interface TelemetryCardProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Left header caption (e.g. `◐ VAULT RETENTION`). */
   title: ReactNode;
   /** Right header tag (e.g. `ARC` / `BAR` / `COL`). */
@@ -368,6 +400,8 @@ export interface TelemetryCardProps {
   foot?: [ReactNode, ReactNode];
   /** Border hue. @default 'orange' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the panel), `header` (title/type bar), `foot` (footer row). */
+  classes?: ClassesOf<'root' | 'header' | 'foot'>;
   sx?: SxProps<Theme>;
 }
 
@@ -377,15 +411,15 @@ export interface TelemetryCardProps {
  * shell for a landing-page metric — drop a {@link RadialGauge}, {@link SegmentBar},
  * or {@link LedColumn} row inside.
  */
-export function TelemetryCard({ title, type, children, foot, tone = 'orange', sx }: TelemetryCardProps) {
+export function TelemetryCard({ title, type, children, foot, tone = 'orange', classes, className, sx, ...rest }: TelemetryCardProps) {
   return (
-    <Box sx={[(t) => ({ border: `1px solid ${toneHue(t, tone)}`, background: t.nerv.hue.void, p: '18px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={(t) => ({ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.1em', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 1, mb: 2, fontFamily: t.nerv.fonts.mono })}>
+    <Box {...rest} className={resolveClasses('TelemetryCard', 'root', classes, className)} sx={[(t) => ({ border: `1px solid ${toneHue(t, tone)}`, background: t.nerv.hue.void, p: '18px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box className={resolveClasses('TelemetryCard', 'header', classes)} sx={(t) => ({ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.1em', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 1, mb: 2, fontFamily: t.nerv.fonts.mono })}>
         <span>{title}</span>{type != null && <span>{type}</span>}
       </Box>
       {children}
       {foot && (
-        <Box sx={(t) => ({ mt: 1.75, fontSize: 9, color: t.nerv.hue.greenMap, display: 'flex', justifyContent: 'space-between', fontFamily: t.nerv.fonts.mono })}>
+        <Box className={resolveClasses('TelemetryCard', 'foot', classes)} sx={(t) => ({ mt: 1.75, fontSize: 9, color: t.nerv.hue.greenMap, display: 'flex', justifyContent: 'space-between', fontFamily: t.nerv.fonts.mono })}>
           <span>{foot[0]}</span><span>{foot[1]}</span>
         </Box>
       )}
