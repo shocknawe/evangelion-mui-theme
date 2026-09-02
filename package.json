@@ -51,6 +51,7 @@
   "scripts": {
     "build": "tsup && node scripts/generate-dtcg.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "size": "size-limit",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
@@ -73,10 +74,13 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
+    "@size-limit/esbuild": "13.0.3",
+    "@size-limit/file": "13.0.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "size-limit": "13.0.3",
     "tsup": "^8.3.5",
     "typescript": "~5.9.0"
   },
