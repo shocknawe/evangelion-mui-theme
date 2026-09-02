@@ -58,4 +58,4 @@
 
 - [x] 9.1 Run full build + typecheck for `theme/`, `app/`, and `doc-site/`; all green
 - [ ] 9.2 Confirm all new CI gates (size-limit, axe-core) pass on the branch
-- [ ] 9.3 Confirm no visual identity, token value, or variant changes shipped (diff review against constraints)
+- [x] 9.3 Confirm no visual identity, token value, or variant changes shipped (diff review against constraints)
