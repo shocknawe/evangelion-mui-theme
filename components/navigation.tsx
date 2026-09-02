@@ -113,7 +113,7 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
               fontSize: 11,
               opacity: dim ? 0.25 : 1,
               filter: dim ? 'grayscale(.6)' : 'none',
-              transition: 'opacity 120ms linear',
+              transition: `opacity ${t.nerv.motion.durations.fast}ms linear`,
             })}
           >
             <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>

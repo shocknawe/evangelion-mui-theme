@@ -146,7 +146,7 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx }: Agent
                   boxShadow: on ? '0 0 14px rgba(82,242,154,.4)' : 'none',
                   p: '14px 6px',
                   background: th.nerv.hue.void,
-                  transition: 'border-color 120ms linear, box-shadow 120ms linear',
+                  transition: `border-color ${th.nerv.motion.durations.fast}ms linear, box-shadow ${th.nerv.motion.durations.fast}ms linear`,
                 })}
               >
                 <Box sx={(th) => ({ fontFamily: th.nerv.fonts.jp, fontWeight: 800, fontSize: 22, lineHeight: 1, textTransform: 'none', color: on ? th.nerv.hue.mintHi : th.nerv.hue.greenMap, textShadow: on ? '0 0 10px rgba(82,242,154,.5)' : 'none' })}>{n.jp}</Box>

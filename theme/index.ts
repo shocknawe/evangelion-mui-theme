@@ -28,7 +28,7 @@ const chamfer = (cut: number = radii.chamfer) =>
   `polygon(0 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, ${cut}px 100%, 0 calc(100% - ${cut}px))`;
 
 /** 45° hazard-stripe background (crimson/black by default). */
-const hazard = (a: string = hue.crimson, b = '#000') =>
+const hazard = (a: string = hue.crimson, b: string = hue.black) =>
   `repeating-linear-gradient(-45deg, ${a} 0 12px, ${b} 12px 24px)`;
 
 /**
@@ -72,7 +72,7 @@ export const theme = createTheme({
       shorter: motion.durations.snap,
       short: motion.durations.fast,
       standard: motion.durations.fast,
-      complex: 160,
+      complex: motion.durations.complex,
       enteringScreen: motion.durations.fast,
       leavingScreen: motion.durations.snap,
     },

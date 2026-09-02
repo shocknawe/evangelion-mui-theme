@@ -120,7 +120,8 @@ export const feedback: Pick<
 
   MuiBackdrop: {
     styleOverrides: {
-      root: { backgroundColor: 'rgba(0,0,0,0.82)' }, // dim to black, no blur
+      // dim to black, no blur
+      root: ({ theme }) => ({ backgroundColor: v(theme).palette.nerv.backdrop }),
     },
   },
 

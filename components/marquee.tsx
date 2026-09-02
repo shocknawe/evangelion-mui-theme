@@ -35,7 +35,7 @@ export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueePro
         {
           borderTop: `2px solid ${t.nerv.hue.redHi}`,
           borderBottom: `2px solid ${t.nerv.hue.redHi}`,
-          background: '#170303',
+          background: t.nerv.hue.hazardBg,
           overflow: 'hidden',
           whiteSpace: 'nowrap',
           width: '100%',

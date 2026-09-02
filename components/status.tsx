@@ -590,7 +590,7 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx }: R
           fontFamily: t.nerv.fonts.mono,
           opacity: dim ? 0.25 : 1,
           filter: dim ? 'grayscale(.6)' : 'none',
-          transition: 'opacity 120ms linear',
+          transition: `opacity ${t.nerv.motion.durations.fast}ms linear`,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -691,7 +691,7 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
           p: '16px',
           fontFamily: t.nerv.fonts.mono,
           boxShadow: selected ? '0 0 16px rgba(82,242,154,.4)' : 'none',
-          transition: 'box-shadow 120ms linear, border-color 120ms linear',
+          transition: `box-shadow ${t.nerv.motion.durations.fast}ms linear, border-color ${t.nerv.motion.durations.fast}ms linear`,
           '&:hover': selected ? null : { boxShadow: '0 0 14px rgba(242,100,0,.35), inset 0 0 16px rgba(242,100,0,.06)' },
           '&:focus-visible': { outline: `2px solid ${t.nerv.hue.paper}`, outlineOffset: 3 },
         }),

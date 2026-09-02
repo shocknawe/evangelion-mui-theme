@@ -170,8 +170,8 @@ export function HazardRating({ value, onChange, max = 5, sx }: HazardRatingProps
               height: 28,
               cursor: 'pointer',
               border: `1px solid ${lit ? t.nerv.hue.mint : t.nerv.hue.greenDim}`,
-              background: lit ? t.nerv.hue.mint : 'repeating-linear-gradient(-45deg, transparent 0 4px, rgba(255,255,255,.04) 4px 8px)',
-              boxShadow: lit ? '0 0 6px color-mix(in srgb, #52F29A 50%, transparent)' : 'none',
+              background: lit ? t.nerv.hue.mint : `repeating-linear-gradient(-45deg, transparent 0 4px, ${t.palette.nerv.overlayFaint} 4px 8px)`,
+              boxShadow: lit ? `0 0 6px color-mix(in srgb, ${t.nerv.hue.mint} 50%, transparent)` : 'none',
               '&:focus-visible': focusRing(t),
             })}
           />

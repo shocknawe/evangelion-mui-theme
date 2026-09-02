@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
@@ -30,13 +30,14 @@ export interface HazardPromptProps {
  * @example <HazardPrompt jp="裁定" en="DECIDE" onDecide={route} />
  */
 export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromptProps) {
+  const t = useTheme();
   const [flash, setFlash] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const trigger = () => {
     setFlash(true);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setFlash(false), 120);
+    timer.current = setTimeout(() => setFlash(false), t.nerv.motion.durations.fast);
     onDecide?.();
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -46,7 +47,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
     }
   };
 
-  const stripe = { position: 'absolute' as const, left: 0, right: 0, height: 14, background: 'repeating-linear-gradient(-45deg, #000 0 10px, transparent 10px 20px)' };
+  const stripe = (th: Theme) => ({ position: 'absolute' as const, left: 0, right: 0, height: 14, background: `repeating-linear-gradient(-45deg, ${th.nerv.hue.black} 0 10px, transparent 10px 20px)` });
 
   return (
     <Box
@@ -75,7 +76,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box sx={{ ...stripe, top: 0 }} />
+      <Box sx={(th) => ({ ...stripe(th), top: 0 })} />
       <Box
         sx={(t) => ({
           fontFamily: t.nerv.fonts.jp,
@@ -95,7 +96,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx }: HazardPromp
           {en}
         </Box>
       </Box>
-      <Box sx={{ ...stripe, bottom: 0 }} />
+      <Box sx={(th) => ({ ...stripe(th), bottom: 0 })} />
     </Box>
   );
 }
@@ -139,11 +140,11 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
     if (open) approveRef.current?.focus();
   }, [open]);
 
-  const stripes = { flex: 'none', height: 22, background: 'repeating-linear-gradient(-45deg, #000 0 14px, transparent 14px 28px)' };
+  const stripes = (th: Theme) => ({ flex: 'none' as const, height: 22, background: `repeating-linear-gradient(-45deg, ${th.nerv.hue.black} 0 14px, transparent 14px 28px)` });
   const cornerChip = (t: Theme) => ({
     position: 'absolute' as const,
-    border: '3px solid #fff',
-    color: '#fff',
+    border: `3px solid ${t.nerv.hue.white}`,
+    color: t.nerv.hue.white,
     fontFamily: t.nerv.fonts.display,
     fontWeight: 700,
     fontSize: 20,
@@ -164,7 +165,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
           outline: 'none',
         })}
       >
-        <Box sx={stripes} />
+        <Box sx={(th) => stripes(th)} />
         <Box component="span" sx={(t) => ({ ...cornerChip(t), top: 36, left: 26 })}>GATE</Box>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.4vh', px: 2 }}>
           <Box sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: '4.2vh', color: t.nerv.hue.void, border: `3px solid ${t.nerv.hue.void}`, p: '2px 24px', letterSpacing: '0.5em', textIndent: '0.5em' })}>

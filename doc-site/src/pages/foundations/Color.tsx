@@ -31,6 +31,11 @@ const MEANING: Record<HueKey, string> = {
   crimson: 'HAZARD STRIPES ONLY',
   teal: 'HEADER DOUBLE-RULES · HARDWARE BEZEL',
   blue: 'PENDING · DELIBERATING · IN-REVIEW',
+  orangeHi: 'CHROME-ORANGE PEAK (SECONDARY.LIGHT)',
+  orangeDeep: 'CHROME-ORANGE PRESSED (SECONDARY.DARK)',
+  hazardBg: 'HAZARD TICKER FIELD',
+  black: 'HAZARD STRIPES & FIELDS ONLY',
+  white: 'HAZARD-FIELD CONTENT',
 };
 
 const TONES: Tone[] = ['mint', 'green', 'amber', 'blue', 'red', 'orange', 'paper', 'dim', 'teal'];
@@ -49,9 +54,10 @@ export default function Color() {
 
       <DocSection id="hues" title="THE HUE SET" aside={`${hueKeys.length} TOKENS`}>
         <Prose>
-          Fourteen named hues, sampled off the reference GIFs and locked in `theme/tokens.ts`. Nothing in
-          the theme or the component library hardcodes a hex — every color you see anywhere in this system
-          traces back to one of these swatches.
+          Named hues locked in `theme/tokens.ts` — fourteen sampled off the reference GIFs, plus the
+          chrome-orange augment pair (`orangeHi` / `orangeDeep`) and the hazard-field accents (`hazardBg`,
+          `black`, `white`). Nothing in the theme or the component library hardcodes a hex — every color
+          you see anywhere in this system traces back to one of these swatches.
         </Prose>
         <Box
           sx={{

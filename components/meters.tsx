@@ -82,7 +82,7 @@ export function SegmentedMeter({
           {levels.map((lvl, bi) => (
             <Box key={bi} sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '3px' }}>
               {Array.from({ length: segments }, (_, i) => (
-                <Box key={i} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, transition: 'opacity 120ms linear, background 120ms linear', ...segColor(i, i < lvl) }} />
+                <Box key={i} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, transition: `opacity ${t.nerv.motion.durations.fast}ms linear, background ${t.nerv.motion.durations.fast}ms linear`, ...segColor(i, i < lvl) }} />
               ))}
             </Box>
           ))}
@@ -284,7 +284,7 @@ export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLE
               sx={{
                 flex: 1,
                 borderRadius: `${t.nerv.radius.chip}px`,
-                transition: 'opacity 120ms linear, background 120ms linear',
+                transition: `opacity ${t.nerv.motion.durations.fast}ms linear, background ${t.nerv.motion.durations.fast}ms linear`,
                 ...(i < fill ? { background: t.nerv.hue.mint, opacity: 1, boxShadow: '0 0 5px rgba(82,242,154,.45)' } : { background: t.nerv.hue.greenDim, opacity: 0.35 }),
               }}
             />
@@ -448,8 +448,8 @@ export function MeterBar({ label, value, pct, tone = 'mint', warn = false, heigh
         <Box component="span">{label}</Box>
         {value != null && <Box component="b">{value}</Box>}
       </Box>
-      <Box sx={{ height, background: 'rgba(255,255,255,.06)', position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.max(0, Math.min(100, pct))}%`, background: c, boxShadow: `0 0 6px ${c}`, transition: 'width 300ms linear' }} />
+      <Box sx={{ height, background: t.palette.nerv.overlay, position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.max(0, Math.min(100, pct))}%`, background: c, boxShadow: `0 0 6px ${c}`, transition: `width ${t.nerv.motion.durations.slide}ms linear` }} />
       </Box>
     </Box>
   );
@@ -494,7 +494,7 @@ export function LedColumn({ value, segments = 14, tone = 'amber', hotBelow, heig
           sx={{
             flex: 1,
             borderRadius: `${t.nerv.radius.chip}px`,
-            transition: 'opacity 120ms linear, background 120ms linear',
+            transition: `opacity ${t.nerv.motion.durations.fast}ms linear, background ${t.nerv.motion.durations.fast}ms linear`,
             ...(i < lit
               ? { background: c, opacity: 1, boxShadow: `0 0 ${hot ? 6 : 5}px color-mix(in srgb, ${c} ${hot ? 60 : 50}%, transparent)` }
               : { background: t.nerv.hue.greenDim, opacity: 0.3 }),
