@@ -84,7 +84,8 @@ export function Navigation() {
         </SpecCard>
         <SpecCard label="WIKILINK" src="<WikiLink/>">
           <Box sx={{ fontSize: 13, color: t.nerv.hue.mint, textTransform: 'none', fontFamily: t.nerv.fonts.mono }}>
-            learns from the <WikiLink>[[MEMORY_VAULT]]</WikiLink> archive
+            {/* `href` is what makes it a link (role=link); without one it renders a button */}
+            learns from the <WikiLink href="#data">[[MEMORY_VAULT]]</WikiLink> archive
           </Box>
         </SpecCard>
       </SpecGrid>

@@ -187,7 +187,7 @@ export function Landing01Page() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.25, mt: 3.5 }}>
           <TelemetryCard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 0.75 }}>
-              <RadialGauge value={98.4} label="HELD" size={150} animated={false} />
+              <RadialGauge value={98.4} label="HELD" size={150} animated={false} role="meter" aria-label="VAULT RETENTION" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
             </Box>
             <GLabel>MEMORY HELD ACROSS 2,482 NODES</GLabel>
           </TelemetryCard>
@@ -195,13 +195,13 @@ export function Landing01Page() {
           <TelemetryCard title="▮ ENGINE LOAD" type="BAR" foot={['CEILING 80%', loadState]}>
             <GVal>{Math.round(load)}%</GVal>
             <GLabel>AGENT COMPUTE · 4 CORES</GLabel>
-            <SegmentBar value={load} tone={load > 80 ? 'amber' : 'mint'} segments={20} height={26} sx={{ my: 1 }} />
+            <SegmentBar value={load} tone={load > 80 ? 'amber' : 'mint'} segments={20} height={26} sx={{ my: 1 }} role="progressbar" aria-label="ENGINE LOAD" aria-valuenow={Math.round(load)} aria-valuemin={0} aria-valuemax={100} />
           </TelemetryCard>
 
           <TelemetryCard title="▊ THROUGHPUT" type="COL" foot={['WINDOW 6', 'RISING']}>
             <Box sx={{ display: 'flex', gap: 1, height: 120, alignItems: 'flex-end', my: 0.75 }}>
               {cols.map((v, i) => (
-                <LedColumn key={i} value={v * 10} segments={10} tone="mint" height={120} sx={{ flex: 1, width: 'auto', minWidth: 0 }} />
+                <LedColumn key={i} value={v * 10} segments={10} tone="mint" height={120} sx={{ flex: 1, width: 'auto', minWidth: 0 }} role="meter" aria-label={`THROUGHPUT COL ${i + 1}`} aria-valuenow={v * 10} aria-valuemin={0} aria-valuemax={100} />
               ))}
             </Box>
             <GVal sx={{ fontSize: 24 }}>{tput}</GVal>
