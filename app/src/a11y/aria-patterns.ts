@@ -415,7 +415,7 @@ export const COMPONENT_PATTERNS: Record<string, ComponentPattern> = {
   SevenSegClock: decoration('seven-segment SVG glyphs only — no text node anywhere.', 'moderate', 'A screen reader gets nothing: the time exists only as SVG polygons, so the information is missing entirely (WCAG 1.1.1).', 'Component change (6.4): `role="img"` + `aria-label`/sr-only text carrying the time or `digits` (and `aria-hidden` on the glyph SVGs).'),
   DigitalClock: decoration('`aria-label="system clock"` sits on a generic `<div>`, where AT ignores it — but the digits are real text, so the time is still read.', 'minor', 'the ignored `aria-label` is noise; the blinking colons are also announced as text.', 'Drop the `aria-label` or give the root `role="timer"` so the label applies.'),
   // — marquee.tsx —
-  Marquee: decoration('hazard ticker; `reduced` renders it static.', 'moderate', 'The track is duplicated for the seamless loop, so a screen reader reads every item twice.', 'Component change (6.4): `aria-hidden` on the duplicated track.'),
+  Marquee: decoration('hazard ticker; `reduced` renders it static.', 'minor', 'The track is duplicated for the seamless loop, so a screen reader reads every item twice.', 'Component change (6.4): `aria-hidden` on the duplicated track.'),
   // — charts.tsx —
   LineChart: decoration('canvas plot; the `label · status` caption is real text (the plot itself is decorative).'),
   Waveform: decoration('decorative separator; captions are real text.'),
