@@ -42,7 +42,7 @@
 
 ## 7. Agent-readiness artifacts (FR-7)
 
-- [ ] 7.1 Add build-time DTCG codegen generating `dist/tokens.dtcg.json` from `theme/tokens.ts`
+- [x] 7.1 Add build-time DTCG codegen generating `dist/tokens.dtcg.json` from `theme/tokens.ts`
 - [ ] 7.2 Generate `registry.json` listing each component's name, props summary, tokens consumed, and example route
 - [x] 7.3 Publish `llms.txt` at the docs-site root indexing curated LLM-consumable pages
 - [ ] 7.4 Expand `doc-site/` + `theme/README.md` per-component docs to cover edge cases, performance notes, and a customization recipe
