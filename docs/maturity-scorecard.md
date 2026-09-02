@@ -9,9 +9,11 @@
 > The model (§1–§2) was authored in task 8.1; **task 8.2 scored the current
 > state** — every category below carries a `Score:` line with its evidence mix
 > (prose + structural + verification) and the level that mix supports, and §6
-> holds the current-state summary and the verification runs behind it. Task 8.3
-> (baseline recording + per-release refresh wiring) is separate and not done
-> here. Scoring date: **2026-09-02**, branch `feat/upgrate-ui-library` @
+> holds the current-state summary and the verification runs behind it.
+> **Task 8.3 recorded that scoring as the baseline and wired the per-release
+> refresh** (§8): the baseline lives in `docs/maturity-history.md` with the
+> delta log, and each release refreshes §5 and appends its deltas there.
+> Scoring date: **2026-09-02**, branch `feat/upgrate-ui-library` @
 > `cd3e373` (first refresh — no prior baseline exists).
 
 ## 1. The L0–L5 model
@@ -609,8 +611,9 @@ tests, the a11y suite, the off-token grep, or the screenshot sweep on a PR.
 - **U3 Live Examples (2, 67 pts)** — 58/59; the single `StepFlow` miss plus a
   stale `coverage.ts` claim keep it out of L3. Cheapest win on the board.
 
-Baseline recording, delta logging and the per-release refresh wiring are task
-8.3 and are intentionally not done here.
+This scoring is the **recorded baseline** (task 8.3): it is copied verbatim
+into `docs/maturity-history.md` as entry `0.1.0 (baseline)`, and every future
+refresh is diffed against it (§8).
 
 ## 6. Verification runs behind this scoring
 
@@ -675,9 +678,62 @@ cd doc-site && npm run build         → built (note: regenerates llms.txt unpin
 3. Weight the evidence per §2 (prose ≤ 40, structural ≤ 40, verification
    ≤ +20) and convert with §2.1 (band table + guards G1–G4).
 4. Record the score in the category's `Score:` line with its evidence mix and
-   the guard that demoted it, if any. Task 8.3 records the baseline, the
-   per-release refresh, and delta logging.
+   the guard that demoted it, if any. The per-release refresh then logs the
+   deltas against the previous entry in `docs/maturity-history.md` (§8).
 
 **Totals:** sum the 10 System scores and the 10 UX scores separately (each
 out of 50), plus a combined total out of 100. Current totals (task 8.2):
 System 30/50, UX 27/50, combined **57/100** (§5).
+
+## 8. Baseline & per-release refresh (task 8.3)
+
+### 8.1 Recorded baseline
+
+The task 8.2 scoring (§5, 2026-09-02) is the recorded baseline — the reference
+every future refresh is diffed against:
+
+- **Total: 57/100** (System 30/50, UX 27/50) — 20 category levels and their
+  evidence mixes in `docs/maturity-history.md`, entry **`0.1.0 (baseline)`**.
+- **Version:** `0.1.0` (`package.json`). **Scored at:** branch
+  `feat/upgrate-ui-library` @ `cd3e373`; scorecard committed @ `cbf7577`.
+- It is **refresh #1** of the ≥ 2 consecutive refreshes G3 (§2.1) requires
+  before any category can hold L5 — so L5 stays unreachable until the next
+  refresh confirms each category's level.
+
+### 8.2 Per-release refresh procedure
+
+The spec's scenario: *"WHEN a release is cut, THEN the same change updates
+`docs/maturity-scorecard.md` and records the score deltas."* Run this inside
+the release change, after the release's own work has landed:
+
+1. **Re-score** all 20 categories per §7 (steps 1–4) against the current
+   tree: fresh evidence for every `Score:` line, §2 caps, §2.1 band + guards
+   G1–G4. Judgment stays human — nothing automates a score.
+2. **Update §5**: new scoring date + commit in the heading, new `Score:` lines
+   in §3/§4, new §5 table, and a refreshed §6 (re-run the verification
+   commands, drop anything that no longer holds).
+3. **Log the deltas** in `docs/maturity-history.md`:
+
+   ```bash
+   npm run maturity:refresh                 # dry run: prints the delta table
+   npm run maturity:refresh -- --write \
+     --release <version> --date <YYYY-MM-DD>
+   ```
+
+   `scripts/maturity-refresh.mjs` diffs the refreshed §5 table against the
+   latest history entry — per-category Δ level / Δ pts, subtotals, total — and
+   with `--write` appends the entry plus its `## Summary` row. It never scores
+   anything; it fails loudly if §5 no longer has all 20 rows. Commit both
+   files in the same change.
+4. **Apply the G3 consequences** from the report: a category that *regressed*
+   loses its L5 streak (streak restarts at 1); a category at ≥ 90 pts whose
+   streak survived is eligible for L5 on the *next* refresh. Note the verdicts
+   in the history entry if they change anything §5 says.
+
+### 8.3 Where deltas live
+
+`docs/maturity-history.md` is the single delta log: a `## Summary` table
+(release, date, commit, System/UX/total, Δ total) with one detail entry per
+refresh carrying the 20 category rows and their deltas. The scorecard keeps
+only the current score; all history — including the baseline above — is in the
+log, so §5 can be rewritten in place each release without losing the trend.

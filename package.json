@@ -51,6 +51,7 @@
   "scripts": {
     "build": "tsup && node scripts/generate-dtcg.mjs && node scripts/generate-registry.mjs",
     "registry": "node scripts/generate-registry.mjs",
+    "maturity:refresh": "node scripts/maturity-refresh.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "size": "size-limit",
     "prepublishOnly": "npm run build"
