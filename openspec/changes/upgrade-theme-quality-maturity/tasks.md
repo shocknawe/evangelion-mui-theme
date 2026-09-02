@@ -7,7 +7,7 @@
 
 ## 2. Component inventory & customization classification (FR-1)
 
-- [ ] 2.1 Inventory every `components/*` export; classify each as `simple-props`, `slots`, or `composition-only`
+- [x] 2.1 Inventory every `components/*` export; classify each as `simple-props`, `slots`, or `composition-only`
 - [ ] 2.2 Identify any existing `*Component/*Props`-style APIs to migrate; record the slot-candidate list (track/needle, header, leading/trailing, etc.)
 - [x] 2.3 Record the classes/class-naming decision (`Nerv*` shape, `root` key) in the change for implementers
 
