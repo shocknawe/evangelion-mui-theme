@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, animSnap, resolveClasses, toneHue } from './util';
 
 /**
  * A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`; `exec`
@@ -115,7 +115,7 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
           );
         })}
         {count >= rows.length && (
-          <Box component="span" className={resolveClasses('Terminal', 'cursor', classes)} sx={{ display: 'inline-block', width: 8, height: 13, background: t.nerv.hue.amber, verticalAlign: '-2px', animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
+          <Box component="span" className={resolveClasses('Terminal', 'cursor', classes)} sx={{ display: 'inline-block', width: 8, height: 13, background: t.nerv.hue.amber, verticalAlign: '-2px', ...(reduced ? { animation: 'none' } : { animationName: 'nervBlink', animationDuration: `${t.nerv.motion.durations.blink}ms`, animationTimingFunction: animSnap(t), animationIterationCount: 'infinite' }) }} />
         )}
       </Box>
     </Box>
@@ -178,7 +178,16 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, status, p
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [rows]);
 
-  const blink = { animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` } as const;
+  // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
+  // `animation` SHORTHAND — the whole declaration would be dropped.
+  const blink = reduced
+    ? ({ animation: 'none' } as const)
+    : ({
+        animationName: 'nervBlink',
+        animationDuration: `${t.nerv.motion.durations.blink}ms`,
+        animationTimingFunction: animSnap(t),
+        animationIterationCount: 'infinite',
+      } as const);
   const Cursor = () => <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', ...blink }} />;
 
   return (

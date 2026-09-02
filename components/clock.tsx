@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion, pad2 } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, animSnap, resolveClasses } from './util';
 
 const SEGMAP: Record<number, string> = {
   0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc',
@@ -71,7 +71,7 @@ export function DigitalClock({ tone = 'orange', size = 20, classes, className, s
   const { now } = useNow();
   const c = tone === 'mint' ? t.nerv.hue.mint : t.nerv.hue.orange;
   const colon = (
-    <Box component="span" sx={{ animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }}>:</Box>
+    <Box component="span" sx={{ ...(reduced ? { animation: 'none' } : { animationName: 'nervBlink', animationDuration: `${t.nerv.motion.durations.blink}ms`, animationTimingFunction: animSnap(t), animationIterationCount: 'infinite' }) }}>:</Box>
   );
   return (
     <Box aria-label="system clock" {...rest} className={resolveClasses('DigitalClock', 'root', classes, className)} sx={[{ fontVariantNumeric: 'tabular-nums', fontSize: size, color: c, textShadow: `0 0 6px ${tone === 'mint' ? 'rgba(82,242,154,.6)' : 'rgba(242,100,0,.7)'}`, letterSpacing: '0.06em', fontFamily: t.nerv.fonts.mono }, ...(Array.isArray(sx) ? sx : [sx])]}>

@@ -194,3 +194,17 @@ export const focusRing = (t: Theme) => ({
   outline: `2px solid ${t.nerv.hue.paper}`,
   outlineOffset: 2,
 });
+
+/**
+ * `t.nerv.motion.snap` as an `animation-timing-function`.
+ *
+ * Chromium rejects `steps(1, jump-none)` for timing functions entirely —
+ * `jump-none` needs n >= 2, so the value fails `CSS.supports` for BOTH
+ * `animation-timing-function` and `transition-timing-function`, and it is
+ * dropped from the `animation:` shorthand *and* the longhand (which used to
+ * drop the whole blink declaration). `steps(1, end)` parses in both contexts
+ * and is the nearest parseable hard snap: with the 1 Hz keyframes (which hold
+ * their values on both sides of the 1%-wide transition window) the difference
+ * from the token's midpoint step is <5ms.
+ */
+export const animSnap = (t: Theme): string => t.nerv.motion.snap.replace('jump-none', 'end');

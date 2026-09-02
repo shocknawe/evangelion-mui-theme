@@ -8,7 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, animSnap, resolveClasses } from './util';
 import { SegmentBar } from './meters';
 
 export interface StepFlowStep {
@@ -70,7 +70,17 @@ export function StepFlow({ steps, active, classes, className, sx, ...rest }: Ste
                   ...(done
                     ? { background: t.nerv.hue.mint, borderColor: t.nerv.hue.mint, color: t.nerv.hue.void }
                     : now
-                      ? { background: t.nerv.hue.blue, borderColor: t.nerv.hue.blue, color: t.nerv.hue.void, animation: `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }
+                      ? {
+                          background: t.nerv.hue.blue,
+                          borderColor: t.nerv.hue.blue,
+                          color: t.nerv.hue.void,
+                          // Longhands: `steps(1, jump-none)` (motion.snap) is rejected
+                          // inside the `animation` SHORTHAND — it would be dropped.
+                          animationName: 'nervBlink',
+                          animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                          animationTimingFunction: animSnap(t),
+                          animationIterationCount: 'infinite',
+                        }
                       : { background: 'transparent', borderColor: t.nerv.hue.greenDim, color: t.nerv.hue.greenMap }),
                 })}
               >

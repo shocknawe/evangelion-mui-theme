@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, animSnap, resolveClasses } from './util';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
@@ -175,7 +175,12 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
     fontSize: 20,
     letterSpacing: '0.12em',
     p: '1px 14px',
-    animation: `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite`,
+    // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
+    // `animation` SHORTHAND — the whole declaration would be dropped.
+    animationName: 'nervBlink',
+    animationDuration: `${t.nerv.motion.durations.blink}ms`,
+    animationTimingFunction: animSnap(t),
+    animationIterationCount: 'infinite',
   });
 
   return (
@@ -346,7 +351,16 @@ export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, on
     cursor: decided ? 'default' : 'pointer',
     fontFamily: t.nerv.fonts.mono,
     opacity: decided ? 0.35 : 1,
-    animation: blink && !decided ? `nervBtnBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+    // Longhands — see the GateDecisionDialog note above (`motion.snap` breaks
+    // the `animation` shorthand).
+    ...(blink && !decided
+      ? {
+          animationName: 'nervBtnBlink',
+          animationDuration: `${t.nerv.motion.durations.blink}ms`,
+          animationTimingFunction: animSnap(t),
+          animationIterationCount: 'infinite',
+        }
+      : { animation: 'none' }),
     '&:hover': decided ? null : { background: hue, color: t.nerv.hue.void },
     '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: 2 },
     '&:disabled': { opacity: 0.35, cursor: 'default', animation: 'none' },

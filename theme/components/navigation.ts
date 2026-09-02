@@ -5,7 +5,7 @@
  * stepper renders chamfered OODA-style nodes (done = mint fill, active = blink).
  */
 import type { Components, Theme } from '@mui/material/styles';
-import { KEYFRAMES, v } from './util';
+import { KEYFRAMES, snapForAnimation, v } from './util';
 
 export const navigation: Pick<
   Components<Theme>,
@@ -176,7 +176,12 @@ export const navigation: Pick<
         '&.Mui-active': {
           color: theme.nerv.hue.blue,
           borderColor: theme.nerv.hue.blue,
-          animation: `${KEYFRAMES.blink} ${theme.nerv.motion.durations.blink}ms ${theme.nerv.motion.snap} infinite`,
+          // Longhands — `steps(1, jump-none)` (motion.snap) is rejected inside
+          // the `animation` SHORTHAND; see theme/components/buttons.ts.
+          animationName: KEYFRAMES.blink,
+          animationDuration: `${theme.nerv.motion.durations.blink}ms`,
+          animationTimingFunction: snapForAnimation(theme),
+          animationIterationCount: 'infinite',
         },
       }),
       text: ({ theme, ownerState }) => ({

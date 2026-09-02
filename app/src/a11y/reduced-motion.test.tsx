@@ -79,7 +79,10 @@ afterEach(() => {
 describe('reduced-motion inventory (Task 6.3)', () => {
   it('covers every public component with direct motion mechanics', () => {
     const componentsDir = resolve(process.cwd(), '../components');
-    const motionSyntax = /useReducedMotion\(|\banimation\s*:|\btransition\s*:|\bsetInterval\(|\bsetTimeout\(|\brequestAnimationFrame\(|behavior:\s*reduced\s*\?/;
+    // `animation:` covers the shorthand; the longhand group covers the
+    // longhand form the 4.3 blink fix moved to (`animationName`, etc.), which
+    // keeps the inventory identical while the declarations themselves parse.
+    const motionSyntax = /useReducedMotion\(|\banimation(?:Name|TimingFunction|Duration|IterationCount)?\s*:|\btransition\s*:|\bsetInterval\(|\bsetTimeout\(|\brequestAnimationFrame\(|behavior:\s*reduced\s*\?/;
     const discovered = new Set<string>();
 
     for (const file of readdirSync(componentsDir).filter((name) => name.endsWith('.tsx'))) {

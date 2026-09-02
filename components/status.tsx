@@ -5,7 +5,7 @@
 import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, type Tone, resolveClasses, resolveSlot, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, type Tone, animSnap, resolveClasses, resolveSlot, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -170,7 +170,16 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, classes, 
                 p: '1px 6px',
                 fontSize: 9,
                 borderRadius: `${t.nerv.radius.chip}px`,
-                animation: u.status === 'CAUTION' && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+                // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside
+                // the `animation` SHORTHAND — it would be dropped.
+                ...(u.status === 'CAUTION' && !reduced
+                  ? {
+                      animationName: 'nervBlink',
+                      animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                      animationTimingFunction: animSnap(t),
+                      animationIterationCount: 'infinite',
+                    }
+                  : { animation: 'none' }),
               })}
             >
               {u.status}
@@ -719,7 +728,16 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, slots, 
             p: '2px 8px',
             borderRadius: `${t.nerv.radius.chip}px`,
             textShadow: status === 'RETRIED' ? '0 0 4px currentColor' : 'none',
-            animation: status === 'RETRIED' && !reduced ? `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` : 'none',
+            // Longhands — see the CAUTION note above (`motion.snap` breaks the
+            // `animation` shorthand).
+            ...(status === 'RETRIED' && !reduced
+              ? {
+                  animationName: 'nervBlink',
+                  animationDuration: `${t.nerv.motion.durations.blink}ms`,
+                  animationTimingFunction: animSnap(t),
+                  animationIterationCount: 'infinite',
+                }
+              : { animation: 'none' }),
           };
         }}
       >
