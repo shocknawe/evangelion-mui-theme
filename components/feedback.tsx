@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
+import { useReducedMotion } from './hooks';
 import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
 
 /* ------------------------------------------------------------------ */
@@ -34,13 +35,28 @@ export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
  */
 export function HazardPrompt({ jp, en, onDecide, height = 150, classes, className, sx, ...rest }: HazardPromptProps) {
   const t = useTheme();
+  const reduced = useReducedMotion();
   const [flash, setFlash] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  useEffect(() => {
+    if (reduced) {
+      if (timer.current) clearTimeout(timer.current);
+      setFlash(false);
+    }
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [reduced]);
+
   const trigger = () => {
-    setFlash(true);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setFlash(false), t.nerv.motion.durations.fast);
+    if (reduced) {
+      setFlash(false);
+    } else {
+      setFlash(true);
+      timer.current = setTimeout(() => setFlash(false), t.nerv.motion.durations.fast);
+    }
     onDecide?.();
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {

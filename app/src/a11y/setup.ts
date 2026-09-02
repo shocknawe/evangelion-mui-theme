@@ -11,12 +11,19 @@
 // React 19 + @testing-library/react act() environment.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-// MUI useMediaQuery / useReducedMotion.
+// MUI useMediaQuery / useReducedMotion. Tests can opt into reduced motion before
+// mounting a fixture; the default remains the browser's normal no-preference.
+let reducedMotion = false;
+
+export function setReducedMotion(value: boolean): void {
+  reducedMotion = value;
+}
+
 if (typeof window !== 'undefined' && !window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: (query: string) => ({
-      matches: false,
+      matches: query === '(prefers-reduced-motion: reduce)' && reducedMotion,
       media: query,
       onchange: null,
       addListener: () => {},
