@@ -50,7 +50,7 @@
 
 ## 8. Maturity scorecard (FR-6)
 
-- [ ] 8.1 Author `docs/maturity-scorecard.md`: CMM L0–L5 across 20 categories (10 system, 10 UX), each 0–5
+- [x] 8.1 Author `docs/maturity-scorecard.md`: CMM L0–L5 across 20 categories (10 system, 10 UX), each 0–5
 - [ ] 8.2 Apply evidence weighting (prose ≤40, structural ≤40, verification +≤20) and score current state
 - [ ] 8.3 Record the baseline score and wire a per-release refresh step that logs deltas
 
