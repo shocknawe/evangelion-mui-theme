@@ -31,7 +31,7 @@
 - [x] 5.1 Add `size-limit` config measuring gzip bytes of the theme and each component entry
 - [x] 5.2 Commit a version-controlled budget table seeded from first measured numbers
 - [x] 5.3 Document the shared-runtime accounting rule (theme singleton / Emotion cache counted once)
-- [ ] 5.4 Wire CI to fail on over-budget exports unless the same PR bumps the budget entry; verify both fail and pass paths
+- [x] 5.4 Wire CI to fail on over-budget exports unless the same PR bumps the budget entry; verify both fail and pass paths
 
 ## 6. Accessibility audit in CI (FR-5)
 
