@@ -25,6 +25,14 @@
       "types": "./dist/theme.d.ts",
       "import": "./dist/theme.js"
     },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "import": "./dist/tokens.js"
+    },
+    "./overrides": {
+      "types": "./dist/overrides.d.ts",
+      "import": "./dist/overrides.js"
+    },
     "./components": {
       "types": "./dist/components.d.ts",
       "import": "./dist/components.js"

@@ -1,6 +1,6 @@
 ## 1. Token module split & extension contract (FR-3)
 
-- [ ] 1.1 Split `theme/` so tokens and component overrides are separately importable modules; keep `theme/tokens.ts` as the single source of truth
+- [x] 1.1 Split `theme/` so tokens and component overrides are separately importable modules; keep `theme/tokens.ts` as the single source of truth
 - [ ] 1.2 Verify no off-token hex/size/timing values remain in `theme/` or `components/` (grep audit; fix or tokenize any strays)
 - [ ] 1.3 Add an "Extending the theme" section to `theme/README.md` with a runnable shallow-spread example and a named "do not deep-merge" anti-pattern
 - [ ] 1.4 Confirm no deep-merge helper is exported; `app/` and `doc-site/` still build against the split modules

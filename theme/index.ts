@@ -31,6 +31,16 @@ const chamfer = (cut: number = radii.chamfer) =>
 const hazard = (a: string = hue.crimson, b = '#000') =>
   `repeating-linear-gradient(-45deg, ${a} 0 12px, ${b} 12px 24px)`;
 
+/**
+ * Re-exports from the split modules so `import { … } from './theme'` keeps
+ * working without reaching for a second entry point. The raw tokens are also
+ * available standalone via `phosphor-console-theme/tokens` and the override map
+ * via `phosphor-console-theme/overrides` — those two entries are import-safe
+ * on their own and never pull each other in.
+ */
+export { components } from './components';
+export * from './tokens';
+
 export const theme = createTheme({
   cssVariables: { colorSchemeSelector: 'class', cssVarPrefix: 'mui' },
   defaultColorScheme: 'dark', // the canonical (and only) Phosphor Console scheme
