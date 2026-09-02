@@ -35,6 +35,92 @@ export default function App() {
 }
 ```
 
+## Extending the theme
+
+Extend with a **shallow object spread**. `theme` is a plain object, so each
+top-level key (`palette`, `typography`, `components`, `transitions`, …) is
+replaced one key at a time — spread the base value at *that key* when you want
+to add to it, never splice into something nested deeper. Define the result once
+at module scope (outside your component), never per render:
+
+```tsx
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import { theme } from 'phosphor-console-theme';
+
+// One level per key. `components` is a top-level key, so spread the base
+// override map and add or replace whole component entries.
+const consoleTheme: Theme = {
+  ...theme,
+  components: {
+    ...theme.components,
+    MuiButton: {
+      ...theme.components?.MuiButton,
+      defaultProps: {
+        ...theme.components?.MuiButton?.defaultProps,
+        // keep the console grammar, tighten your own app's defaults
+        size: 'small',
+      },
+    },
+  },
+};
+
+export default function App() {
+  return (
+    <ThemeProvider theme={consoleTheme} defaultMode="dark">
+      <CssBaseline />
+      {/* … */}
+    </ThemeProvider>
+  );
+}
+```
+
+A shallow spread keeps the whole base theme intact — including the structural
+`theme.nerv.*` tokens that the override callbacks read (`theme.nerv.motion`,
+`theme.nerv.radius`, …) and the `--mui-*` variables `cssVariables` already
+emitted. Replace a top-level key only when you mean to replace it wholesale.
+
+> **Do not deep-merge.** There is no deep-merge helper in this package, on
+> purpose:
+>
+> - **First-render cost.** A deep merge walks every key of a fully built theme
+>   (palette, typography variants, ~40 component override objects) on every
+>   call. MUI's own guidance is to build the theme once and spread — and note
+>   that `createTheme(baseTheme, patch)` inside MUI *is* a deepmerge, so prefer
+>   the explicit spread above, where every replaced key is visible.
+> - **It breaks the single-source token guarantee.** `tokens.ts` is the only
+>   place a hex, size, or timing value may live. Deep-merging silently writes
+>   new values into nested groups (`theme.nerv.hue`,
+>   `components.MuiButton.styleOverrides`), so styles no longer trace to a
+>   token and you have two sources of truth.
+> - **It desyncs the CSS variables.** `cssVariables` is on, so palette values
+>   were resolved to `--mui-*` vars when the theme was created. Merging a new
+>   color into the built theme object does not regenerate `theme.vars` — the
+>   stylesheet and the object disagree.
+>
+> If a change you're making feels like it needs a deep merge, it's a token or
+> override change: make it in `theme/` (or open an issue), not in a consumer.
+
+### Tokens and overrides are separately importable
+
+`phosphor-console-theme/tokens` is the raw, import-safe token module — usable
+with no theme and no overrides at all:
+
+```tsx
+import { createTheme } from '@mui/material/styles';
+import { hue, motion } from 'phosphor-console-theme/tokens';
+
+const myTheme = createTheme({
+  palette: { mode: 'dark', primary: { main: hue.mint } },
+  transitions: { duration: { standard: motion.durations.fast } },
+});
+```
+
+`phosphor-console-theme/overrides` is the bare `components` override map. Its
+style callbacks read `theme.nerv.*`, so if you feed it to your own
+`createTheme`, pair it with the structural tokens — the quickest way is the
+spread above, starting from the full theme.
+
 ## Developing in this repo
 
 If you're editing the theme *source* (not consuming the published package),
