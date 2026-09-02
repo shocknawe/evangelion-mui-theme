@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type WithRef } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
@@ -20,6 +20,8 @@ export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
   onDecide?: () => void;
   /** Height of the surface (px). @default 150 */
   height?: number;
+  /** Class overrides by part: `root` (the hazard surface). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -30,7 +32,7 @@ export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
  *
  * @example <HazardPrompt jp="裁定" en="DECIDE" onDecide={route} />
  */
-export function HazardPrompt({ jp, en, onDecide, height = 150, sx, ...rest }: HazardPromptProps) {
+export function HazardPrompt({ jp, en, onDecide, height = 150, classes, className, sx, ...rest }: HazardPromptProps) {
   const t = useTheme();
   const [flash, setFlash] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -58,6 +60,7 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, sx, ...rest }: Ha
       onClick={trigger}
       onKeyDown={onKey}
       {...rest}
+      className={resolveClasses('HazardPrompt', 'root', classes, className)}
       sx={[
         (t) => ({
           position: 'relative',
@@ -123,6 +126,8 @@ export interface GateDecisionDialogProps extends RootHTMLAttributes, WithRef {
   jp?: string;
   /** English action. @default 'DECIDE' */
   en?: string;
+  /** Class overrides by part: `root` (the full-screen surface), `rail` (the response bar), `marker` (a corner GATE chip). */
+  classes?: ClassesOf<'root' | 'rail' | 'marker'>;
 }
 
 const ACTIONS: { kind: GateDecision; jp: string; en: string; tone: 'mint' | 'red' | 'blue' }[] = [
@@ -137,7 +142,7 @@ const ACTIONS: { kind: GateDecision; jp: string; en: string; tone: 'mint' | 'red
  * item under review, and an approve / deny / defer response rail. One focal job.
  * Focus lands on APPROVE; Escape/backdrop call `onClose`.
  */
-export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE', ...rest }: GateDecisionDialogProps) {
+export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定', en = 'DECIDE', classes, className, ...rest }: GateDecisionDialogProps) {
   const approveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -161,6 +166,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
     <Modal open={open} onClose={onClose} aria-label="Gate decision required" closeAfterTransition={false}>
       <Box
         {...rest}
+        className={resolveClasses('GateDecisionDialog', 'root', classes, className)}
         sx={(t) => ({
           position: 'fixed',
           inset: 0,
@@ -171,7 +177,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
         })}
       >
         <Box sx={(th) => stripes(th)} />
-        <Box component="span" sx={(t) => ({ ...cornerChip(t), top: 36, left: 26 })}>GATE</Box>
+        <Box component="span" className={resolveClasses('GateDecisionDialog', 'marker', classes)} sx={(t) => ({ ...cornerChip(t), top: 36, left: 26 })}>GATE</Box>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.4vh', px: 2 }}>
           <Box sx={(t) => ({ fontFamily: t.nerv.fonts.jp, fontWeight: 800, fontSize: '4.2vh', color: t.nerv.hue.void, border: `3px solid ${t.nerv.hue.void}`, p: '2px 24px', letterSpacing: '0.5em', textIndent: '0.5em' })}>
             {jp}
@@ -183,8 +189,8 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
             ITEM: <Box component="b" sx={(t) => ({ background: t.nerv.hue.void, color: t.nerv.hue.redHi, p: '2px 10px' })}>{item ?? '—'}</Box>
           </Box>
         </Box>
-        <Box component="span" sx={(t) => ({ ...cornerChip(t), bottom: 110, right: 26 })}>GATE</Box>
-        <Box sx={(t) => ({ flex: 'none', display: 'flex', gap: 1.25, alignItems: 'stretch', background: t.nerv.hue.void, borderTop: `2px solid ${t.nerv.hue.orange}`, p: '12px 16px' })}>
+        <Box component="span" className={resolveClasses('GateDecisionDialog', 'marker', classes)} sx={(t) => ({ ...cornerChip(t), bottom: 110, right: 26 })}>GATE</Box>
+        <Box className={resolveClasses('GateDecisionDialog', 'rail', classes)} sx={(t) => ({ flex: 'none', display: 'flex', gap: 1.25, alignItems: 'stretch', background: t.nerv.hue.void, borderTop: `2px solid ${t.nerv.hue.orange}`, p: '12px 16px' })}>
           <Box component="span" sx={(t) => ({ display: 'flex', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.18em', fontFamily: t.nerv.fonts.mono })}>
             RESPONSE REQUIRED:
           </Box>
@@ -236,6 +242,8 @@ export interface YesNoGateProps extends RootHTMLAttributes, WithRef {
   noResponse?: React.ReactNode;
   /** Fired with the chosen answer. */
   onDecide?: (answer: 'yes' | 'no') => void;
+  /** Class overrides by part: `root` (the gate). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -247,7 +255,7 @@ export interface YesNoGateProps extends RootHTMLAttributes, WithRef {
  * @example
  * <YesNoGate yesResponse="◉ ACCEPTED" noResponse="✕ DEFERRED" onDecide={track} />
  */
-export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, sx, ...rest }: YesNoGateProps) {
+export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noResponse, onDecide, classes, className, sx, ...rest }: YesNoGateProps) {
   const [sel, setSel] = useState<'yes' | 'no' | null>(null);
   const choose = (a: 'yes' | 'no') => { setSel(a); onDecide?.(a); };
 
@@ -272,7 +280,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
   };
 
   return (
-    <Box {...rest} sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('YesNoGate', 'root', classes, className)} sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box role="group" aria-label="decision" sx={{ display: 'flex', gap: 2 }}>
         <Box component="button" type="button" aria-pressed={sel === 'yes'} onClick={() => choose('yes')} sx={btn('yes')}>{yesLabel}</Box>
         <Box component="button" type="button" aria-pressed={sel === 'no'} onClick={() => choose('no')} sx={btn('no')}>{noLabel}</Box>
@@ -301,6 +309,8 @@ export interface ApprovalBarProps extends RootHTMLAttributes, WithRef {
   denyLabel?: string;
   /** Once decided, replaces the buttons with a verdict (buttons disable). */
   verdict?: { ok: boolean; text: React.ReactNode } | null;
+  /** Class overrides by part: `root` (the bar). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -309,7 +319,7 @@ export interface ApprovalBarProps extends RootHTMLAttributes, WithRef {
  * (approve blinks like a primary action). Once decided, the actions disable and
  * a mint/red verdict takes their place. Pairs under {@link LogConsole}.
  */
-export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, sx, ...rest }: ApprovalBarProps) {
+export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, onDeny, approveLabel = 'APPROVE · 承認', denyLabel = 'DENY · 否認', verdict, classes, className, sx, ...rest }: ApprovalBarProps) {
   const decided = !!verdict;
   const btn = (t: Theme, hue: string, blink = false) => ({
     border: `1px solid ${hue}`,
@@ -328,6 +338,7 @@ export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, on
   return (
     <Box
       {...rest}
+      className={resolveClasses('ApprovalBar', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', border: `1px solid ${t.nerv.hue.amberDim}`, borderTop: 'none', p: '10px 12px' }),
         ...(Array.isArray(sx) ? sx : [sx]),

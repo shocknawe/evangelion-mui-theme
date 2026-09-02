@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
 
 /**
  * A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`; `exec`
@@ -33,6 +33,8 @@ export interface TerminalProps extends Omit<RootHTMLAttributes, 'title'>, WithRe
   minBodyHeight?: number;
   /** Max height of the body before it scrolls (px, or `'none'` to grow). @default 190 */
   maxBodyHeight?: number | 'none';
+  /** Class overrides by part: `root`, `header` (the title bar), `line` (a log row), `cursor`. */
+  classes?: ClassesOf<'root' | 'header' | 'line' | 'cursor'>;
   sx?: SxProps<Theme>;
 }
 
@@ -49,7 +51,7 @@ const DEFAULT_ROWS: TerminalRow[] = [
   { k: 'sum', t: '7 CHECKS · 6 PASS · 1 FLAGGED' },
 ];
 
-export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, minBodyHeight = 150, maxBodyHeight = 190, sx, ...rest }: TerminalProps) {
+export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', typewriter = true, speed = 130, minBodyHeight = 150, maxBodyHeight = 190, classes, className, sx, ...rest }: TerminalProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const still = reduced || !typewriter;
@@ -77,8 +79,8 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
 
   const dim = t.palette.nerv.termDim;
   return (
-    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.amberDim}`, background: 'rgba(244,159,9,.02)', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: '6px 12px', borderBottom: `1px solid ${t.nerv.hue.amberDim}`, fontSize: 9, color: t.nerv.hue.amber, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono }}>
+    <Box {...rest} className={resolveClasses('Terminal', 'root', classes, className)} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.amberDim}`, background: 'rgba(244,159,9,.02)', width: '100%' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box className={resolveClasses('Terminal', 'header', classes)} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: '6px 12px', borderBottom: `1px solid ${t.nerv.hue.amberDim}`, fontSize: 9, color: t.nerv.hue.amber, letterSpacing: '0.1em', fontFamily: t.nerv.fonts.mono }}>
         {title}
         <Box sx={{ display: 'flex', gap: '5px', ml: 'auto' }}>
           {[t.nerv.hue.redHi, t.nerv.hue.amber, t.nerv.hue.mint].map((c, i) => (
@@ -90,14 +92,14 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
         {rows.slice(0, count).map((r, i) => {
           if (r.k === 'exec')
             return (
-              <Box key={i} sx={{ whiteSpace: 'pre-wrap', textTransform: 'none', letterSpacing: '0.02em' }}>
+              <Box key={i} className={resolveClasses('Terminal', 'line', classes)} sx={{ whiteSpace: 'pre-wrap', textTransform: 'none', letterSpacing: '0.02em' }}>
                 <Box component="span" sx={{ color: t.nerv.hue.amberDim }}>{r.ts}</Box>{' '}
                 <Box component="span" sx={{ color: t.nerv.hue.amber }}>{r.msg}</Box>
               </Box>
             );
           if (r.k === 'chk')
             return (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'baseline', gap: 1, whiteSpace: 'nowrap' }}>
+              <Box key={i} className={resolveClasses('Terminal', 'line', classes)} sx={{ display: 'flex', alignItems: 'baseline', gap: 1, whiteSpace: 'nowrap' }}>
                 <Box component="span" sx={{ color: t.nerv.hue.amber }}>{r.l}</Box>
                 <Box sx={{ flex: 1, borderBottom: `1px dotted ${t.nerv.hue.amberDim}`, height: 0, mb: '4px', minWidth: 12 }} />
                 <Box component="span" sx={{ fontWeight: 700, color: r.ok ? t.nerv.hue.amber : t.nerv.hue.redHi, textShadow: r.ok ? 'none' : '0 0 4px currentColor' }}>
@@ -107,13 +109,13 @@ export function Terminal({ rows = DEFAULT_ROWS, title = 'STDOUT // DIAGNOSTIC', 
             );
           const color = r.k === 'rule' ? dim : r.k === 'note' ? t.nerv.hue.redHi : r.k === 'sum' ? t.nerv.hue.mint : t.nerv.hue.amber;
           return (
-            <Box key={i} sx={{ color, fontSize: r.k === 'note' ? 11 : 12 }}>
+            <Box key={i} className={resolveClasses('Terminal', 'line', classes)} sx={{ color, fontSize: r.k === 'note' ? 11 : 12 }}>
               {r.t}
             </Box>
           );
         })}
         {count >= rows.length && (
-          <Box component="span" sx={{ display: 'inline-block', width: 8, height: 13, background: t.nerv.hue.amber, verticalAlign: '-2px', animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
+          <Box component="span" className={resolveClasses('Terminal', 'cursor', classes)} sx={{ display: 'inline-block', width: 8, height: 13, background: t.nerv.hue.amber, verticalAlign: '-2px', animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
         )}
       </Box>
     </Box>
@@ -149,6 +151,8 @@ export interface LogConsoleProps extends Omit<RootHTMLAttributes, 'title'>, With
   prompt?: ReactNode;
   /** Blinking cursor after the last row (or in the prompt row). @default true */
   cursor?: boolean;
+  /** Class overrides by part: `root` (the console). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -165,7 +169,7 @@ const TAG_TONE: Record<LogTag, keyof Theme['nerv']['hue']> = {
  * connection status bar. Presentational — feed it `rows`; it auto-scrolls to the
  * newest and can host an approval bar beneath it.
  */
-export function LogConsole({ title = 'STDOUT', rows, connected = true, status, prompt, cursor = true, sx, ...rest }: LogConsoleProps) {
+export function LogConsole({ title = 'STDOUT', rows, connected = true, status, prompt, cursor = true, classes, className, sx, ...rest }: LogConsoleProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -178,7 +182,7 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, status, p
   const Cursor = () => <Box component="span" sx={{ display: 'inline-block', width: 7, height: 11, background: t.nerv.hue.amber, verticalAlign: '-1px', ...blink }} />;
 
   return (
-    <Box {...rest} sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('LogConsole', 'root', classes, className)} sx={[{ display: 'flex', flexDirection: 'column', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: t.nerv.hue.amber, letterSpacing: '0.12em', border: `1px solid ${t.nerv.hue.amberDim}`, borderBottom: 'none', p: '6px 12px', fontFamily: t.nerv.fonts.mono }}>
         <span>{title}</span>
         {status !== undefined ? (

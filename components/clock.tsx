@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion, pad2 } from './hooks';
-import { type RootHTMLAttributes, type WithRef } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
 
 const SEGMAP: Record<number, string> = {
   0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc',
@@ -55,6 +55,8 @@ export interface DigitalClockProps extends RootHTMLAttributes, WithRef {
   tone?: 'orange' | 'mint';
   /** Font size (px). @default 20 */
   size?: number;
+  /** Class overrides by part: `root` (the readout). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -63,7 +65,7 @@ export interface DigitalClockProps extends RootHTMLAttributes, WithRef {
  * colons — the header/nav clock. For the seven-segment skins use
  * {@link SevenSegClock}.
  */
-export function DigitalClock({ tone = 'orange', size = 20, sx, ...rest }: DigitalClockProps) {
+export function DigitalClock({ tone = 'orange', size = 20, classes, className, sx, ...rest }: DigitalClockProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const { now } = useNow();
@@ -72,7 +74,7 @@ export function DigitalClock({ tone = 'orange', size = 20, sx, ...rest }: Digita
     <Box component="span" sx={{ animation: reduced ? 'none' : `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }}>:</Box>
   );
   return (
-    <Box aria-label="system clock" {...rest} sx={[{ fontVariantNumeric: 'tabular-nums', fontSize: size, color: c, textShadow: `0 0 6px ${tone === 'mint' ? 'rgba(82,242,154,.6)' : 'rgba(242,100,0,.7)'}`, letterSpacing: '0.06em', fontFamily: t.nerv.fonts.mono }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box aria-label="system clock" {...rest} className={resolveClasses('DigitalClock', 'root', classes, className)} sx={[{ fontVariantNumeric: 'tabular-nums', fontSize: size, color: c, textShadow: `0 0 6px ${tone === 'mint' ? 'rgba(82,242,154,.6)' : 'rgba(242,100,0,.7)'}`, letterSpacing: '0.06em', fontFamily: t.nerv.fonts.mono }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {pad2(now.getHours())}{colon}{pad2(now.getMinutes())}{colon}{pad2(now.getSeconds())}
     </Box>
   );
@@ -87,6 +89,8 @@ export interface SevenSegClockProps extends RootHTMLAttributes, WithRef {
    * 2nd and 4th digit.
    */
   digits?: string;
+  /** Class overrides by part: `root`, `chip` (the paper timestamp skin), `countdown` (the glowing readout). */
+  classes?: ClassesOf<'root' | 'chip' | 'countdown'>;
   sx?: SxProps<Theme>;
 }
 
@@ -95,7 +99,7 @@ export interface SevenSegClockProps extends RootHTMLAttributes, WithRef {
  * orange readout; `both` stacks them. Pass `digits` to drive it from an arbitrary
  * `HHMMSS` value (uptime, elapsed) rather than the current time.
  */
-export function SevenSegClock({ variant = 'both', digits, sx, ...rest }: SevenSegClockProps) {
+export function SevenSegClock({ variant = 'both', digits, classes, className, sx, ...rest }: SevenSegClockProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const { now, tick } = useNow();
@@ -116,9 +120,9 @@ export function SevenSegClock({ variant = 'both', digits, sx, ...rest }: SevenSe
   );
 
   return (
-    <Box {...rest} sx={[{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('SevenSegClock', 'root', classes, className)} sx={[{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {variant !== 'countdown' && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', background: t.nerv.hue.paper, p: '5px 9px 4px', borderRadius: `${t.nerv.radius.chip}px`, boxShadow: '0 0 10px rgba(237,248,214,.4), inset 0 0 4px rgba(10,10,10,.15)' }}>
+        <Box className={resolveClasses('SevenSegClock', 'chip', classes)} sx={{ display: 'flex', alignItems: 'center', gap: '2px', background: t.nerv.hue.paper, p: '5px 9px 4px', borderRadius: `${t.nerv.radius.chip}px`, boxShadow: '0 0 10px rgba(237,248,214,.4), inset 0 0 4px rgba(10,10,10,.15)' }}>
           {chipDigits.map((d, i) => (
             <Box key={i} sx={{ display: 'contents' }}>
               <Digit value={d} w={13} h={20} on={t.nerv.hue.void} off="rgba(10,10,10,.12)" />
@@ -134,7 +138,7 @@ export function SevenSegClock({ variant = 'both', digits, sx, ...rest }: SevenSe
       )}
 
       {variant !== 'chip' && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <Box className={resolveClasses('SevenSegClock', 'countdown', classes)} sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {cdDigits.map((d, i) => (
             <Box key={i} sx={{ display: 'contents' }}>
               <Digit value={d} w={20} h={30} on={t.nerv.hue.orange} off="rgba(242,100,0,.07)" glow />

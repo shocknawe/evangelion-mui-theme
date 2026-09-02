@@ -8,7 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type WithRef } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
 import { SegmentBar } from './meters';
 
 export interface StepFlowStep {
@@ -22,6 +22,8 @@ export interface StepFlowProps extends RootHTMLAttributes, WithRef {
   steps: StepFlowStep[];
   /** Index of the current step: earlier steps read as done, this one as active. */
   active: number;
+  /** Class overrides by part: `root`, `node` (a step column), `connector` (the rule between steps). */
+  classes?: ClassesOf<'root' | 'node' | 'connector'>;
   sx?: SxProps<Theme>;
 }
 
@@ -33,9 +35,9 @@ export interface StepFlowProps extends RootHTMLAttributes, WithRef {
  *   { short: 'LRN', label: 'LEARN' },
  * ]} />
  */
-export function StepFlow({ steps, active, sx, ...rest }: StepFlowProps) {
+export function StepFlow({ steps, active, classes, className, sx, ...rest }: StepFlowProps) {
   return (
-    <Box {...rest} sx={[{ display: 'flex', alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('StepFlow', 'root', classes, className)} sx={[{ display: 'flex', alignItems: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {steps.map((s, i) => {
         const done = i < active;
         const now = i === active;
@@ -43,6 +45,7 @@ export function StepFlow({ steps, active, sx, ...rest }: StepFlowProps) {
           <Box key={s.label} sx={{ display: 'contents' }}>
             {i > 0 && (
               <Box
+                className={resolveClasses('StepFlow', 'connector', classes)}
                 sx={(t) => ({
                   flex: 1,
                   height: 2,
@@ -52,7 +55,7 @@ export function StepFlow({ steps, active, sx, ...rest }: StepFlowProps) {
                 })}
               />
             )}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: 72 }}>
+            <Box className={resolveClasses('StepFlow', 'node', classes)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: 72 }}>
               <Box
                 sx={(t) => ({
                   width: 26,
@@ -109,6 +112,8 @@ export interface AgenticLoopProps extends RootHTMLAttributes, WithRef {
   active?: number;
   /** Self-cycle interval (ms). @default 900 */
   cycleMs?: number;
+  /** Class overrides by part: `root`, `node` (a lit/unlit loop station). */
+  classes?: ClassesOf<'root' | 'node'>;
   sx?: SxProps<Theme>;
 }
 
@@ -118,7 +123,7 @@ export interface AgenticLoopProps extends RootHTMLAttributes, WithRef {
  * mechanically; under reduced motion it holds the first node. For a *progress*
  * stepper (done-up-to-active) use {@link StepFlow} instead.
  */
-export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx, ...rest }: AgenticLoopProps) {
+export function AgenticLoop({ steps, caption, active, cycleMs = 900, classes, className, sx, ...rest }: AgenticLoopProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [internal, setInternal] = useState(0);
@@ -131,7 +136,7 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx, ...rest
   }, [active, reduced, cycleMs, steps.length]);
 
   return (
-    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '26px 20px 20px', position: 'relative' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('AgenticLoop', 'root', classes, className)} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '26px 20px 20px', position: 'relative' }), ...(Array.isArray(sx) ? sx : [sx])]}>
       {caption && <Box component="span" sx={(th) => ({ position: 'absolute', top: -9, left: 16, background: th.nerv.hue.void, px: 1, fontSize: 10, color: th.nerv.hue.orange, letterSpacing: '0.14em', fontFamily: th.nerv.fonts.mono })}>{caption}</Box>}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
         {steps.map((n, i) => {
@@ -140,6 +145,7 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx, ...rest
             <Box key={n.en} sx={{ display: 'contents' }}>
               {i > 0 && <Box component="span" sx={{ color: t.nerv.hue.orange, fontSize: 14, flex: '0 0 auto' }}>→</Box>}
               <Box
+                className={resolveClasses('AgenticLoop', 'node', classes)}
                 sx={(th) => ({
                   flex: 1,
                   textAlign: 'center',
@@ -178,6 +184,8 @@ export interface TaskCardProps extends Omit<RootHTMLAttributes, 'id' | 'title'>,
   pct: number;
   /** The step sequence. @default the OODA loop */
   steps?: StepFlowStep[];
+  /** Class overrides by part: `root`, `header` (id · title · action row), `progress` (the pct bar row). */
+  classes?: ClassesOf<'root' | 'header' | 'progress'>;
   sx?: SxProps<Theme>;
 }
 
@@ -191,17 +199,17 @@ const OODA: StepFlowStep[] = [
  * {@link StepFlow}, and a labeled progress bar. The composed task card used on
  * the agent-console dashboard.
  */
-export function TaskCard({ id, title, action, active, pct, steps = OODA, sx, ...rest }: TaskCardProps) {
+export function TaskCard({ id, title, action, active, pct, steps = OODA, classes, className, sx, ...rest }: TaskCardProps) {
   const t = useTheme();
   return (
-    <Box {...rest} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '10px 14px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
+    <Box {...rest} className={resolveClasses('TaskCard', 'root', classes, className)} sx={[(th) => ({ border: `1px solid ${th.nerv.hue.greenDim}`, p: '10px 14px' }), ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box className={resolveClasses('TaskCard', 'header', classes)} sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
         <Box component="span" sx={(th) => ({ color: th.nerv.hue.amber, fontSize: 11, whiteSpace: 'nowrap', fontFamily: th.nerv.fonts.mono })}>{id}</Box>
         <Box component="span" sx={(th) => ({ color: th.nerv.hue.paper, fontSize: 13, fontFamily: th.nerv.fonts.mono })}>{title}</Box>
         {action && <Box sx={{ ml: 'auto' }}>{action}</Box>}
       </Box>
       <StepFlow sx={{ mt: 1.5 }} active={active} steps={steps} />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mt: 1.25, fontSize: 10, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
+      <Box className={resolveClasses('TaskCard', 'progress', classes)} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mt: 1.25, fontSize: 10, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
         <span>PROGRESS</span>
         <SegmentBar value={pct} />
         <Box component="b" sx={{ color: t.nerv.hue.mint, fontWeight: 400 }}>{pct}%</Box>

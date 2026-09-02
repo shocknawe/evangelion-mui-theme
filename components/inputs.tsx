@@ -8,7 +8,7 @@ import { useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type WithRef, type Tone, toneHue, focusRing } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, focusRing, resolveClasses, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ChipRadioGroup — bilingual radio chips with figure/ground inversion. */
@@ -28,6 +28,8 @@ export interface ChipRadioGroupProps extends Omit<RootHTMLAttributes, 'value' | 
   onChange: (value: string) => void;
   /** Accessible name for the group. */
   ariaLabel?: string;
+  /** Class overrides by part: `root` (the group), `option` (a chip button). */
+  classes?: ClassesOf<'root' | 'option'>;
   sx?: SxProps<Theme>;
 }
 
@@ -41,9 +43,9 @@ export interface ChipRadioGroupProps extends Omit<RootHTMLAttributes, 'value' | 
  *   { value: 'critical', jp: '緊急', en: 'AAA', tone: 'red' },
  * ]} />
  */
-export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx, ...rest }: ChipRadioGroupProps) {
+export function ChipRadioGroup({ options, value, onChange, ariaLabel, classes, className, sx, ...rest }: ChipRadioGroupProps) {
   return (
-    <Box role="radiogroup" aria-label={ariaLabel} {...rest} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="radiogroup" aria-label={ariaLabel} {...rest} className={resolveClasses('ChipRadioGroup', 'root', classes, className)} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {options.map((opt) => {
         const on = value === opt.value;
         return (
@@ -51,6 +53,7 @@ export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx, ...res
             key={opt.value}
             component="button"
             role="radio"
+            className={resolveClasses('ChipRadioGroup', 'option', classes)}
             aria-checked={on}
             onClick={() => onChange(opt.value)}
             sx={(t) => {
@@ -99,6 +102,8 @@ export interface NumberStepperProps extends Omit<RootHTMLAttributes, 'value' | '
   step?: number;
   /** Width of the whole control (px). @default 150 */
   width?: number;
+  /** Class overrides by part: `root` (the stepper). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -107,7 +112,7 @@ export interface NumberStepperProps extends Omit<RootHTMLAttributes, 'value' | '
  *
  * @example <NumberStepper value={n} onChange={setN} min={1} max={16} />
  */
-export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, width = 150, sx, ...rest }: NumberStepperProps) {
+export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, width = 150, classes, className, sx, ...rest }: NumberStepperProps) {
   const clamp = (n: number) => Math.max(min, Math.min(max, n));
   const btn = (t: Theme) => ({
     width: 38,
@@ -121,7 +126,7 @@ export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, wi
     '&:focus-visible': { outline: `2px solid ${t.nerv.hue.mint}`, outlineOffset: -2 },
   });
   return (
-    <Box {...rest} sx={[(t) => ({ display: 'flex', alignItems: 'stretch', width, border: `1px solid ${t.nerv.hue.greenDim}` }), ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('NumberStepper', 'root', classes, className)} sx={[(t) => ({ display: 'flex', alignItems: 'stretch', width, border: `1px solid ${t.nerv.hue.greenDim}` }), ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box component="button" aria-label="decrement" onClick={() => onChange(clamp(value - step))} sx={btn}>
         −
       </Box>
@@ -148,6 +153,8 @@ export interface HazardRatingProps extends Omit<RootHTMLAttributes, 'value' | 'o
   onChange: (value: number) => void;
   /** Number of segments. @default 5 */
   max?: number;
+  /** Class overrides by part: `root`, `segment` (a rating cell). */
+  classes?: ClassesOf<'root' | 'segment'>;
   sx?: SxProps<Theme>;
 }
 
@@ -155,9 +162,9 @@ export interface HazardRatingProps extends Omit<RootHTMLAttributes, 'value' | 'o
  * A discrete rating: lit mint segments over a hazard-hatched track. Segments are
  * drawn objects, never a continuous fill.
  */
-export function HazardRating({ value, onChange, max = 5, sx, ...rest }: HazardRatingProps) {
+export function HazardRating({ value, onChange, max = 5, classes, className, sx, ...rest }: HazardRatingProps) {
   return (
-    <Box role="radiogroup" aria-label="rating" {...rest} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="radiogroup" aria-label="rating" {...rest} className={resolveClasses('HazardRating', 'root', classes, className)} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
         const lit = n <= value;
         return (
@@ -165,6 +172,7 @@ export function HazardRating({ value, onChange, max = 5, sx, ...rest }: HazardRa
             key={n}
             component="button"
             role="radio"
+            className={resolveClasses('HazardRating', 'segment', classes)}
             aria-checked={n === value}
             aria-label={String(n)}
             onClick={() => onChange(n)}
@@ -195,6 +203,8 @@ export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, Wit
   placeholder?: string;
   /** Uppercase new tags on add. @default true */
   uppercase?: boolean;
+  /** Class overrides by part: `root` (the field), `tag` (a tag chip), `input` (the add-field). */
+  classes?: ClassesOf<'root' | 'tag' | 'input'>;
   sx?: SxProps<Theme>;
 }
 
@@ -202,7 +212,7 @@ export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, Wit
  * A tag field: mint stamp chips (deletable) with an inline input that adds a tag
  * on Enter and removes the last on Backspace.
  */
-export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, sx, ...rest }: TagInputProps) {
+export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase = true, classes, className, sx, ...rest }: TagInputProps) {
   const [draft, setDraft] = useState('');
   const add = () => {
     const v = (uppercase ? draft.toUpperCase() : draft).trim().replace(/\s+/g, '_');
@@ -220,16 +230,18 @@ export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase
   return (
     <Box
       {...rest}
+      className={resolveClasses('TagInput', 'root', classes, className)}
       sx={[
         (t) => ({ border: `1px solid ${t.nerv.hue.greenDim}`, p: '6px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', width: '100%' }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
       {tags.map((tag) => (
-        <Chip key={tag} label={tag} color="success" onDelete={() => onChange(tags.filter((x) => x !== tag))} />
+        <Chip key={tag} className={resolveClasses('TagInput', 'tag', classes)} label={tag} color="success" onDelete={() => onChange(tags.filter((x) => x !== tag))} />
       ))}
       <Box
         component="input"
+        className={resolveClasses('TagInput', 'input', classes)}
         value={draft}
         placeholder={placeholder}
         aria-label="add tag"
@@ -260,6 +272,8 @@ export interface DateSegmentsProps extends RootHTMLAttributes, WithRef {
   segments: string[];
   /** Separator glyph between segments. @default '/' */
   separator?: string;
+  /** Class overrides by part: `root` (the display). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -267,9 +281,9 @@ export interface DateSegmentsProps extends RootHTMLAttributes, WithRef {
  * A read-only segmented date/number display — glowing mint monospace digits in
  * bordered cells, joined by an orange separator.
  */
-export function DateSegments({ segments, separator = '/', sx, ...rest }: DateSegmentsProps) {
+export function DateSegments({ segments, separator = '/', classes, className, sx, ...rest }: DateSegmentsProps) {
   return (
-    <Box {...rest} sx={[{ display: 'flex', alignItems: 'center', gap: '6px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('DateSegments', 'root', classes, className)} sx={[{ display: 'flex', alignItems: 'center', gap: '6px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {segments.map((seg, i) => (
         <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {i > 0 && (

@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type Tone, type WithRef, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type Tone, type WithRef, resolveClasses, toneHue } from './util';
 
 export interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> {
   children: ReactNode;
@@ -22,6 +22,8 @@ export interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> 
   glow?: boolean;
   /** `sm` (9px) or `md` (11px). @default 'md' */
   size?: 'sm' | 'md';
+  /** Class overrides by part: `root` (the stamp itself). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -34,7 +36,7 @@ export interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> 
  * <Stamp tone="mint" glow>SYS:NOMINAL</Stamp>
  * <Stamp tone="red" filled>DOWN</Stamp>
  */
-export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', sx, ...rest }: StampProps) {
+export function Stamp({ children, tone = 'orange', filled = false, blink = false, glow = false, size = 'md', classes, className, sx, ...rest }: StampProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const c = toneHue(t, tone);
@@ -42,6 +44,7 @@ export function Stamp({ children, tone = 'orange', filled = false, blink = false
     <Box
       component="span"
       {...rest}
+      className={resolveClasses('Stamp', 'root', classes, className)}
       sx={[
         {
           display: 'inline-block',

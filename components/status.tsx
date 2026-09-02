@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, type Tone, resolveClasses, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -21,6 +21,8 @@ export interface LegendItem {
 
 export interface StatusLegendProps extends RootHTMLAttributes, WithRef {
   items: LegendItem[];
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -34,9 +36,9 @@ export interface StatusLegendProps extends RootHTMLAttributes, WithRef {
  *   { jp: '阻止', en: 'BLOCKED', tone: 'red', filled: true },
  * ]} />
  */
-export function StatusLegend({ items, sx, ...rest }: StatusLegendProps) {
+export function StatusLegend({ items, classes, className, sx, ...rest }: StatusLegendProps) {
   return (
-    <Box {...rest} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box {...rest} className={resolveClasses('StatusLegend', 'root', classes, className)} sx={[{ display: 'flex', gap: 1, flexWrap: 'wrap' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {items.map((it) => (
         <Box
           key={it.en}
@@ -85,6 +87,8 @@ export interface RosterProps extends Omit<RootHTMLAttributes, 'onSelect'>, WithR
   columns?: number;
   /** Fires with the selected unit id (or `null` when toggled off). */
   onSelect?: (id: string | null) => void;
+  /** Class overrides by part: `root` (the grid), `tile` (a unit button). */
+  classes?: ClassesOf<'root' | 'tile'>;
   sx?: SxProps<Theme>;
 }
 
@@ -107,13 +111,14 @@ const DEFAULT_UNITS: RosterUnit[] = [
  * inversion (solid red, black content), CAUTION blinks. Selecting thickens the
  * border.
  */
-export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx, ...rest }: RosterProps) {
+export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, classes, className, sx, ...rest }: RosterProps) {
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState<string | null>(null);
 
   return (
     <Box
       {...rest}
+      className={resolveClasses('Roster', 'root', classes, className)}
       sx={[
         { display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: `repeat(${columns}, 1fr)` }, gap: 1, width: '100%' },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -126,6 +131,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx, ...re
           <Box
             key={u.id}
             component="button"
+            className={resolveClasses('Roster', 'tile', classes)}
             aria-pressed={on}
             onClick={() => {
               const next = on ? null : u.id;
@@ -188,6 +194,8 @@ export interface StatTileProps extends RootHTMLAttributes, WithRef {
   footer?: React.ReactNode;
   /** Hue of the big value. @default 'mint' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the tile). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -198,10 +206,11 @@ export interface StatTileProps extends RootHTMLAttributes, WithRef {
  * @example
  * <StatTile label="MEMORY NODES" value="2,482" footer="98.4% RETENTION · STABLE" />
  */
-export function StatTile({ label, value, footer, tone = 'mint', sx, ...rest }: StatTileProps) {
+export function StatTile({ label, value, footer, tone = 'mint', classes, className, sx, ...rest }: StatTileProps) {
   return (
     <Box
       {...rest}
+      className={resolveClasses('StatTile', 'root', classes, className)}
       sx={[
         (t) => ({
           border: `1px solid ${t.nerv.hue.greenDim}`,
@@ -254,6 +263,8 @@ export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'>, WithRe
   when?: React.ReactNode;
   /** Completed — dims and strikes the title. @default false */
   done?: boolean;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -261,10 +272,11 @@ export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'>, WithRe
  * A rail list row: a title with an optional subtitle on the left, a due/time
  * marker on the right, divided by a dotted hairline. `done` dims and strikes it.
  */
-export function RailItem({ title, sub, when, done = false, sx, ...rest }: RailItemProps) {
+export function RailItem({ title, sub, when, done = false, classes, className, sx, ...rest }: RailItemProps) {
   return (
     <Box
       {...rest}
+      className={resolveClasses('RailItem', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -307,6 +319,9 @@ export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, 
   verdict?: GateVerdict | null;
   /** Fired when the REVIEW button is pressed (only shown while awaiting). */
   onReview?: () => void;
+  /** Class overrides by part: `root`, `id`, `title`, `leader` (the dot leader), `sub`,
+   *  `priority` (the stamp), `verdict` (the decided stamp), `action` (the REVIEW button). */
+  classes?: ClassesOf<'root' | 'id' | 'title' | 'leader' | 'sub' | 'priority' | 'verdict' | 'action'>;
   sx?: SxProps<Theme>;
 }
 
@@ -324,11 +339,12 @@ const VERDICT: Record<GateVerdict, { label: string; tone: Tone }> = {
  * idle left edge is tinted by priority (1px, per the no-side-stripe rule);
  * approve/deny settle it back to a neutral hairline.
  */
-export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, sx, ...rest }: GateRowProps) {
+export function GateRow({ id, title, sub, priority = 'routine', verdict, onReview, classes, className, sx, ...rest }: GateRowProps) {
   const settled = verdict === 'approve' || verdict === 'deny';
   return (
     <Box
       {...rest}
+      className={resolveClasses('GateRow', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -343,12 +359,13 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap', fontSize: 11 })}>{id}</Box>
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, whiteSpace: 'nowrap', fontSize: 12 })}>{title}</Box>
-      <Box aria-hidden sx={(t) => ({ flex: 1, minWidth: 16, overflow: 'hidden', whiteSpace: 'nowrap', color: t.nerv.hue.greenDim, letterSpacing: '2px', '&::after': { content: '"' + '.'.repeat(64) + '"' } })} />
-      {sub && <Box component="span" sx={(t) => ({ color: t.nerv.hue.greenMap, fontSize: 10, whiteSpace: 'nowrap' })}>{sub}</Box>}
+      <Box component="span" className={resolveClasses('GateRow', 'id', classes)} sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap', fontSize: 11 })}>{id}</Box>
+      <Box component="span" className={resolveClasses('GateRow', 'title', classes)} sx={(t) => ({ color: t.nerv.hue.paper, whiteSpace: 'nowrap', fontSize: 12 })}>{title}</Box>
+      <Box aria-hidden className={resolveClasses('GateRow', 'leader', classes)} sx={(t) => ({ flex: 1, minWidth: 16, overflow: 'hidden', whiteSpace: 'nowrap', color: t.nerv.hue.greenDim, letterSpacing: '2px', '&::after': { content: '"' + '.'.repeat(64) + '"' } })} />
+      {sub && <Box component="span" className={resolveClasses('GateRow', 'sub', classes)} sx={(t) => ({ color: t.nerv.hue.greenMap, fontSize: 10, whiteSpace: 'nowrap' })}>{sub}</Box>}
       <Box
         component="span"
+        className={resolveClasses('GateRow', 'priority', classes)}
         sx={(t) => {
           const c = toneHue(t, PRIO_TONE[priority]);
           return { border: `1px solid ${c}`, color: c, borderRadius: `${t.nerv.radius.chip}px`, fontSize: 9, p: '2px 7px', letterSpacing: '0.08em', flex: 'none' };
@@ -359,6 +376,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
       {verdict ? (
         <Box
           component="span"
+          className={resolveClasses('GateRow', 'verdict', classes)}
           sx={(t) => {
             const c = toneHue(t, VERDICT[verdict].tone);
             return { border: `1px solid ${c}`, color: c, borderRadius: `${t.nerv.radius.chip}px`, fontSize: 11, p: '2px 8px', whiteSpace: 'nowrap', flex: 'none' };
@@ -369,6 +387,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
       ) : (
         <Box
           component="button"
+          className={resolveClasses('GateRow', 'action', classes)}
           onClick={onReview}
           sx={(t) => ({
             border: `1px solid ${t.nerv.hue.redHi}`,
@@ -405,6 +424,8 @@ export interface AgentCardProps extends Omit<RootHTMLAttributes<'button'>, 'onSe
   /** Selected = the console currently shown (thicker border + inset glow). */
   selected?: boolean;
   onSelect?: () => void;
+  /** Class overrides by part: `root` (the card button). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -415,7 +436,7 @@ const AGENT_TONE: Record<AgentStatus, Tone> = { ACTIVE: 'mint', REVIEWING: 'blue
  * with a name, a status stamp, and a task line. Selecting it (to view a console,
  * say) thickens the border and adds an inset glow.
  */
-export function AgentCard({ name, status, task, selected = false, onSelect, sx, ...rest }: AgentCardProps) {
+export function AgentCard({ name, status, task, selected = false, onSelect, classes, className, sx, ...rest }: AgentCardProps) {
   return (
     <Box
       component="button"
@@ -423,6 +444,7 @@ export function AgentCard({ name, status, task, selected = false, onSelect, sx, 
       aria-pressed={selected}
       onClick={onSelect}
       {...rest}
+      className={resolveClasses('AgentCard', 'root', classes, className)}
       sx={[
         (t) => {
           const c = toneHue(t, AGENT_TONE[status]);
@@ -465,6 +487,8 @@ export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'>, WithRef
   children: React.ReactNode;
   /** Left-edge + tint accent. @default 'teal' */
   tone?: Tone;
+  /** Class overrides by part: `root` (the note). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -473,10 +497,11 @@ export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'>, WithRef
  * left edge (1px, per the no-side-stripe rule), an amber id, and readable body
  * text.
  */
-export function RecallNote({ id, children, tone = 'teal', sx, ...rest }: RecallNoteProps) {
+export function RecallNote({ id, children, tone = 'teal', classes, className, sx, ...rest }: RecallNoteProps) {
   return (
     <Box
       {...rest}
+      className={resolveClasses('RecallNote', 'root', classes, className)}
       sx={[
         (t) => {
           const c = toneHue(t, tone);
@@ -511,6 +536,8 @@ export interface SinkRowProps extends RootHTMLAttributes, WithRef {
   ping?: React.ReactNode;
   /** Stamp label. @default `DOWN` when OFFLINE, else `LIVE` */
   stampLabel?: string;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -522,12 +549,13 @@ const SINK_TONE: Record<SinkStatus, Tone> = { ACTIVE: 'mint', CONNECTED: 'blue',
  * OFFLINE inverts the stamp to a solid red fill with black content (the
  * figure/ground "recorded" grammar). Divided by a dotted hairline.
  */
-export function SinkRow({ name, status, detail, ping, stampLabel, sx, ...rest }: SinkRowProps) {
+export function SinkRow({ name, status, detail, ping, stampLabel, classes, className, sx, ...rest }: SinkRowProps) {
   const offline = status === 'OFFLINE';
   const label = stampLabel ?? (offline ? 'DOWN' : 'LIVE');
   return (
     <Box
       {...rest}
+      className={resolveClasses('SinkRow', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.25, borderBottom: `1px dotted ${t.nerv.hue.greenDim}`, py: 1, fontFamily: t.nerv.fonts.mono }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -579,6 +607,8 @@ export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'>, WithRef
   dim?: boolean;
   /** Fires when RUN is pressed. */
   onRun?: () => void;
+  /** Class overrides by part: `root`, `id`, `name`, `kind`, `status` (the stamp), `action` (the RUN button). */
+  classes?: ClassesOf<'root' | 'id' | 'name' | 'kind' | 'status' | 'action'>;
   sx?: SxProps<Theme>;
 }
 
@@ -589,11 +619,12 @@ const ROUTINE_TONE: Record<RoutineStatus, Tone> = { PENDING: 'blue', SUCCESS: 'm
  * SUCCESS mint · RETRIED red, blinking) · a RUN action. `dim` fades and
  * desaturates it (for filter-rail scoping) without removing it from the list.
  */
-export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx, ...rest }: RoutineRowProps) {
+export function RoutineRow({ id, name, kind, status, dim = false, onRun, classes, className, sx, ...rest }: RoutineRowProps) {
   const reduced = useReducedMotion();
   return (
     <Box
       {...rest}
+      className={resolveClasses('RoutineRow', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -609,11 +640,12 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx, ...
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, fontSize: 10, whiteSpace: 'nowrap' })}>{id}</Box>
-      <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })}>{name}</Box>
-      <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', whiteSpace: 'nowrap' })}>{kind}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'id', classes)} sx={(t) => ({ color: t.nerv.hue.amber, fontSize: 10, whiteSpace: 'nowrap' })}>{id}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'name', classes)} sx={(t) => ({ color: t.nerv.hue.paper, fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })}>{name}</Box>
+      <Box component="span" className={resolveClasses('RoutineRow', 'kind', classes)} sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em', whiteSpace: 'nowrap' })}>{kind}</Box>
       <Box
         component="span"
+        className={resolveClasses('RoutineRow', 'status', classes)}
         sx={(t) => {
           const c = toneHue(t, ROUTINE_TONE[status]);
           return {
@@ -633,6 +665,7 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx, ...
       <Box
         component="button"
         type="button"
+        className={resolveClasses('RoutineRow', 'action', classes)}
         onClick={onRun}
         sx={(t) => ({
           flex: 'none',
@@ -678,6 +711,8 @@ export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'tit
   /** Pinned/selected — mint border + glow. @default false */
   selected?: boolean;
   onSelect?: () => void;
+  /** Class overrides by part: `root` (the card button). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -687,7 +722,7 @@ export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'tit
  * (orange) border at rest that lifts on hover; selecting it pins the card with a
  * mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
  */
-export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, sx, ...rest }: ModuleCardProps) {
+export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, classes, className, sx, ...rest }: ModuleCardProps) {
   return (
     <Box
       component="button"
@@ -695,6 +730,7 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
       aria-pressed={selected}
       onClick={onSelect}
       {...rest}
+      className={resolveClasses('ModuleCard', 'root', classes, className)}
       sx={[
         (t) => ({
           display: 'flex',
@@ -740,6 +776,8 @@ export interface AgentDotProps extends RootHTMLAttributes<'span'>, WithRef<'span
   children: React.ReactNode;
   /** Busy — amber dot + amber text; otherwise a mint dot. @default false */
   busy?: boolean;
+  /** Class overrides by part: `root` (the readout). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -748,11 +786,12 @@ export interface AgentDotProps extends RootHTMLAttributes<'span'>, WithRef<'span
  * dot (mint nominal · amber busy) before its label, the whole thing tinted amber
  * when busy.
  */
-export function AgentDot({ children, busy = false, sx, ...rest }: AgentDotProps) {
+export function AgentDot({ children, busy = false, classes, className, sx, ...rest }: AgentDotProps) {
   return (
     <Box
       component="span"
       {...rest}
+      className={resolveClasses('AgentDot', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'inline-flex', alignItems: 'center', color: busy ? t.nerv.hue.amber : 'inherit', fontFamily: t.nerv.fonts.mono, whiteSpace: 'nowrap' }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -777,6 +816,8 @@ export interface MemoryRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>
   title: React.ReactNode;
   /** Entry kind — colors the stamp (decision amber · pattern mint · mistake red · learning blue). */
   kind: MemoryKind;
+  /** Class overrides by part: `root` (the row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -787,10 +828,11 @@ const MEMORY_TONE: Record<MemoryKind, Tone> = { decision: 'amber', pattern: 'min
  * stamp colored by type. Hovering lifts the border to orange. Pair with
  * {@link FilterChips} to build a queryable memory list.
  */
-export function MemoryRow({ id, title, kind, sx, ...rest }: MemoryRowProps) {
+export function MemoryRow({ id, title, kind, classes, className, sx, ...rest }: MemoryRowProps) {
   return (
     <Box
       {...rest}
+      className={resolveClasses('MemoryRow', 'root', classes, className)}
       sx={[
         (t) => ({ display: 'flex', alignItems: 'center', gap: 1.75, border: `1px solid ${t.nerv.hue.greenDim}`, background: t.nerv.hue.void, p: '12px 14px', fontFamily: t.nerv.fonts.mono, '&:hover': { borderColor: t.nerv.hue.orange } }),
         ...(Array.isArray(sx) ? sx : [sx]),
