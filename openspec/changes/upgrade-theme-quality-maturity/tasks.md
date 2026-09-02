@@ -13,7 +13,7 @@
 
 ## 3. Strict API conventions (FR-2)
 
-- [ ] 3.1 Ensure children-first composition on every component; convert fixed-order content props to children where order is permutable
+- [x] 3.1 Ensure children-first composition on every component; convert fixed-order content props to children where order is permutable
 - [ ] 3.2 Spread undeclared props to the root element on every component
 - [ ] 3.3 Forward `ref` to the outermost DOM node on every component that renders one
 - [ ] 3.4 Add a `classes` prop (root key = `root`, stable keys) to every public component
