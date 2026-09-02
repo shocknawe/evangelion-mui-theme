@@ -46,7 +46,7 @@
 - [x] 7.2 Generate `registry.json` listing each component's name, props summary, tokens consumed, and example route
 - [x] 7.3 Publish `llms.txt` at the docs-site root indexing curated LLM-consumable pages
 - [x] 7.4 Expand `doc-site/` + `theme/README.md` per-component docs to cover edge cases, performance notes, and a customization recipe
-- [ ] 7.5 Score the agent-readiness rubric and confirm ≥4/5 (llms.txt + DTCG + registry present)
+- [x] 7.5 Score the agent-readiness rubric and confirm ≥4/5 (llms.txt + DTCG + registry present)
 
 ## 8. Maturity scorecard (FR-6)
 
