@@ -1,0 +1,2897 @@
+{
+  "$schema": "phosphor-console/component-registry/1",
+  "description": "Component registry manifest — every public component of the Phosphor Console library with its props summary, consumed theme tokens, and an example app/ route. Generated from source by scripts/generate-registry.mjs; do not edit by hand (regenerate with `npm run registry`).",
+  "generatedFrom": [
+    "components/index.ts",
+    "components/*.tsx",
+    "app/src/App.tsx",
+    "app/src/pages",
+    "app/src/sections"
+  ],
+  "tokenScope": "nerv.* paths as referenced from the component module file (theme.nerv.* / theme.palette.nerv.* / theme.vars.*.nerv.*, normalized). Leaf values (hue.*, fonts.*, radius.*, motion.durations.*) are declared in theme/tokens.ts; a few paths (chamfer, overlay, overlayFaint, termDim) are derived members of the augmented theme.nerv object declared in theme/index.ts, and a bare group path (nerv.hue) denotes a dynamic key lookup into that group. Module-file scope: components sharing a module file share its token list, and a component consuming tokens only through a shared helper is attributed to that helper.",
+  "counts": {
+    "components": 59,
+    "withExampleRoute": 58,
+    "withoutExampleRoute": 1
+  },
+  "withoutExampleRouteNote": "No app/ route renders this component (routes: /, /dashboard-01, /dashboard-02, /dashboard-03, /landing-01, /landing-02). Recorded as null rather than invented.",
+  "routes": [
+    {
+      "path": "/",
+      "page": "app/src/pages/DesignSystemPage.tsx"
+    },
+    {
+      "path": "/dashboard-01",
+      "page": "app/src/pages/Dashboard01Page.tsx"
+    },
+    {
+      "path": "/dashboard-02",
+      "page": "app/src/pages/Dashboard02Page.tsx"
+    },
+    {
+      "path": "/dashboard-03",
+      "page": "app/src/pages/Dashboard03Page.tsx"
+    },
+    {
+      "path": "/landing-01",
+      "page": "app/src/pages/Landing01Page.tsx"
+    },
+    {
+      "path": "/landing-02",
+      "page": "app/src/pages/Landing02Page.tsx"
+    }
+  ],
+  "components": [
+    {
+      "name": "BilingualLabel",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "BilingualLabelProps",
+        "required": [
+          "jp"
+        ],
+        "optional": [
+          "en",
+          "tone",
+          "captionTone",
+          "size",
+          "layout",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'mint'",
+          "captionTone": "'green'",
+          "size": "40",
+          "layout": "'row'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "MetadataBlock",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "MetadataBlockProps",
+        "required": [
+          "entries"
+        ],
+        "optional": [
+          "keyTone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "keyTone": "'orange'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/#atoms",
+      "routes": [
+        "/#atoms",
+        "/#feedback",
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "SectionDivider",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "SectionDividerProps",
+        "required": [
+          "index",
+          "jp",
+          "title"
+        ],
+        "optional": [
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/#atoms",
+      "routes": [
+        "/#atoms"
+      ]
+    },
+    {
+      "name": "FieldLabel",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "FieldLabelProps",
+        "required": [
+          "jp",
+          "label",
+          "children"
+        ],
+        "optional": [
+          "htmlFor",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "SectionHeading",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "SectionHeadingProps",
+        "required": [
+          "index",
+          "children"
+        ],
+        "optional": [
+          "note",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-01",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "DossierSheet",
+      "module": "components/text.tsx",
+      "props": {
+        "type": "DossierSheetProps",
+        "required": [
+          "title",
+          "rows"
+        ],
+        "optional": [
+          "watermark",
+          "signature",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root",
+          "watermark",
+          "signature"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amberDim",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.teal",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "Stamp",
+      "module": "components/chips.tsx",
+      "props": {
+        "type": "StampProps",
+        "required": [
+          "children"
+        ],
+        "optional": [
+          "tone",
+          "filled",
+          "blink",
+          "glow",
+          "size",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'orange'",
+          "size": "'md'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-01",
+        "/dashboard-02",
+        "/dashboard-03",
+        "/landing-01",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "ConsoleFrame",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "ConsoleFrameProps",
+        "required": [
+          "header",
+          "children"
+        ],
+        "optional": [
+          "band",
+          "sidebar",
+          "rail",
+          "footer",
+          "alarm",
+          "sidebarWidth",
+          "railWidth",
+          "headerHeight",
+          "bandHeight",
+          "footerHeight",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "sidebarWidth": "198",
+          "railWidth": "292",
+          "headerHeight": "100",
+          "bandHeight": "96",
+          "footerHeight": "44"
+        },
+        "classes": [
+          "root",
+          "header",
+          "band",
+          "sidebar",
+          "main",
+          "rail",
+          "footer"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01",
+        "/dashboard-02",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "ZoneTitle",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "ZoneTitleProps",
+        "required": [
+          "children"
+        ],
+        "optional": [
+          "aside",
+          "component",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "component": "'div'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01",
+        "/dashboard-02",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "Monogram",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "MonogramProps",
+        "required": [
+          "jp",
+          "label"
+        ],
+        "optional": [
+          "tone",
+          "size",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'orange'",
+          "size": "26"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "Stat",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "StatProps",
+        "required": [
+          "label",
+          "value"
+        ],
+        "optional": [
+          "tone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'paper'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "GaugeCard",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "GaugeCardProps",
+        "required": [
+          "kind",
+          "name",
+          "children"
+        ],
+        "optional": [
+          "readout",
+          "sub",
+          "tone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'mint'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "TelemetryCard",
+      "module": "components/layout.tsx",
+      "props": {
+        "type": "TelemetryCardProps",
+        "required": [
+          "title",
+          "children"
+        ],
+        "optional": [
+          "type",
+          "foot",
+          "tone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'orange'"
+        },
+        "classes": [
+          "root",
+          "header",
+          "foot"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.crimson",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "StepFlow",
+      "module": "components/flow.tsx",
+      "props": {
+        "type": "StepFlowProps",
+        "required": [
+          "steps",
+          "active"
+        ],
+        "optional": [
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root",
+          "node",
+          "connector"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": null,
+      "routes": []
+    },
+    {
+      "name": "AgenticLoop",
+      "module": "components/flow.tsx",
+      "props": {
+        "type": "AgenticLoopProps",
+        "required": [
+          "steps"
+        ],
+        "optional": [
+          "caption",
+          "active",
+          "cycleMs",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "cycleMs": "900"
+        },
+        "classes": [
+          "root",
+          "node"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "TaskCard",
+      "module": "components/flow.tsx",
+      "props": {
+        "type": "TaskCardProps",
+        "required": [
+          "id",
+          "title",
+          "active",
+          "pct"
+        ],
+        "optional": [
+          "action",
+          "steps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "steps": "the OODA loop"
+        },
+        "classes": [
+          "root",
+          "header",
+          "progress"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.chamfer",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-02"
+      ]
+    },
+    {
+      "name": "StatusLegend",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "StatusLegendProps",
+        "required": [
+          "items"
+        ],
+        "optional": [
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#atoms",
+      "routes": [
+        "/#atoms",
+        "/dashboard-01",
+        "/dashboard-02",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "Roster",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "RosterProps",
+        "required": [],
+        "optional": [
+          "units",
+          "columns",
+          "onSelect",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "columns": "4"
+        },
+        "classes": [
+          "root",
+          "tile"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data"
+      ]
+    },
+    {
+      "name": "StatTile",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "StatTileProps",
+        "required": [
+          "label",
+          "value"
+        ],
+        "optional": [
+          "footer",
+          "tone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'mint'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data"
+      ]
+    },
+    {
+      "name": "RailItem",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "RailItemProps",
+        "required": [
+          "title"
+        ],
+        "optional": [
+          "sub",
+          "when",
+          "done",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "done": "false"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "GateRow",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "GateRowProps",
+        "required": [
+          "id",
+          "title"
+        ],
+        "optional": [
+          "sub",
+          "priority",
+          "verdict",
+          "onReview",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "priority": "'routine'"
+        },
+        "slots": [
+          "action"
+        ],
+        "classes": [
+          "root",
+          "id",
+          "title",
+          "leader",
+          "sub",
+          "priority",
+          "verdict",
+          "action"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "AgentCard",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "AgentCardProps",
+        "required": [
+          "name",
+          "status",
+          "task"
+        ],
+        "optional": [
+          "selected",
+          "onSelect",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-02",
+      "routes": [
+        "/dashboard-02"
+      ]
+    },
+    {
+      "name": "RecallNote",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "RecallNoteProps",
+        "required": [
+          "id",
+          "children"
+        ],
+        "optional": [
+          "tone",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'teal'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-02",
+      "routes": [
+        "/dashboard-02"
+      ]
+    },
+    {
+      "name": "SinkRow",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "SinkRowProps",
+        "required": [
+          "name",
+          "status"
+        ],
+        "optional": [
+          "detail",
+          "ping",
+          "stampLabel",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "detail": "the status word",
+          "ping": "`—` when OFFLINE",
+          "stampLabel": "`DOWN` when OFFLINE, else `LIVE`"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "RoutineRow",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "RoutineRowProps",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "status"
+        ],
+        "optional": [
+          "dim",
+          "onRun",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "dim": "false"
+        },
+        "slots": [
+          "action"
+        ],
+        "classes": [
+          "root",
+          "id",
+          "name",
+          "kind",
+          "status",
+          "action"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "ModuleCard",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "ModuleCardProps",
+        "required": [
+          "jp",
+          "code",
+          "title",
+          "children",
+          "stamp"
+        ],
+        "optional": [
+          "codeSub",
+          "meta",
+          "tone",
+          "selected",
+          "onSelect",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'mint'",
+          "selected": "false"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "MemoryRow",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "MemoryRowProps",
+        "required": [
+          "id",
+          "title",
+          "kind"
+        ],
+        "optional": [
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "AgentDot",
+      "module": "components/status.tsx",
+      "props": {
+        "type": "AgentDotProps",
+        "required": [
+          "children"
+        ],
+        "optional": [
+          "busy",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "busy": "false"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03",
+        "/landing-01",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "ChipRadioGroup",
+      "module": "components/inputs.tsx",
+      "props": {
+        "type": "ChipRadioGroupProps",
+        "required": [
+          "options",
+          "value",
+          "onChange"
+        ],
+        "optional": [
+          "ariaLabel",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root",
+          "option"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.void",
+        "nerv.overlayFaint",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "NumberStepper",
+      "module": "components/inputs.tsx",
+      "props": {
+        "type": "NumberStepperProps",
+        "required": [
+          "value",
+          "onChange"
+        ],
+        "optional": [
+          "min",
+          "max",
+          "step",
+          "width",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "width": "150"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.void",
+        "nerv.overlayFaint",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "HazardRating",
+      "module": "components/inputs.tsx",
+      "props": {
+        "type": "HazardRatingProps",
+        "required": [
+          "value",
+          "onChange"
+        ],
+        "optional": [
+          "max",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "max": "5"
+        },
+        "classes": [
+          "root",
+          "segment"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.void",
+        "nerv.overlayFaint",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "TagInput",
+      "module": "components/inputs.tsx",
+      "props": {
+        "type": "TagInputProps",
+        "required": [
+          "tags",
+          "onChange"
+        ],
+        "optional": [
+          "placeholder",
+          "uppercase",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "placeholder": "'ADD TAG…'",
+          "uppercase": "true"
+        },
+        "slots": [
+          "tag"
+        ],
+        "classes": [
+          "root",
+          "tag",
+          "input"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.void",
+        "nerv.overlayFaint",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "DateSegments",
+      "module": "components/inputs.tsx",
+      "props": {
+        "type": "DateSegmentsProps",
+        "required": [
+          "segments"
+        ],
+        "optional": [
+          "separator",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "separator": "'/'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.void",
+        "nerv.overlayFaint",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#forms",
+      "routes": [
+        "/#forms"
+      ]
+    },
+    {
+      "name": "FilterChips",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "FilterChipsProps",
+        "required": [
+          "filters",
+          "value"
+        ],
+        "optional": [
+          "onChange",
+          "ariaLabel",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "FilterRail",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "FilterRailProps",
+        "required": [
+          "filters",
+          "rows"
+        ],
+        "optional": [
+          "value",
+          "defaultValue",
+          "onChange",
+          "allValue",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "defaultValue": "filters[0]",
+          "allValue": "filters[0]"
+        },
+        "slots": [
+          "row"
+        ],
+        "classes": [
+          "root",
+          "chips",
+          "row"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/#nav",
+      "routes": [
+        "/#nav"
+      ]
+    },
+    {
+      "name": "WikiLink",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "WikiLinkProps",
+        "required": [
+          "children"
+        ],
+        "optional": [
+          "href",
+          "onClick",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/#nav",
+      "routes": [
+        "/#nav"
+      ]
+    },
+    {
+      "name": "ConsoleNav",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "ConsoleNavProps",
+        "required": [
+          "items",
+          "value",
+          "onChange"
+        ],
+        "optional": [
+          "ariaLabel",
+          "variant",
+          "classes",
+          "sx"
+        ],
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-01",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "SiteHeader",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "SiteHeaderProps",
+        "required": [
+          "name"
+        ],
+        "optional": [
+          "version",
+          "links",
+          "actions",
+          "maxWidth",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "maxWidth": "1180"
+        },
+        "slots": [
+          "brand"
+        ],
+        "classes": [
+          "root",
+          "container",
+          "brand",
+          "nav",
+          "link",
+          "actions"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/landing-01",
+      "routes": [
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "Brand",
+      "module": "components/navigation.tsx",
+      "props": {
+        "type": "BrandProps",
+        "required": [
+          "name"
+        ],
+        "optional": [
+          "version",
+          "size",
+          "stackVersion",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "size": "'md'",
+          "stackVersion": "false (inline)"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "HazardPrompt",
+      "module": "components/feedback.tsx",
+      "props": {
+        "type": "HazardPromptProps",
+        "required": [
+          "jp",
+          "en"
+        ],
+        "optional": [
+          "onDecide",
+          "height",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "height": "150"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.black",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.hue.white",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/#feedback",
+      "routes": [
+        "/#feedback"
+      ]
+    },
+    {
+      "name": "GateDecisionDialog",
+      "module": "components/feedback.tsx",
+      "props": {
+        "type": "GateDecisionDialogProps",
+        "required": [
+          "open",
+          "onDecide"
+        ],
+        "optional": [
+          "item",
+          "onClose",
+          "jp",
+          "en",
+          "classes"
+        ],
+        "defaults": {
+          "jp": "'裁定'",
+          "en": "'DECIDE'"
+        },
+        "classes": [
+          "root",
+          "rail",
+          "marker"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.black",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.hue.white",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "ApprovalBar",
+      "module": "components/feedback.tsx",
+      "props": {
+        "type": "ApprovalBarProps",
+        "required": [
+          "item"
+        ],
+        "optional": [
+          "label",
+          "onApprove",
+          "onDeny",
+          "approveLabel",
+          "denyLabel",
+          "verdict",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "label": "'PENDING APPROVAL ·'",
+          "approveLabel": "'APPROVE · 承認'",
+          "denyLabel": "'DENY · 否認'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.black",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.hue.white",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/dashboard-02",
+      "routes": [
+        "/dashboard-02"
+      ]
+    },
+    {
+      "name": "YesNoGate",
+      "module": "components/feedback.tsx",
+      "props": {
+        "type": "YesNoGateProps",
+        "required": [],
+        "optional": [
+          "yesLabel",
+          "noLabel",
+          "yesResponse",
+          "noResponse",
+          "onDecide",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "yesLabel": "'YES'",
+          "noLabel": "'NO'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.jp",
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.black",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.hue.white",
+        "nerv.motion.durations.blink",
+        "nerv.motion.durations.fast"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "SegmentedMeter",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "SegmentedMeterProps",
+        "required": [],
+        "optional": [
+          "values",
+          "defaultValues",
+          "segments",
+          "limitPct",
+          "columnLabels",
+          "axisLabels",
+          "animated",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "defaultValues": "[10, 13, 8, 15]",
+          "segments": "20",
+          "limitPct": "70",
+          "columnLabels": "['A','B','C','D']",
+          "axisLabels": "['+100','±0','-100']",
+          "animated": "true"
+        },
+        "classes": [
+          "root",
+          "axis",
+          "segment",
+          "marker"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data"
+      ]
+    },
+    {
+      "name": "RadialGauge",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "RadialGaugeProps",
+        "required": [],
+        "optional": [
+          "value",
+          "label",
+          "segments",
+          "size",
+          "animated",
+          "slots",
+          "slotProps",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "label": "'ARMED'",
+          "segments": "22",
+          "size": "120",
+          "animated": "true"
+        },
+        "slots": [
+          "track",
+          "readout"
+        ],
+        "classes": [
+          "root",
+          "track",
+          "readout",
+          "readoutValue",
+          "readoutLabel"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/",
+        "/dashboard-03",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "BarColumnGauge",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "BarColumnGaugeProps",
+        "required": [],
+        "optional": [
+          "columns",
+          "bar",
+          "animated",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "animated": "true"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data"
+      ]
+    },
+    {
+      "name": "ProgressMeter",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "ProgressMeterProps",
+        "required": [
+          "value"
+        ],
+        "optional": [
+          "segments",
+          "threshold",
+          "label",
+          "readout",
+          "animated",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "segments": "25",
+          "label": "'COMPLETE'",
+          "animated": "true"
+        },
+        "classes": [
+          "root",
+          "marker"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01"
+      ]
+    },
+    {
+      "name": "HealthColumns",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "HealthColumnsProps",
+        "required": [],
+        "optional": [
+          "columns",
+          "cells",
+          "animated",
+          "onSummary",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "columns": "4",
+          "cells": "7",
+          "animated": "true"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/dashboard-01",
+      "routes": [
+        "/dashboard-01",
+        "/dashboard-02"
+      ]
+    },
+    {
+      "name": "SegmentBar",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "SegmentBarProps",
+        "required": [
+          "value"
+        ],
+        "optional": [
+          "segments",
+          "tone",
+          "height",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "segments": "20",
+          "tone": "'mint'",
+          "height": "8"
+        },
+        "classes": [
+          "root",
+          "segment"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "LedColumn",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "LedColumnProps",
+        "required": [
+          "value"
+        ],
+        "optional": [
+          "segments",
+          "tone",
+          "hotBelow",
+          "height",
+          "width",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "segments": "14",
+          "tone": "'amber'",
+          "height": "104",
+          "width": "44"
+        },
+        "classes": [
+          "root",
+          "segment"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/dashboard-03",
+        "/landing-01",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "MeterBar",
+      "module": "components/meters.tsx",
+      "props": {
+        "type": "MeterBarProps",
+        "required": [
+          "label",
+          "pct"
+        ],
+        "optional": [
+          "value",
+          "tone",
+          "warn",
+          "height",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'mint'",
+          "warn": "false",
+          "height": "5"
+        },
+        "classes": [
+          "root",
+          "fill"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.display",
+        "nerv.fonts.mono",
+        "nerv.hue.amber",
+        "nerv.hue.blue",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi",
+        "nerv.hue.void",
+        "nerv.motion.durations.fast",
+        "nerv.motion.durations.slide",
+        "nerv.overlay",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "Terminal",
+      "module": "components/terminal.tsx",
+      "props": {
+        "type": "TerminalProps",
+        "required": [],
+        "optional": [
+          "rows",
+          "title",
+          "typewriter",
+          "speed",
+          "minBodyHeight",
+          "maxBodyHeight",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "title": "'STDOUT // DIAGNOSTIC'",
+          "typewriter": "true",
+          "speed": "130",
+          "minBodyHeight": "150",
+          "maxBodyHeight": "190"
+        },
+        "classes": [
+          "root",
+          "header",
+          "line",
+          "cursor"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.mint",
+        "nerv.hue.redHi",
+        "nerv.motion.durations.blink",
+        "nerv.termDim"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "LogConsole",
+      "module": "components/terminal.tsx",
+      "props": {
+        "type": "LogConsoleProps",
+        "required": [
+          "rows"
+        ],
+        "optional": [
+          "title",
+          "connected",
+          "status",
+          "prompt",
+          "cursor",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "title": "'STDOUT'",
+          "connected": "true",
+          "cursor": "true"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "Omit",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue",
+        "nerv.hue.amber",
+        "nerv.hue.amberDim",
+        "nerv.hue.mint",
+        "nerv.hue.redHi",
+        "nerv.motion.durations.blink",
+        "nerv.termDim"
+      ],
+      "exampleRoute": "/dashboard-02",
+      "routes": [
+        "/dashboard-02",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "SevenSegClock",
+      "module": "components/clock.tsx",
+      "props": {
+        "type": "SevenSegClockProps",
+        "required": [],
+        "optional": [
+          "variant",
+          "digits",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "variant": "'both'"
+        },
+        "classes": [
+          "root",
+          "chip",
+          "countdown"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/#atoms",
+      "routes": [
+        "/#atoms",
+        "/dashboard-01",
+        "/dashboard-02",
+        "/dashboard-03"
+      ]
+    },
+    {
+      "name": "DigitalClock",
+      "module": "components/clock.tsx",
+      "props": {
+        "type": "DigitalClockProps",
+        "required": [],
+        "optional": [
+          "tone",
+          "size",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "tone": "'orange'",
+          "size": "20"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.mint",
+        "nerv.hue.orange",
+        "nerv.hue.paper",
+        "nerv.hue.void",
+        "nerv.motion.durations.blink",
+        "nerv.radius.chip"
+      ],
+      "exampleRoute": "/",
+      "routes": [
+        "/",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "Marquee",
+      "module": "components/marquee.tsx",
+      "props": {
+        "type": "MarqueeProps",
+        "required": [],
+        "optional": [
+          "items",
+          "speedSec",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "speedSec": "18"
+        },
+        "classes": [
+          "root",
+          "track"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.hazardBg",
+        "nerv.hue.orange",
+        "nerv.hue.redHi"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/landing-01"
+      ]
+    },
+    {
+      "name": "LineChart",
+      "module": "components/charts.tsx",
+      "props": {
+        "type": "LineChartProps",
+        "required": [],
+        "optional": [
+          "label",
+          "status",
+          "height",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "label": "'RESONANCE'",
+          "status": "'STABLE'",
+          "height": "150"
+        },
+        "classes": [
+          "root",
+          "caption"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "Waveform",
+      "module": "components/charts.tsx",
+      "props": {
+        "type": "WaveformProps",
+        "required": [],
+        "optional": [
+          "label",
+          "caption",
+          "height",
+          "frame",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "label": "'INFERENCE FIELD'",
+          "caption": "'共振 / RESONANCE'",
+          "height": "96",
+          "frame": "true"
+        },
+        "classes": [
+          "root",
+          "label",
+          "caption"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/dashboard-02",
+        "/landing-02"
+      ]
+    },
+    {
+      "name": "ScanLattice",
+      "module": "components/charts.tsx",
+      "props": {
+        "type": "ScanLatticeProps",
+        "required": [],
+        "optional": [
+          "height",
+          "nodeLabel",
+          "classes",
+          "sx"
+        ],
+        "defaults": {
+          "height": "110",
+          "nodeLabel": "'NODE·0x512'"
+        },
+        "classes": [
+          "root"
+        ],
+        "extends": [
+          "RootHTMLAttributes",
+          "WithRef"
+        ]
+      },
+      "tokens": [
+        "nerv.fonts.mono",
+        "nerv.hue.greenDim",
+        "nerv.hue.greenMap",
+        "nerv.hue.mint",
+        "nerv.hue.mintHi",
+        "nerv.hue.orange",
+        "nerv.hue.redHi"
+      ],
+      "exampleRoute": "/#data",
+      "routes": [
+        "/#data",
+        "/landing-01"
+      ]
+    }
+  ]
+}
