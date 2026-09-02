@@ -61,22 +61,25 @@ export const dataDisplay: Pick<
             style: {
               backgroundColor: 'currentColor',
               border: 0,
-              '& .MuiChip-label': { color: theme.nerv.hue.void },
               '& .MuiChip-deleteIcon': { color: theme.nerv.hue.void, '&:hover': { color: theme.nerv.hue.void } },
             },
           },
         ],
+      }),
+      label: ({ theme, ownerState }) => ({
+        ...(ownerState.variant === 'filled' || ownerState.variant === 'stamp'
+          ? { color: theme.nerv.hue.void }
+          : null),
       }),
       outlined: {
         border: '1px solid currentColor',
         backgroundColor: 'transparent',
       },
       // Filled = the inverse stamp (solid hue, void content).
-      filled: ({ theme }) => ({
+      filled: {
         backgroundColor: 'currentColor',
         border: 0,
-        '& .MuiChip-label': { color: theme.nerv.hue.void },
-      }),
+      },
     },
   },
 

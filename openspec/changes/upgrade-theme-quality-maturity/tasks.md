@@ -17,7 +17,7 @@
 - [x] 3.2 Spread undeclared props to the root element on every component
 - [x] 3.3 Forward `ref` to the outermost DOM node on every component that renders one
 - [x] 3.4 Add a `classes` prop (root key = `root`, stable keys) to every public component
-- [ ] 3.5 Flatten override selectors to single-class specificity so consumer overrides win without `!important`
+- [x] 3.5 Flatten override selectors to single-class specificity so consumer overrides win without `!important`
 - [ ] 3.6 Add tests asserting prop-spread, ref forwarding, and `classes` application per component
 
 ## 4. Slot APIs where warranted (FR-1)
