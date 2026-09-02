@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 
 function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, frame: number) => void,
@@ -49,7 +49,7 @@ function useCanvas(
 /* ------------------------------------------------------------------ */
 /* LineChart — a glowing sparse trend line over a dotted field. */
 
-export interface LineChartProps extends RootHTMLAttributes {
+export interface LineChartProps extends RootHTMLAttributes, WithRef {
   /** Corner caption; the highlighted word is `status`. @default 'RESONANCE' */
   label?: string;
   /** Highlighted status word. @default 'STABLE' */
@@ -100,7 +100,7 @@ export function LineChart({ label = 'RESONANCE', status = 'STABLE', height = 150
 /* ------------------------------------------------------------------ */
 /* Waveform — a braided oscilloscope separator. */
 
-export interface WaveformProps extends RootHTMLAttributes {
+export interface WaveformProps extends RootHTMLAttributes, WithRef {
   /** Left caption. @default 'INFERENCE FIELD' */
   label?: React.ReactNode;
   /** Right caption. @default '共振 / RESONANCE' */
@@ -150,7 +150,7 @@ export function Waveform({ label = 'INFERENCE FIELD', caption = '共振 / RESONA
 /* ------------------------------------------------------------------ */
 /* ScanLattice — a static schematic grid with a targeting reticle. */
 
-export interface ScanLatticeProps extends RootHTMLAttributes {
+export interface ScanLatticeProps extends RootHTMLAttributes, WithRef {
   /** Height (px). @default 110 */
   height?: number;
   /** Reticle label. @default 'NODE·0x512' */

@@ -8,7 +8,7 @@ import { useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type Tone, toneHue, focusRing } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue, focusRing } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ChipRadioGroup — bilingual radio chips with figure/ground inversion. */
@@ -22,7 +22,7 @@ export interface ChipRadioOption {
 }
 
 /** `value`/`onChange` are the controlled selection, not the DOM ones. */
-export interface ChipRadioGroupProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
+export interface ChipRadioGroupProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   options: ChipRadioOption[];
   value: string;
   onChange: (value: string) => void;
@@ -91,7 +91,7 @@ export function ChipRadioGroup({ options, value, onChange, ariaLabel, sx, ...res
 /* NumberStepper — −/value/+ with orange chrome controls. */
 
 /** `value`/`onChange` are the controlled count, not the DOM ones. */
-export interface NumberStepperProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
+export interface NumberStepperProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   value: number;
   onChange: (value: number) => void;
   min?: number;
@@ -143,7 +143,7 @@ export function NumberStepper({ value, onChange, min = 0, max = 99, step = 1, wi
 /* HazardRating — lit segments on a hazard-hatched track. */
 
 /** `value`/`onChange` are the controlled rating, not the DOM ones. */
-export interface HazardRatingProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
+export interface HazardRatingProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   value: number;
   onChange: (value: number) => void;
   /** Number of segments. @default 5 */
@@ -188,7 +188,7 @@ export function HazardRating({ value, onChange, max = 5, sx, ...rest }: HazardRa
 /* TagInput — deletable chips + type-to-add. */
 
 /** `onChange` is the tag-list callback, not the DOM `onChange`. */
-export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'> {
+export interface TagInputProps extends Omit<RootHTMLAttributes, 'onChange'>, WithRef {
   tags: string[];
   onChange: (tags: string[]) => void;
   /** Placeholder for the add-field. @default 'ADD TAG…' */
@@ -255,7 +255,7 @@ export function TagInput({ tags, onChange, placeholder = 'ADD TAG…', uppercase
 /* ------------------------------------------------------------------ */
 /* DateSegments — glowing monospace date readout. */
 
-export interface DateSegmentsProps extends RootHTMLAttributes {
+export interface DateSegmentsProps extends RootHTMLAttributes, WithRef {
   /** Ordered segments, largest-first (e.g. `['2026', '07', '18']`). */
   segments: string[];
   /** Separator glyph between segments. @default '/' */

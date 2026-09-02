@@ -8,14 +8,14 @@ import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
 
 const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 
 /* ------------------------------------------------------------------ */
 /* SegmentedMeter — vertical LED columns with a drawn threshold line. */
 
-export interface SegmentedMeterProps extends RootHTMLAttributes {
+export interface SegmentedMeterProps extends RootHTMLAttributes, WithRef {
   /** Controlled per-column levels (0..segments). Omit to self-animate. */
   values?: number[];
   /** Seed levels when uncontrolled. @default [10, 13, 8, 15] */
@@ -113,7 +113,7 @@ const polar = (cx: number, cy: number, r: number, d: number): [number, number] =
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 };
 
-export interface RadialGaugeProps extends RootHTMLAttributes {
+export interface RadialGaugeProps extends RootHTMLAttributes, WithRef {
   /** Controlled percentage (0..100). Omit to self-animate near full. */
   value?: number;
   /** Caption under the readout. @default 'ARMED' */
@@ -181,7 +181,7 @@ function seg(t: Theme, lit: boolean, hot = false) {
   return { background: t.nerv.hue.amber, opacity: 1, boxShadow: '0 0 4px rgba(244,159,9,.5)' };
 }
 
-export interface BarColumnGaugeProps extends RootHTMLAttributes {
+export interface BarColumnGaugeProps extends RootHTMLAttributes, WithRef {
   /** Controlled column heights (0..10). Omit to self-animate. */
   columns?: number[];
   /** Controlled horizontal-bar fill (0..18). Omit to self-animate. */
@@ -231,7 +231,7 @@ export function BarColumnGauge({ columns, bar, animated = true, sx, ...rest }: B
 /* ------------------------------------------------------------------ */
 /* ProgressMeter — a horizontal segmented bar with an optional threshold line. */
 
-export interface ProgressMeterProps extends RootHTMLAttributes {
+export interface ProgressMeterProps extends RootHTMLAttributes, WithRef {
   /** Target completion (0..100). */
   value: number;
   /** Number of discrete segments. @default 25 */
@@ -314,7 +314,7 @@ export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLE
 /* ------------------------------------------------------------------ */
 /* HealthColumns — mini stepped system-health bars for a header. */
 
-export interface HealthColumnsProps extends RootHTMLAttributes {
+export interface HealthColumnsProps extends RootHTMLAttributes, WithRef {
   /** Number of columns. @default 4 */
   columns?: number;
   /** Cells per column. @default 7 */
@@ -377,7 +377,7 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, onSumma
 /* ------------------------------------------------------------------ */
 /* SegmentBar — a thin inline horizontal segmented fill. */
 
-export interface SegmentBarProps extends RootHTMLAttributes {
+export interface SegmentBarProps extends RootHTMLAttributes, WithRef {
   /** Fill percentage (0..100). */
   value: number;
   /** Number of segments. @default 20 */
@@ -419,7 +419,7 @@ export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, sx
 /* ------------------------------------------------------------------ */
 /* MeterBar — a labeled thin continuous vitals bar (label · value · fill). */
 
-export interface MeterBarProps extends RootHTMLAttributes {
+export interface MeterBarProps extends RootHTMLAttributes, WithRef {
   /** Left label (e.g. `CPU`). */
   label: React.ReactNode;
   /** Right-aligned readout (e.g. `12.4%`). */
@@ -459,7 +459,7 @@ export function MeterBar({ label, value, pct, tone = 'mint', warn = false, heigh
 /* ------------------------------------------------------------------ */
 /* LedColumn — a single vertical LED column that fills bottom-up. */
 
-export interface LedColumnProps extends RootHTMLAttributes {
+export interface LedColumnProps extends RootHTMLAttributes, WithRef {
   /** Fill percentage (0..100). */
   value: number;
   /** Number of stacked segments. @default 14 */

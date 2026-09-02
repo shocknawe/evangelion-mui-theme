@@ -8,7 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 import { SegmentBar } from './meters';
 
 export interface StepFlowStep {
@@ -18,7 +18,7 @@ export interface StepFlowStep {
   label: string;
 }
 
-export interface StepFlowProps extends RootHTMLAttributes {
+export interface StepFlowProps extends RootHTMLAttributes, WithRef {
   steps: StepFlowStep[];
   /** Index of the current step: earlier steps read as done, this one as active. */
   active: number;
@@ -101,7 +101,7 @@ export interface AgenticLoopStep {
   en: string;
 }
 
-export interface AgenticLoopProps extends RootHTMLAttributes {
+export interface AgenticLoopProps extends RootHTMLAttributes, WithRef {
   steps: AgenticLoopStep[];
   /** Small caption in the border notch (e.g. `ACTIVE_LOOP : AUTONOMOUS_LEARN`). */
   caption?: ReactNode;
@@ -165,7 +165,7 @@ export function AgenticLoop({ steps, caption, active, cycleMs = 900, sx, ...rest
 /* TaskCard — a loop-synchronizer task: id · title · action, a StepFlow, progress. */
 
 /** `id`/`title` are this card's *display* text, not the DOM `id`/`title`. */
-export interface TaskCardProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
+export interface TaskCardProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Task id (e.g. `TASK·882`). */
   id: ReactNode;
   /** Task title. */

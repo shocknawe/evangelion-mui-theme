@@ -6,13 +6,13 @@
 import type { ElementType, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* ConsoleFrame — the chamfered command shell: full-bleed header over a
    sidebar · main · rail grid, one orange double-frame, internal scroll. */
 
-export interface ConsoleFrameProps extends RootHTMLAttributes {
+export interface ConsoleFrameProps extends RootHTMLAttributes, WithRef {
   /** Full-width top band. */
   header: ReactNode;
   /** Optional full-width band directly under the header (e.g. a separator). */
@@ -171,7 +171,7 @@ export function ConsoleFrame({
 /* ------------------------------------------------------------------ */
 /* ZoneTitle — an orange section label over a hairline rule. */
 
-export interface ZoneTitleProps extends RootHTMLAttributes {
+export interface ZoneTitleProps extends RootHTMLAttributes, WithRef {
   children: ReactNode;
   /** Right-aligned meta (e.g. a count chip). Rendered in amber. */
   aside?: ReactNode;
@@ -225,7 +225,7 @@ export function ZoneTitle({ children, aside, component = 'div', sx, ...rest }: Z
 /* ------------------------------------------------------------------ */
 /* Monogram — a boxed kanji with a small caption (masthead grammar). */
 
-export interface MonogramProps extends RootHTMLAttributes {
+export interface MonogramProps extends RootHTMLAttributes, WithRef {
   /** The kanji monogram. */
   jp: string;
   /** Small caption below. */
@@ -276,7 +276,7 @@ export function Monogram({ jp, label, tone = 'orange', size = 26, sx, ...rest }:
 /* ------------------------------------------------------------------ */
 /* Stat — a compact label/value pair (dashboard vitals). */
 
-export interface StatProps extends RootHTMLAttributes {
+export interface StatProps extends RootHTMLAttributes, WithRef {
   /** Small caption. */
   label: string;
   /** The value. */
@@ -314,7 +314,7 @@ export function Stat({ label, value, tone = 'paper', sx, ...rest }: StatProps) {
 /* ------------------------------------------------------------------ */
 /* GaugeCard — a chamfered card framing one gauge (a trigger / channel). */
 
-export interface GaugeCardProps extends RootHTMLAttributes {
+export interface GaugeCardProps extends RootHTMLAttributes, WithRef {
   /** Small kanji-tagged channel label (e.g. `CRON · 定時`), tinted by `tone`. */
   kind: ReactNode;
   /** Condensed channel name (e.g. `NIGHTLY REVIEW`). */
@@ -373,7 +373,7 @@ export function GaugeCard({ kind, name, children, readout, sub, tone = 'mint', s
 /* ------------------------------------------------------------------ */
 /* TelemetryCard — a bordered telemetry panel (title/type header · body · foot). */
 
-export interface TelemetryCardProps extends Omit<RootHTMLAttributes, 'title'> {
+export interface TelemetryCardProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Left header caption (e.g. `◐ VAULT RETENTION`). */
   title: ReactNode;
   /** Right header tag (e.g. `ARC` / `BAR` / `COL`). */

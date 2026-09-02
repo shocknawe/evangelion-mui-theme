@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
 
 /**
  * A single terminal row. `chk` renders a dot-leader `LABEL ···· OK/FAIL`; `exec`
@@ -20,7 +20,7 @@ export type TerminalRow =
   | { k: 'exec'; ts: string; msg: ReactNode };
 
 /** `title` is the terminal's header caption, not the DOM `title`. */
-export interface TerminalProps extends Omit<RootHTMLAttributes, 'title'> {
+export interface TerminalProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Log rows, top→bottom. Defaults to a sample diagnostic. */
   rows?: TerminalRow[];
   /** Header caption. @default 'STDOUT // DIAGNOSTIC' */
@@ -136,7 +136,7 @@ export interface LogRow {
 }
 
 /** `title` is the console's header caption, not the DOM `title`. */
-export interface LogConsoleProps extends Omit<RootHTMLAttributes, 'title'> {
+export interface LogConsoleProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Header caption. @default 'STDOUT' */
   title?: ReactNode;
   /** Rows, oldest→newest. The view auto-scrolls to the newest. */

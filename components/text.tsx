@@ -6,12 +6,12 @@
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
 
 /* ------------------------------------------------------------------ */
 /* BilingualLabel — large kanji + small English caption (the bimodal pair). */
 
-export interface BilingualLabelProps extends RootHTMLAttributes {
+export interface BilingualLabelProps extends RootHTMLAttributes, WithRef {
   /** The large graphic term (kanji, numeral, or heading). */
   jp: string;
   /** The small caption pinned to it. Required by the "bilingual pairing" rule. */
@@ -91,7 +91,7 @@ export function BilingualLabel({
 /* ------------------------------------------------------------------ */
 /* MetadataBlock — the KEY:VALUE spec block (CODE:, FILE:, EX_MODE:, …). */
 
-export interface MetadataBlockProps extends RootHTMLAttributes {
+export interface MetadataBlockProps extends RootHTMLAttributes, WithRef {
   /** Key/value pairs, in order. Keys are shown verbatim (already ALL CAPS). */
   entries: Record<string, string> | Array<[string, string]>;
   /** Hue of the keys. @default 'orange' */
@@ -137,7 +137,7 @@ export function MetadataBlock({ entries, keyTone = 'orange', sx, ...rest }: Meta
 /* ------------------------------------------------------------------ */
 /* SectionDivider — index chip · kanji · title · gradient rule. */
 
-export interface SectionDividerProps extends RootHTMLAttributes {
+export interface SectionDividerProps extends RootHTMLAttributes, WithRef {
   /** Sequence number/label shown in the solid chip (e.g. `"01"`). */
   index: string;
   /** Large kanji term. */
@@ -208,7 +208,7 @@ export function SectionDivider({ index, jp, title, sx, ...rest }: SectionDivider
 /* ------------------------------------------------------------------ */
 /* FieldLabel — the bilingual label that captions a form control. */
 
-export interface FieldLabelProps extends RootHTMLAttributes {
+export interface FieldLabelProps extends RootHTMLAttributes, WithRef {
   /** Kanji tag (e.g. `件名`). */
   jp: string;
   /** English label (ALL CAPS). */
@@ -256,7 +256,7 @@ export function FieldLabel({ jp, label, children, htmlFor, sx, ...rest }: FieldL
 /* ------------------------------------------------------------------ */
 /* SectionHeading — a marketing section head: index chip · heading · rule · note. */
 
-export interface SectionHeadingProps extends RootHTMLAttributes {
+export interface SectionHeadingProps extends RootHTMLAttributes, WithRef {
   /** Sequence number shown in the solid chip (e.g. `"01"`). */
   index: string;
   /** The heading text (condensed caps). */
@@ -311,7 +311,7 @@ export function SectionHeading({ index, children, note, sx, ...rest }: SectionHe
    signature footer, with an optional rotated watermark stamp. */
 
 /** `title` is the sheet's display heading, not the DOM `title`. */
-export interface DossierSheetProps extends Omit<RootHTMLAttributes, 'title'> {
+export interface DossierSheetProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Heading (e.g. `JAIRUS_OS · CORE v2.4.0 — OPERATOR DOSSIER`). */
   title: ReactNode;
   /** Key/value spec rows. Values may be rich (bold via `<b>`). */

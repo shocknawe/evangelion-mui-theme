@@ -7,13 +7,13 @@ import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 
 /* ------------------------------------------------------------------ */
 /* FilterChips — a row of orange scope chips (active = solid inversion). */
 
 /** `value`/`onChange` are the controlled filter, not the DOM ones. */
-export interface FilterChipsProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
+export interface FilterChipsProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   /** Chip values. */
   filters: string[];
   /** The active chip. */
@@ -72,7 +72,7 @@ export interface FilterRow {
 }
 
 /** `value`/`onChange` are the controlled filter, not the DOM ones. */
-export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'> {
+export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   /** Filter values. The `allValue` entry clears the filter (shows everything). */
   filters: string[];
   rows: FilterRow[];
@@ -147,7 +147,7 @@ export interface ConsoleNavItem {
 }
 
 /** `value`/`onChange` are the controlled nav selection, not the DOM ones. */
-export interface ConsoleNavProps extends Omit<RootHTMLAttributes<'nav'>, 'value' | 'onChange'> {
+export interface ConsoleNavProps extends Omit<RootHTMLAttributes<'nav'>, 'value' | 'onChange'>, WithRef<'nav'> {
   items: ConsoleNavItem[];
   value: string;
   onChange: (value: string) => void;
@@ -252,7 +252,7 @@ export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed
 /* ------------------------------------------------------------------ */
 /* Brand — the diamond mark + wordmark + version lockup. */
 
-export interface BrandProps extends RootHTMLAttributes {
+export interface BrandProps extends RootHTMLAttributes, WithRef {
   /** Wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Version / tag (orange chrome). */
@@ -297,7 +297,7 @@ export interface SiteHeaderLink {
   href: string;
 }
 
-export interface SiteHeaderProps extends RootHTMLAttributes<'header'> {
+export interface SiteHeaderProps extends RootHTMLAttributes<'header'>, WithRef<'header'> {
   /** Brand wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Small version/tag after the wordmark (orange chrome). */
@@ -411,7 +411,7 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
 /** `href`/`onClick` are the link target/handler the component itself renders;
  *  `children` is the link text. Root is an `<a>` when `href` is given, else a
  *  `<button>`. */
-export interface WikiLinkProps extends Omit<RootHTMLAttributes<'a'>, 'href' | 'onClick'> {
+export interface WikiLinkProps extends Omit<RootHTMLAttributes<'a'>, 'href' | 'onClick'>, WithRef<'a'> {
   children: ReactNode;
   href?: string;
   onClick?: () => void;

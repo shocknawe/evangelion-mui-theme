@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type WithRef, type Tone, toneHue } from './util';
 import { useReducedMotion } from './hooks';
 
 /* ------------------------------------------------------------------ */
@@ -19,7 +19,7 @@ export interface LegendItem {
   filled?: boolean;
 }
 
-export interface StatusLegendProps extends RootHTMLAttributes {
+export interface StatusLegendProps extends RootHTMLAttributes, WithRef {
   items: LegendItem[];
   sx?: SxProps<Theme>;
 }
@@ -78,7 +78,7 @@ export interface RosterUnit {
 }
 
 /** `onSelect` is the tile-selection callback, not the DOM `onSelect`. */
-export interface RosterProps extends Omit<RootHTMLAttributes, 'onSelect'> {
+export interface RosterProps extends Omit<RootHTMLAttributes, 'onSelect'>, WithRef {
   /** Units to display. Defaults to a sample roster so it renders out of the box. */
   units?: RosterUnit[];
   /** Columns at the `sm`+ breakpoint. @default 4 */
@@ -179,7 +179,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, sx, ...re
 /* ------------------------------------------------------------------ */
 /* StatTile — a big negative-space metric. */
 
-export interface StatTileProps extends RootHTMLAttributes {
+export interface StatTileProps extends RootHTMLAttributes, WithRef {
   /** Caption above the value. */
   label: string;
   /** The headline metric. */
@@ -245,7 +245,7 @@ export function StatTile({ label, value, footer, tone = 'mint', sx, ...rest }: S
 /* RailItem — a reminder / inbox row with a due time. */
 
 /** `title` is this row's display text, not the DOM `title`. */
-export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'> {
+export interface RailItemProps extends Omit<RootHTMLAttributes, 'title'>, WithRef {
   /** Primary line. */
   title: React.ReactNode;
   /** Small subtitle (category / source). */
@@ -294,7 +294,7 @@ export type GatePriority = 'critical' | 'elevated' | 'routine';
 export type GateVerdict = 'approve' | 'deny' | 'defer';
 
 /** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
-export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
+export interface GateRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Gate id (e.g. `GATE·04`). */
   id: string;
   /** Gate title. */
@@ -396,7 +396,7 @@ export function GateRow({ id, title, sub, priority = 'routine', verdict, onRevie
 export type AgentStatus = 'ACTIVE' | 'REVIEWING' | 'IDLE';
 
 /** `onSelect` is the card-selection callback, not the DOM `onSelect`. */
-export interface AgentCardProps extends Omit<RootHTMLAttributes<'button'>, 'onSelect'> {
+export interface AgentCardProps extends Omit<RootHTMLAttributes<'button'>, 'onSelect'>, WithRef<'button'> {
   /** Agent name (e.g. `AGENT·ORION`). */
   name: string;
   status: AgentStatus;
@@ -458,7 +458,7 @@ export function AgentCard({ name, status, task, selected = false, onSelect, sx, 
 /* RecallNote — a cited memory / decision-log fragment. */
 
 /** `id` is the displayed reference id, not the DOM `id`. */
-export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'> {
+export interface RecallNoteProps extends Omit<RootHTMLAttributes, 'id'>, WithRef {
   /** Reference id (e.g. `DECISION_LOG_32`). */
   id: string;
   /** The recalled text. */
@@ -501,7 +501,7 @@ export function RecallNote({ id, children, tone = 'teal', sx, ...rest }: RecallN
 
 export type SinkStatus = 'ACTIVE' | 'CONNECTED' | 'OFFLINE';
 
-export interface SinkRowProps extends RootHTMLAttributes {
+export interface SinkRowProps extends RootHTMLAttributes, WithRef {
   /** Sink name (e.g. `NTFY GATEWAY`). */
   name: React.ReactNode;
   status: SinkStatus;
@@ -567,7 +567,7 @@ export function SinkRow({ name, status, detail, ping, stampLabel, sx, ...rest }:
 export type RoutineStatus = 'PENDING' | 'SUCCESS' | 'RETRIED';
 
 /** `id` is the displayed routine id, not the DOM `id`. */
-export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'> {
+export interface RoutineRowProps extends Omit<RootHTMLAttributes, 'id'>, WithRef {
   /** Routine id (e.g. `RT·01`). */
   id: React.ReactNode;
   /** Routine name. */
@@ -658,7 +658,7 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, sx, ...
 
 /** `title` is the card's display heading, not the DOM `title`; `onSelect` is
  *  the pin/selection callback, not the DOM `onSelect`. */
-export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'title' | 'onSelect'> {
+export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'title' | 'onSelect'>, WithRef<'button'> {
   /** Large kanji glyph (the system's mark). */
   jp: string;
   /** System code (e.g. `SYS·01`). */
@@ -735,7 +735,7 @@ export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, to
 /* ------------------------------------------------------------------ */
 /* AgentDot — a status-bar agent readout: a state dot + label. */
 
-export interface AgentDotProps extends RootHTMLAttributes<'span'> {
+export interface AgentDotProps extends RootHTMLAttributes<'span'>, WithRef<'span'> {
   /** The readout text (e.g. `AGENT·01: NOMINAL`). */
   children: React.ReactNode;
   /** Busy — amber dot + amber text; otherwise a mint dot. @default false */
@@ -770,7 +770,7 @@ export function AgentDot({ children, busy = false, sx, ...rest }: AgentDotProps)
 export type MemoryKind = 'decision' | 'pattern' | 'mistake' | 'learning';
 
 /** `id`/`title` are this row's display text, not the DOM `id`/`title`. */
-export interface MemoryRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'> {
+export interface MemoryRowProps extends Omit<RootHTMLAttributes, 'id' | 'title'>, WithRef {
   /** Node id (e.g. `MEM-2024-0512`). */
   id: React.ReactNode;
   /** The entry title. */

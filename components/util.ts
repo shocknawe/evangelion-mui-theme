@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { Theme } from '@mui/material/styles';
 import '../theme/augmentation'; // side-effect: theme.nerv / palette.nerv module augmentation
 
@@ -47,6 +47,24 @@ export type RootHTMLAttributes<Tag extends keyof HTMLElementTagNameMap = 'div'> 
   ComponentPropsWithoutRef<Tag>,
   'children'
 >;
+
+/**
+ * The React 19 `ref` prop for a component's root element, typed against the
+ * same tag as {@link RootHTMLAttributes}. The library deliberately does not use
+ * `forwardRef`: every component is a plain function component (React 19 passes
+ * `ref` through as an ordinary prop), and every component already spreads its
+ * leftover props onto the root element — so `ref` rides the same `...rest`
+ * spread and lands on the outermost DOM node.
+ *
+ *   interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> { … }
+ *   <Box component="span" {...rest} sx={…}>          // `ref` flows in `rest`
+ *
+ * Components whose root element is *not* the spread target (portals, dual
+ * button/a roots) destructure `ref` first and attach it deliberately.
+ */
+export type WithRef<Tag extends keyof HTMLElementTagNameMap = 'div'> = {
+  ref?: Ref<HTMLElementTagNameMap[Tag]> | undefined;
+};
 
 /** The mint-fill focus ring used across interactive console controls. */
 export const focusRing = (t: Theme) => ({

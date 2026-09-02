@@ -6,12 +6,12 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 
 /* ------------------------------------------------------------------ */
 /* HazardPrompt — a full-bleed Y/N decision surface. */
 
-export interface HazardPromptProps extends RootHTMLAttributes {
+export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
   /** Large kanji verb (e.g. `裁定`). */
   jp: string;
   /** English action shown in the punched-out band (e.g. `DECIDE`). */
@@ -110,7 +110,7 @@ export type GateDecision = 'approve' | 'deny' | 'defer';
 
 /** Root is the full-screen surface inside the `Modal` (the component takes no
  *  `sx` — see the 2.1 inventory finding). */
-export interface GateDecisionDialogProps extends RootHTMLAttributes {
+export interface GateDecisionDialogProps extends RootHTMLAttributes, WithRef {
   /** Whether the overlay is shown. */
   open: boolean;
   /** The thing being decided (shown in the ITEM line). */
@@ -225,7 +225,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
 /* ------------------------------------------------------------------ */
 /* YesNoGate — a large marketing Y/N decision with a response line. */
 
-export interface YesNoGateProps extends RootHTMLAttributes {
+export interface YesNoGateProps extends RootHTMLAttributes, WithRef {
   /** Yes button text. @default 'YES' */
   yesLabel?: string;
   /** No button text. @default 'NO' */
@@ -288,7 +288,7 @@ export function YesNoGate({ yesLabel = 'YES', noLabel = 'NO', yesResponse, noRes
 /* ------------------------------------------------------------------ */
 /* ApprovalBar — an inline human-in-the-loop gate (approve / deny). */
 
-export interface ApprovalBarProps extends RootHTMLAttributes {
+export interface ApprovalBarProps extends RootHTMLAttributes, WithRef {
   /** Small caption. @default 'PENDING APPROVAL ·' */
   label?: string;
   /** What awaits approval. */

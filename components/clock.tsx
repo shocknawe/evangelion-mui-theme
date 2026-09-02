@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion, pad2 } from './hooks';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 
 const SEGMAP: Record<number, string> = {
   0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc',
@@ -50,7 +50,7 @@ function useNow() {
 /* ------------------------------------------------------------------ */
 /* DigitalClock — a plain mono HH:MM:SS readout with blinking colons. */
 
-export interface DigitalClockProps extends RootHTMLAttributes {
+export interface DigitalClockProps extends RootHTMLAttributes, WithRef {
   /** Text hue. @default 'orange' */
   tone?: 'orange' | 'mint';
   /** Font size (px). @default 20 */
@@ -78,7 +78,7 @@ export function DigitalClock({ tone = 'orange', size = 20, sx, ...rest }: Digita
   );
 }
 
-export interface SevenSegClockProps extends RootHTMLAttributes {
+export interface SevenSegClockProps extends RootHTMLAttributes, WithRef {
   /** Which skins to render. @default 'both' */
   variant?: 'both' | 'chip' | 'countdown';
   /**

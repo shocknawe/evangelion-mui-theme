@@ -5,9 +5,9 @@
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes } from './util';
+import { type RootHTMLAttributes, type WithRef } from './util';
 
-export interface MarqueeProps extends RootHTMLAttributes {
+export interface MarqueeProps extends RootHTMLAttributes, WithRef {
   /** Ticker items. Defaults to a sample status feed. */
   items?: string[];
   /** Seconds for one full pass. @default 18 */

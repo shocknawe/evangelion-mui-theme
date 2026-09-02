@@ -8,9 +8,9 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
-import { type RootHTMLAttributes, type Tone, toneHue } from './util';
+import { type RootHTMLAttributes, type Tone, type WithRef, toneHue } from './util';
 
-export interface StampProps extends RootHTMLAttributes<'span'> {
+export interface StampProps extends RootHTMLAttributes<'span'>, WithRef<'span'> {
   children: ReactNode;
   /** Border / text hue (or fill hue when `filled`). @default 'orange' */
   tone?: Tone;
