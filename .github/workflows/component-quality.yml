@@ -1,0 +1,57 @@
+name: Component quality
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: component-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build, typecheck, and accessibility contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+
+      - name: Install library dependencies
+        run: npm ci
+
+      - name: Install app dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Typecheck library
+        run: npm run typecheck
+
+      - name: Build library
+        run: npm run build
+
+      - name: Check generated registry is current
+        run: git diff --exit-code -- registry.json
+
+      - name: Typecheck app
+        working-directory: app
+        run: npm run typecheck
+
+      - name: Build app
+        working-directory: app
+        run: npm run build
+
+      - name: Run accessibility and API-contract tests
+        working-directory: app
+        run: npm run test:a11y

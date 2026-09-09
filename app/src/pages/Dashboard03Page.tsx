@@ -285,7 +285,7 @@ export function Dashboard03Page() {
             />
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.75 }}>
               <GaugeCard tone="mint" kind="CRON · 定時" name="NIGHTLY REVIEW" sub="NEXT: 02:00:00">
-                <RadialGauge value={cronPct} label="ARMED" role="meter" aria-label="NIGHTLY REVIEW" aria-valuenow={Math.round(cronPct)} aria-valuemin={0} aria-valuemax={100} />
+                <RadialGauge value={cronPct} label="ARMED" aria-label="NIGHTLY REVIEW" />
               </GaugeCard>
               <GaugeCard
                 tone="blue"
@@ -294,7 +294,7 @@ export function Dashboard03Page() {
                 readout={<><b>{Math.round(watchPct)}</b>% BUFFER</>}
                 sub="POLLING: 10S"
               >
-                <SegmentBar value={watchPct} tone="blue" segments={18} height={36} sx={{ width: '100%', mt: 1 }} role="progressbar" aria-label="MEDIA BUFFER" aria-valuenow={Math.round(watchPct)} aria-valuemin={0} aria-valuemax={100} />
+                <SegmentBar value={watchPct} tone="blue" segments={18} height={36} sx={{ width: '100%', mt: 1 }} aria-label="MEDIA BUFFER" />
               </GaugeCard>
               <GaugeCard
                 tone="amber"
@@ -303,7 +303,7 @@ export function Dashboard03Page() {
                 readout={<><b>{Math.round(fresh)}</b>% FRESH</>}
                 sub={`LAST: ${lastPollLabel}`}
               >
-                <LedColumn value={fresh} tone="amber" hotBelow={35} segments={14} sx={{ mt: 1 }} role="meter" aria-label="GITLAB FRESHNESS" aria-valuenow={Math.round(fresh)} aria-valuemin={0} aria-valuemax={100} />
+                <LedColumn value={fresh} tone="amber" hotBelow={35} segments={14} sx={{ mt: 1 }} aria-label="GITLAB FRESHNESS" />
               </GaugeCard>
             </Box>
           </Box>

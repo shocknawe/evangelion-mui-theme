@@ -163,7 +163,7 @@ export const motion = {
   /** Stepped timing for segmented / discrete transitions. */
   step: 'steps(4, jump-none)',
   /** Hard on/off snap for state changes. */
-  snap: 'steps(1, jump-none)',
+  snap: 'steps(1, end)',
   durations: {
     snap: 80, // state snap
     fast: 120, // hover / focus

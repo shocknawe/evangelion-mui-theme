@@ -176,8 +176,7 @@ export const navigation: Pick<
         '&.Mui-active': {
           color: theme.nerv.hue.blue,
           borderColor: theme.nerv.hue.blue,
-          // Longhands — `steps(1, jump-none)` (motion.snap) is rejected inside
-          // the `animation` SHORTHAND; see theme/components/buttons.ts.
+          // Longhands keep each motion token independently overridable.
           animationName: KEYFRAMES.blink,
           animationDuration: `${theme.nerv.motion.durations.blink}ms`,
           animationTimingFunction: snapForAnimation(theme),

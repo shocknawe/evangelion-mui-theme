@@ -138,7 +138,7 @@ export default function MotionPage() {
           items={[
             'An easing curve (ease-in-out, cubic-bezier) on any transition — linear or steps() only.',
             'A spring or bounce — this is a CRT console, not a physics toy.',
-            'An opacity fade standing in for a state change — cut hard with steps(1, jump-none) instead.',
+            'An opacity fade standing in for a state change — cut hard with steps(1, end) instead.',
           ]}
         />
       </DocSection>

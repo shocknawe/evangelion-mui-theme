@@ -196,9 +196,9 @@ export function Dashboard01Page() {
               <Stamp tone="orange">JRS·902</Stamp>
             </Box>
             <Box sx={{ my: 1.5 }}>
-              {/* progressbar semantics are attached at the usage site (the component
-                  spreads its root attributes) — see src/a11y/aria-patterns.ts */}
-              <ProgressMeter value={68} threshold={{ pct: 80, label: 'REVIEW GATE · 80' }} readout="REVIEW OPENS AT 80% · ETA NOON SYNC" role="progressbar" aria-label="BRIEF PIPELINE" aria-valuenow={68} aria-valuemin={0} aria-valuemax={100} />
+              {/* ProgressMeter owns the value semantics; this page supplies the
+                  product-specific accessible name. */}
+              <ProgressMeter value={68} threshold={{ pct: 80, label: 'REVIEW GATE · 80' }} readout="REVIEW OPENS AT 80% · ETA NOON SYNC" aria-label="BRIEF PIPELINE" />
             </Box>
             <Typography sx={{ fontSize: 11, lineHeight: 1.6, color: t.nerv.hue.greenMap, textTransform: 'none', maxWidth: '64ch', m: '10px 0 12px', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mint, fontWeight: 400 } }}>
               CURRENT STATE: MODULARIZING THE INFERENCE ENGINE FOR DISTRIBUTED LOW-LATENCY NODES. FOCUS ON THE <b>COREDISPATCHER</b> INTERFACE LOGIC BEFORE NOON SYNC.

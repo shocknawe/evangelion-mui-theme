@@ -60,8 +60,7 @@ export function Stamp({ children, tone = 'orange', filled = false, blink = false
           letterSpacing: '0.06em',
           fontFamily: t.nerv.fonts.mono,
           textShadow: glow && !filled ? '0 0 4px currentColor' : 'none',
-          // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
-          // `animation` SHORTHAND — the whole declaration would be dropped.
+          // Longhands keep each motion token independently overridable.
           ...(blink && !reduced
             ? {
                 animationName: 'nervBlink',

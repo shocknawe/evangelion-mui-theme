@@ -11,10 +11,10 @@
   "tokenScope": "nerv.* paths as referenced from the component module file (theme.nerv.* / theme.palette.nerv.* / theme.vars.*.nerv.*, normalized). Leaf values (hue.*, fonts.*, radius.*, motion.durations.*) are declared in theme/tokens.ts; a few paths (chamfer, overlay, overlayFaint, termDim) are derived members of the augmented theme.nerv object declared in theme/index.ts, and a bare group path (nerv.hue) denotes a dynamic key lookup into that group. Module-file scope: components sharing a module file share its token list, and a component consuming tokens only through a shared helper is attributed to that helper.",
   "counts": {
     "components": 59,
-    "withExampleRoute": 58,
-    "withoutExampleRoute": 1
+    "withExampleRoute": 59,
+    "withoutExampleRoute": 0
   },
-  "withoutExampleRouteNote": "No app/ route renders this component (routes: /, /dashboard-01, /dashboard-02, /dashboard-03, /landing-01, /landing-02). Recorded as null rather than invented.",
+  "withoutExampleRouteNote": null,
   "routes": [
     {
       "path": "/",
@@ -696,8 +696,10 @@
         "nerv.motion.durations.blink",
         "nerv.motion.durations.fast"
       ],
-      "exampleRoute": null,
-      "routes": []
+      "exampleRoute": "/",
+      "routes": [
+        "/"
+      ]
     },
     {
       "name": "AgenticLoop",

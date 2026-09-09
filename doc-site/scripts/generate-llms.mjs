@@ -30,7 +30,7 @@ const outPath = path.resolve(here, '../public/llms.txt');
 
 /* ------------------------- base path / URL helpers ------------------------ */
 
-const base = process.env.DOCS_BASE ?? '/';
+const base = process.env.DOCS_BASE ?? '/evangelion-mui-theme/';
 const origin = process.env.LLMS_ORIGIN?.replace(/\/$/, '') ?? '';
 /** Hash route (`/getting-started`) → site URL; plain path → static file URL. */
 const href = (route) =>
@@ -128,7 +128,7 @@ out.push('', '## Standalone reference screens', '');
 out.push('Self-contained HTML files served verbatim under `pipeline/` — full reference implementations, no build.', '');
 for (const [file, label, desc] of PIPELINE_PAGES) out.push(`- [${label}](${href(file)}): ${desc}`);
 
-const repoUrl = process.env.VITE_REPO_URL;
+const repoUrl = process.env.VITE_REPO_URL ?? 'https://github.com/shocknawe/evangelion-mui-theme';
 if (repoUrl) {
   out.push('', '## Source', '', `- [GitHub repository](${repoUrl.replace(/\/$/, '')}): theme/, components/, and this docs site.`);
 }

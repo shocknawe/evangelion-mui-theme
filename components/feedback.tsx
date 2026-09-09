@@ -33,7 +33,7 @@ export interface HazardPromptProps extends RootHTMLAttributes, WithRef {
  *
  * @example <HazardPrompt jp="裁定" en="DECIDE" onDecide={route} />
  */
-export function HazardPrompt({ jp, en, onDecide, height = 150, classes, className, sx, ...rest }: HazardPromptProps) {
+export function HazardPrompt({ jp, en, onDecide, height = 150, onClick, onKeyDown, classes, className, sx, ...rest }: HazardPromptProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const [flash, setFlash] = useState(false);
@@ -73,9 +73,15 @@ export function HazardPrompt({ jp, en, onDecide, height = 150, classes, classNam
       role="button"
       tabIndex={0}
       aria-label={en.toLowerCase()}
-      onClick={trigger}
-      onKeyDown={onKey}
       {...rest}
+      onClick={(event) => {
+        trigger();
+        onClick?.(event);
+      }}
+      onKeyDown={(event) => {
+        onKey(event);
+        onKeyDown?.(event);
+      }}
       className={resolveClasses('HazardPrompt', 'root', classes, className)}
       sx={[
         (t) => ({
@@ -175,8 +181,7 @@ export function GateDecisionDialog({ open, item, onDecide, onClose, jp = '裁定
     fontSize: 20,
     letterSpacing: '0.12em',
     p: '1px 14px',
-    // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
-    // `animation` SHORTHAND — the whole declaration would be dropped.
+    // Longhands keep each motion token independently overridable.
     animationName: 'nervBlink',
     animationDuration: `${t.nerv.motion.durations.blink}ms`,
     animationTimingFunction: animSnap(t),
@@ -351,8 +356,7 @@ export function ApprovalBar({ label = 'PENDING APPROVAL ·', item, onApprove, on
     cursor: decided ? 'default' : 'pointer',
     fontFamily: t.nerv.fonts.mono,
     opacity: decided ? 0.35 : 1,
-    // Longhands — see the GateDecisionDialog note above (`motion.snap` breaks
-    // the `animation` shorthand).
+    // Longhands keep each motion token independently overridable.
     ...(blink && !decided
       ? {
           animationName: 'nervBtnBlink',

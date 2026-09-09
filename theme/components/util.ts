@@ -30,18 +30,5 @@ export const stampBox = (theme: Theme, opts?: { fill?: boolean }) => ({
     : null),
 });
 
-/**
- * `motion.snap` as an `animation-timing-function`.
- *
- * Chromium rejects `steps(1, jump-none)` for timing functions entirely —
- * `jump-none` needs n >= 2, so the value fails `CSS.supports` for BOTH
- * `animation-timing-function` and `transition-timing-function`, and it is
- * dropped from the `animation:` shorthand *and* the longhand (which silently
- * dropped every blink declaration that interpolated the token into the
- * shorthand). `steps(1, end)` parses in both contexts and is the nearest
- * parseable hard snap: the 1 Hz keyframes hold their values on both sides of
- * the 1%-wide transition window, so the difference from the token's midpoint
- * step is <5ms. The token itself is unchanged.
- */
-export const snapForAnimation = (theme: Theme): string =>
-  theme.nerv.motion.snap.replace('jump-none', 'end');
+/** Return the theme override hard-snap token. Mirrors `components/util.ts::animSnap`. */
+export const snapForAnimation = (theme: Theme): string => theme.nerv.motion.snap;

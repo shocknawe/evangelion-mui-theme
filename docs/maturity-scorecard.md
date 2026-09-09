@@ -438,11 +438,10 @@ G4 demotes) → **L3**.
   exhaustive fail-closed inventory — a new motion path without a named
   reduced path fails the suite; the suite also asserts the shipped CssBaseline
   guard itself.
-- *Why not L4:* not run in CI, and two motion defects are still live —
-  `theme/index.ts:68` maps `transitions.easing.sharp` to the raw
-  `steps(1, jump-none)` token (unparsable as a transition timing function), and
-  the doc-site Motion page still advises `steps(1, jump-none)`. Raise: CI wiring
-  plus fixing both (reported, not fixed — see §6).
+- *Why not L4 at the 2026-09-02 baseline:* the checks did not run in CI, the
+  `sharp` easing used an invalid hard-snap timing function, and the Motion page
+  repeated that value. These were resolved on 2026-09-09; the score remains a
+  baseline until the next formal refresh (see §6).
 - **L0** Motion behavior is undocumented; `prefers-reduced-motion` handling is unverified.
 - **L1** Reduced-motion is implemented for some components informally, not documented.
 - **L2** Motion principles are documented (`DESIGN.md` mechanical-motion rules) but reduced-motion final states are not verified per component.
@@ -628,30 +627,28 @@ npm run typecheck (root)             → exit 0
 npm run build (root)                 → tsup + [generate-dtcg] 75 tokens
                                        + registry.json 59 components (58 with example route)
 npm run size (root)                  → all 19 entries under budget (exit 0)
-cd doc-site && npm run build         → built (note: regenerates llms.txt unpinned — see §6 defects)
+cd doc-site && npm run build         → built (at baseline, regenerated llms.txt unpinned — see §6)
 ```
 
-**Defects and ambiguities found while scoring (reported, not fixed):**
+**Defects and ambiguities found while scoring:** The entries below explain the
+2026-09-02 baseline. Items 1–5 were resolved on 2026-09-09; the recorded scores
+remain unchanged until the next formal maturity refresh.
 
-1. **No CI runs the test suites.** `docs/a11y.md` says critical/serious axe
-   violations "fail CI" and the pattern rate is a "gate" — accurate as suite
-   behaviour, but no workflow invokes it. The L4 rows above are all demoted by
-   this one gap.
-2. **`theme/index.ts:68`** maps `transitions.easing.sharp` to the raw
-   `motion.snap` token (`steps(1, jump-none)`), which Chromium rejects as a
-   transition/animation timing function (n=1 `jump-none`; recorded in
-   `notes/4.3-variant-rendering.md`). Still present at HEAD.
-3. **`doc-site/src/pages/foundations/MotionPage.tsx`** advises
-   `steps(1, jump-none)` — same unparsable value, propagating the defect into
-   consumer guidance.
-4. **Stale `app/src/a11y/coverage.ts`:** claims `StepFlow` renders on
-   `/dashboard-02`; no `app/` page renders it. Consequence: `registry.json`
-   records `exampleRoute: null` for StepFlow, the generator warns on every
-   build, and U3/S6/S10 lose points for a one-line fix.
-5. **`doc-site` `prebuild`/`predev` rewrite `public/llms.txt` unpinned** — any
-   local `npm run build` flips the 83 links from `/evangelion-mui-theme/…` to
-   `/…`, dirtying the file (reproduced during this scoring and reverted with
-   `git checkout`). Recorded in `notes/7.5-agent-readiness-rubric.md`.
+1. **Resolved — CI did not run the test suites.**
+   `.github/workflows/component-quality.yml` now runs root/app builds and
+   typechecks, checks the generated registry, and runs the accessibility/API
+   suite on every pull request.
+2. **Resolved — `transitions.easing.sharp` used an invalid timing function.**
+   The public token and MUI's `sharp` easing now use `steps(1, end)`; the
+   original failure is recorded in `notes/4.3-variant-rendering.md`.
+3. **Resolved — the Motion page advised an invalid timing function.** It now
+   documents `steps(1, end)`.
+4. **Resolved — stale `StepFlow` route coverage.** The design-system route now
+   renders `StepFlow` directly, the coverage map points to `/`, and registry
+   generation records the real route without warning.
+5. **Resolved — local docs builds rewrote `public/llms.txt`.** The generator now
+   defaults to the deployed project base and repository URL, while environment
+   variables can still override both.
 6. **6 of 10 custom variants have no *direct* route rendering** (Button
    `stamp`, Paper `frame`, Typography `jp`/`terminal`/`stamp`/`data` — the
    direct-vs-indirect rule: a variant counts as exercised only when the
@@ -663,10 +660,10 @@ cd doc-site && npm run build         → built (note: regenerates llms.txt unpin
    `stamp`, Paper `frame`, Typography `stamp`). All 6 were verified only
    through a throwaway harness (`notes/4.3`), which caps S5/U8 verification
    credit.
-7. **`docs/a11y.md` headline row "axe violations — moderate: 16"** vs 22 at
-   first run is self-consistent, but the a11y "CI gate" wording (defect 1)
-   overstates what is wired. Also `color-contrast` is disabled in the axe run,
-   so no WCAG contrast number exists anywhere — a real hole in S6 evidence.
+7. **Partially resolved — accessibility evidence.** The CI wording is now
+   accurate because the suite runs on pull requests, and meter/progress
+   semantics ship in the library. `color-contrast` remains disabled in jsdom,
+   so browser-level WCAG contrast verification is still a future evidence gap.
 
 ## 7. Usage
 

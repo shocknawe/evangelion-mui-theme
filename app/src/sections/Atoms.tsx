@@ -24,17 +24,14 @@ export function Atoms() {
         {/* stamps */}
         <SpecCard label="STAMP / CHIP" src="MuiChip">
           <Chip label="NOMINAL" color="success" />
-          {/* Blink as animation longhands: interpolating `motion.snap` into the
-              `animation` SHORTHAND dropped the whole declaration, and Chromium
-              also rejects `steps(1, jump-none)` for animation-timing-function
-              (n >= 2 required) — so the nearest valid hard snap is emitted. */}
+          {/* Animation longhands keep each motion token independently overridable. */}
           <Chip
             label="審査中"
             color="info"
             sx={{
               animationName: 'nervBlink',
               animationDuration: `${t.nerv.motion.durations.blink}ms`,
-              animationTimingFunction: t.nerv.motion.snap.replace('jump-none', 'end'),
+              animationTimingFunction: t.nerv.motion.snap,
               animationIterationCount: 'infinite',
             }}
           />

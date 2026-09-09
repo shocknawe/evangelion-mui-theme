@@ -66,6 +66,7 @@ export function SegmentedMeter({
   }, [values, animated, reduced, segments]);
 
   const labels = columnLabels ?? levels.map((_, i) => String.fromCharCode(65 + i));
+  const displayedLevels = levels.map((level) => Math.max(0, Math.min(segments, level)));
 
   const segColor = (i: number, lit: boolean) => {
     if (!lit) return { background: t.nerv.hue.greenDim, opacity: 0.3 };
@@ -76,7 +77,13 @@ export function SegmentedMeter({
   };
 
   return (
-    <Box {...rest} className={resolveClasses('SegmentedMeter', 'root', classes, className)} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="group"
+      aria-label="Segmented meter"
+      {...rest}
+      className={resolveClasses('SegmentedMeter', 'root', classes, className)}
+      sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       <Box sx={{ display: 'flex', gap: 1.5, height: 150 }}>
         <Box className={resolveClasses('SegmentedMeter', 'axis', classes)} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 9, color: t.nerv.hue.orange, borderRight: `1px solid ${t.nerv.hue.orange}`, pr: '5px', fontFamily: t.nerv.fonts.mono }}>
           {axisLabels.map((a) => (
@@ -84,8 +91,16 @@ export function SegmentedMeter({
           ))}
         </Box>
         <Box sx={{ flex: 1, display: 'flex', gap: 2, position: 'relative' }}>
-          {levels.map((lvl, bi) => (
-            <Box key={bi} sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '3px' }}>
+          {displayedLevels.map((lvl, bi) => (
+            <Box
+              key={bi}
+              role="meter"
+              aria-label={labels[bi] ?? `Column ${bi + 1}`}
+              aria-valuenow={lvl}
+              aria-valuemin={0}
+              aria-valuemax={segments}
+              sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '3px' }}
+            >
               {Array.from({ length: segments }, (_, i) => (
                 <Box key={i} className={resolveClasses('SegmentedMeter', 'segment', classes)} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, transition: `opacity ${t.nerv.motion.durations.fast}ms linear, background ${t.nerv.motion.durations.fast}ms linear`, ...segColor(i, i < lvl) }} />
               ))}
@@ -164,6 +179,7 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
   const reduced = useReducedMotion();
   const [internal, setInternal] = useState(98);
   const pct = value ?? internal;
+  const displayedPct = Math.max(0, Math.min(100, pct));
 
   useEffect(() => {
     if (value !== undefined || !animated || reduced) return;
@@ -183,7 +199,7 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
       return `M${p1x} ${p1y} A${rO} ${rO} 0 0 0 ${p2x} ${p2y} L${p3x} ${p3y} A${rI} ${rI} 0 0 1 ${p4x} ${p4y}Z`;
     });
   }, [segments]);
-  const lit = Math.round((pct / 100) * segments);
+  const lit = Math.round((displayedPct / 100) * segments);
 
   // `track` slot (notes/2.2 §3): the consumer owns the whole SVG; the `paths`
   // memo and the `lit` math stay internal — the slot replaces the rendering,
@@ -202,13 +218,13 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
   });
   // `readout` slot: the centered value + label stack, fed the rounded reading.
   const [ReadoutSlot, readoutProps] = resolveSlot(slots?.readout, Box, {
-    contract: { value: Math.round(pct), label },
+    contract: { value: Math.round(displayedPct), label },
     defaults: {
       sx: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
       children: (
         <>
           <Box component="b" className={resolveClasses('RadialGauge', 'readoutValue', classes)} sx={{ fontFamily: t.nerv.fonts.display, fontSize: 22, color: t.nerv.hue.mintHi, textShadow: '0 0 4px currentColor' }}>
-            {Math.round(pct)}%
+            {Math.round(displayedPct)}%
           </Box>
           <Box component="span" className={resolveClasses('RadialGauge', 'readoutLabel', classes)} sx={{ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.12em' }}>
             {label}
@@ -221,7 +237,16 @@ export function RadialGauge({ value, label = 'ARMED', segments = 22, size = 120,
   });
 
   return (
-    <Box {...rest} className={resolveClasses('RadialGauge', 'root', classes, className)} sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="meter"
+      aria-label={label}
+      aria-valuenow={Math.round(displayedPct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      {...rest}
+      className={resolveClasses('RadialGauge', 'root', classes, className)}
+      sx={[{ position: 'relative', width: size, height: size }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       <TrackSlot {...trackProps} />
       <ReadoutSlot {...readoutProps} />
     </Box>
@@ -256,6 +281,8 @@ export function BarColumnGauge({ columns, bar, animated = true, classes, classNa
   const [cols, setCols] = useState<number[]>([5, 7, 4, 6, 8, 5]);
   const barVal = bar ?? hbar;
   const colVals = columns ?? cols;
+  const displayedBar = Math.max(0, Math.min(18, barVal));
+  const displayedCols = colVals.map((value) => Math.max(0, Math.min(10, value)));
 
   useEffect(() => {
     if ((columns !== undefined && bar !== undefined) || !animated || reduced) return;
@@ -267,14 +294,24 @@ export function BarColumnGauge({ columns, bar, animated = true, classes, classNa
   }, [columns, bar, animated, reduced]);
 
   return (
-    <Box {...rest} className={resolveClasses('BarColumnGauge', 'root', classes, className)} sx={[{ display: 'flex', flexDirection: 'column', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="meter"
+      aria-label="Bar and column gauge"
+      aria-valuenow={displayedBar}
+      aria-valuemin={0}
+      aria-valuemax={18}
+      aria-valuetext={`Bar ${displayedBar} of 18; columns ${displayedCols.join(', ')} of 10`}
+      {...rest}
+      className={resolveClasses('BarColumnGauge', 'root', classes, className)}
+      sx={[{ display: 'flex', flexDirection: 'column', gap: 1.75, width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       <Box sx={{ display: 'flex', gap: '3px', height: 34, width: '100%' }}>
         {Array.from({ length: 18 }, (_, i) => (
-          <Box key={i} sx={{ flex: 1, ...(i < barVal ? { background: t.nerv.hue.blue, opacity: 1, boxShadow: '0 0 5px rgba(80,144,208,.5)' } : { background: t.nerv.hue.greenDim, opacity: 0.3 }) }} />
+          <Box key={i} sx={{ flex: 1, ...(i < displayedBar ? { background: t.nerv.hue.blue, opacity: 1, boxShadow: '0 0 5px rgba(80,144,208,.5)' } : { background: t.nerv.hue.greenDim, opacity: 0.3 }) }} />
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: '6px', height: 110, alignItems: 'flex-end', width: '100%' }}>
-        {colVals.map((val, ci) => (
+        {displayedCols.map((val, ci) => (
           <Box key={ci} sx={{ flex: 1, display: 'flex', flexDirection: 'column-reverse', gap: '2px', height: '100%' }}>
             {Array.from({ length: 10 }, (_, i) => (
               <Box key={i} sx={{ flex: 1, borderRadius: `${t.nerv.radius.chip}px`, ...seg(t, i < val, (i + 1) / 10 > 0.8) }} />
@@ -315,7 +352,7 @@ export interface ProgressMeterProps extends RootHTMLAttributes, WithRef {
 export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLETE', readout, animated = true, classes, className, sx, ...rest }: ProgressMeterProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
-  const target = Math.round((value / 100) * segments);
+  const target = Math.round((Math.max(0, Math.min(100, value)) / 100) * segments);
   const [fill, setFill] = useState(animated && !reduced ? 0 : target);
 
   useEffect(() => {
@@ -336,7 +373,16 @@ export function ProgressMeter({ value, segments = 25, threshold, label = 'COMPLE
   const pct = Math.round((fill / segments) * 100);
 
   return (
-    <Box {...rest} className={resolveClasses('ProgressMeter', 'root', classes, className)} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="progressbar"
+      aria-label={label}
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      {...rest}
+      className={resolveClasses('ProgressMeter', 'root', classes, className)}
+      sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       <Box sx={{ position: 'relative', pt: '2px' }}>
         <Box sx={{ display: 'flex', gap: '3px', height: 18 }}>
           {Array.from({ length: segments }, (_, i) => (
@@ -409,7 +455,13 @@ export function HealthColumns({ columns = 4, cells = 7, animated = true, onSumma
   }, [litTotal, columns, cells, onSummary]);
 
   return (
-    <Box role="img" aria-label="System health" {...rest} className={resolveClasses('HealthColumns', 'root', classes, className)} sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="img"
+      aria-label={`System health: ${litTotal} of ${columns * cells} indicators lit`}
+      {...rest}
+      className={resolveClasses('HealthColumns', 'root', classes, className)}
+      sx={[{ display: 'flex', gap: '5px', alignItems: 'flex-end', height: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {cols.map((col, ci) => (
         <Box key={ci} sx={{ width: 9, display: 'flex', flexDirection: 'column-reverse', gap: '2px' }}>
           {Array.from({ length: cells }, (_, i) => {
@@ -463,7 +515,16 @@ export function SegmentBar({ value, segments = 20, tone = 'mint', height = 8, cl
   const lit = Math.round((value / 100) * segments);
   const c = toneHue(t, tone);
   return (
-    <Box {...rest} className={resolveClasses('SegmentBar', 'root', classes, className)} sx={[{ display: 'flex', gap: '2px', height, flex: 1, minWidth: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuenow={Math.max(0, Math.min(100, value))}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      {...rest}
+      className={resolveClasses('SegmentBar', 'root', classes, className)}
+      sx={[{ display: 'flex', gap: '2px', height, flex: 1, minWidth: 40 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {Array.from({ length: segments }, (_, i) => (
         <Box
           key={i}
@@ -510,8 +571,18 @@ export interface MeterBarProps extends RootHTMLAttributes, WithRef {
 export function MeterBar({ label, value, pct, tone = 'mint', warn = false, height = 5, classes, className, sx, ...rest }: MeterBarProps) {
   const t = useTheme();
   const c = warn ? t.nerv.hue.amber : toneHue(t, tone);
+  const accessibleLabel = typeof label === 'string' || typeof label === 'number' ? String(label) : 'Meter';
   return (
-    <Box {...rest} className={resolveClasses('MeterBar', 'root', classes, className)} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="meter"
+      aria-label={accessibleLabel}
+      aria-valuenow={Math.max(0, Math.min(100, pct))}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      {...rest}
+      className={resolveClasses('MeterBar', 'root', classes, className)}
+      sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 10, color: t.nerv.hue.mint, mb: '4px', fontFamily: t.nerv.fonts.mono, '& b': { color: t.nerv.hue.mintHi, fontWeight: 400 } }}>
         <Box component="span">{label}</Box>
         {value != null && <Box component="b">{value}</Box>}
@@ -557,7 +628,16 @@ export function LedColumn({ value, segments = 14, tone = 'amber', hotBelow, heig
   const hot = hotBelow !== undefined && value < hotBelow;
   const c = hot ? t.nerv.hue.redHi : toneHue(t, tone);
   return (
-    <Box {...rest} className={resolveClasses('LedColumn', 'root', classes, className)} sx={[{ display: 'flex', flexDirection: 'column-reverse', gap: '3px', width, height }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box
+      role="meter"
+      aria-label="Level"
+      aria-valuenow={Math.max(0, Math.min(100, value))}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      {...rest}
+      className={resolveClasses('LedColumn', 'root', classes, className)}
+      sx={[{ display: 'flex', flexDirection: 'column-reverse', gap: '3px', width, height }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {Array.from({ length: segments }, (_, i) => (
         <Box
           key={i}

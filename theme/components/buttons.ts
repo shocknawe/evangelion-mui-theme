@@ -43,9 +43,8 @@ export const buttons: Pick<
           outline: `2px solid ${theme.nerv.hue.paper}`,
           outlineOffset: 3,
         },
-        // The live-action blink: `<Button className="nerv-live">`.
-        // Emitted as longhands: `steps(1, jump-none)` (motion.snap) is rejected
-        // inside the `animation` SHORTHAND — the whole declaration is dropped.
+        // The live-action blink: `<Button className="nerv-live">`. Longhands
+        // keep each motion token explicit and independently overridable.
         '&.nerv-live': {
           animationName: KEYFRAMES.btnBlink,
           animationDuration: `${theme.nerv.motion.durations.blink}ms`,

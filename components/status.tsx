@@ -170,8 +170,7 @@ export function Roster({ units = DEFAULT_UNITS, columns = 4, onSelect, classes, 
                 p: '1px 6px',
                 fontSize: 9,
                 borderRadius: `${t.nerv.radius.chip}px`,
-                // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside
-                // the `animation` SHORTHAND — it would be dropped.
+                // Longhands keep each motion token independently overridable.
                 ...(u.status === 'CAUTION' && !reduced
                   ? {
                       animationName: 'nervBlink',
@@ -474,14 +473,17 @@ const AGENT_TONE: Record<AgentStatus, Tone> = { ACTIVE: 'mint', REVIEWING: 'blue
  * with a name, a status stamp, and a task line. Selecting it (to view a console,
  * say) thickens the border and adds an inset glow.
  */
-export function AgentCard({ name, status, task, selected = false, onSelect, classes, className, sx, ...rest }: AgentCardProps) {
+export function AgentCard({ name, status, task, selected = false, onSelect, onClick, classes, className, sx, ...rest }: AgentCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
-      onClick={onSelect}
       {...rest}
+      onClick={(event) => {
+        onSelect?.();
+        onClick?.(event);
+      }}
       className={resolveClasses('AgentCard', 'root', classes, className)}
       sx={[
         (t) => {
@@ -728,8 +730,7 @@ export function RoutineRow({ id, name, kind, status, dim = false, onRun, slots, 
             p: '2px 8px',
             borderRadius: `${t.nerv.radius.chip}px`,
             textShadow: status === 'RETRIED' ? '0 0 4px currentColor' : 'none',
-            // Longhands — see the CAUTION note above (`motion.snap` breaks the
-            // `animation` shorthand).
+            // Longhands keep each motion token independently overridable.
             ...(status === 'RETRIED' && !reduced
               ? {
                   animationName: 'nervBlink',
@@ -784,14 +785,17 @@ export interface ModuleCardProps extends Omit<RootHTMLAttributes<'button'>, 'tit
  * (orange) border at rest that lifts on hover; selecting it pins the card with a
  * mint border + glow (figure/ground). Renders as a button so it's keyboard-usable.
  */
-export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, classes, className, sx, ...rest }: ModuleCardProps) {
+export function ModuleCard({ jp, code, codeSub, title, children, stamp, meta, tone = 'mint', selected = false, onSelect, onClick, classes, className, sx, ...rest }: ModuleCardProps) {
   return (
     <Box
       component="button"
       type="button"
       aria-pressed={selected}
-      onClick={onSelect}
       {...rest}
+      onClick={(event) => {
+        onSelect?.();
+        onClick?.(event);
+      }}
       className={resolveClasses('ModuleCard', 'root', classes, className)}
       sx={[
         (t) => ({

@@ -248,9 +248,9 @@ export function Landing02Page() {
         sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto', background: 'rgba(10,10,10,.96)', borderLeft: `2px solid ${t.nerv.hue.orange}`, boxShadow: '-2px 0 14px rgba(242,100,0,.15)', p: '18px 16px' }}
       >
         <RLabel>◉ SYSTEM STATUS</RLabel>
-        <MeterBar label="CPU" value={cpu} pct={cpuPct} sx={{ mb: 2 }} role="meter" aria-label="CPU" aria-valuenow={Math.round(cpuPct)} aria-valuemin={0} aria-valuemax={100} />
-        <MeterBar label="MEMORY" value={mem} pct={memPct} sx={{ mb: 2 }} role="meter" aria-label="MEMORY" aria-valuenow={Math.round(memPct)} aria-valuemin={0} aria-valuemax={100} />
-        <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn sx={{ mb: 2 }} role="meter" aria-label="VAULT LOAD" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
+        <MeterBar label="CPU" value={cpu} pct={cpuPct} sx={{ mb: 2 }} />
+        <MeterBar label="MEMORY" value={mem} pct={memPct} sx={{ mb: 2 }} />
+        <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn sx={{ mb: 2 }} />
         <RLabel>◉ GLOBAL MEMORY FEED</RLabel>
         <Box sx={{ fontSize: 10, lineHeight: 1.6, color: t.nerv.hue.amber, textTransform: 'none', letterSpacing: '0.02em', border: `1px solid ${t.nerv.hue.greenDim}`, p: '9px', mt: '6px', '& .t': { color: t.nerv.hue.amberDim }, '& .d': { color: t.nerv.hue.orange }, '& .m': { color: t.nerv.hue.redHi }, '& .g': { color: t.nerv.hue.mint } }}>
           <Box><span className="t">14:22</span> <span className="d">[DEC]</span> Bun runtime for local CI</Box>
@@ -300,4 +300,3 @@ function RLabel({ children }: { children: ReactNode }) {
   const t = useTheme();
   return <Box sx={{ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', m: '6px 0 10px', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 0.75 }}>{children}</Box>;
 }
-

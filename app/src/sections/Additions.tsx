@@ -18,6 +18,7 @@ import {
   SegmentBar,
   LedColumn,
   MeterBar,
+  StepFlow,
   AgenticLoop,
   TaskCard,
   AgentDot,
@@ -37,6 +38,12 @@ const OODA = [
   { jp: '決定', en: 'DECIDE' },
   { jp: '実行', en: 'EXECUTE' },
   { jp: '学習', en: 'LEARN' },
+];
+
+const DELIVERY_STEPS = [
+  { short: 'OBS', label: 'OBSERVE' },
+  { short: 'DEC', label: 'DECIDE' },
+  { short: 'EXE', label: 'EXECUTE' },
 ];
 
 export function Additions() {
@@ -91,34 +98,38 @@ export function Additions() {
       <SpecGrid cols={3}>
         <SpecCard label="GAUGE CARD" src="<GaugeCard/>" column>
           <GaugeCard tone="blue" kind="WATCHER · 監視" name="MEDIA WATCHER" readout={<><b>45</b>% BUFFER</>} sub="POLLING: 10S">
-            {/* WAI-ARIA meter/progressbar semantics are attached at the usage site —
-                the components spread their root attributes, so the consumer names
-                and values the gauge. */}
-            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} role="progressbar" aria-label="MEDIA BUFFER" aria-valuenow={45} aria-valuemin={0} aria-valuemax={100} />
+            {/* The component owns its progress semantics; this example supplies a
+                product-specific accessible name. */}
+            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} aria-label="MEDIA BUFFER" />
           </GaugeCard>
         </SpecCard>
         <SpecCard label="TELEMETRY CARD" src="<TelemetryCard/>" column>
           <TelemetryCard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <RadialGauge value={98} label="HELD" size={120} animated={false} role="meter" aria-label="VAULT RETENTION" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
+              <RadialGauge value={98} label="HELD" size={120} animated={false} aria-label="VAULT RETENTION" />
             </Box>
           </TelemetryCard>
         </SpecCard>
         <SpecCard label="LED COLUMN · HOT UNDER 35" src="<LedColumn/>">
-          <LedColumn value={72} tone="mint" role="meter" aria-label="FUEL · VEGA·1" aria-valuenow={72} aria-valuemin={0} aria-valuemax={100} />
-          <LedColumn value={26} tone="amber" hotBelow={35} role="meter" aria-label="COOLANT · PUMP·B" aria-valuenow={26} aria-valuemin={0} aria-valuemax={100} />
+          <LedColumn value={72} tone="mint" aria-label="FUEL · VEGA·1" />
+          <LedColumn value={26} tone="amber" hotBelow={35} aria-label="COOLANT · PUMP·B" />
         </SpecCard>
         <SpecCard label="METER BAR" src="<MeterBar/>" column>
           <Box sx={{ width: '100%' }}>
-            <MeterBar label="CPU" value="12.4%" pct={12} sx={{ mb: 1.5 }} role="meter" aria-label="CPU" aria-valuenow={12} aria-valuemin={0} aria-valuemax={100} />
-            <MeterBar label="MEMORY" value="2.1 / 32GB" pct={7} sx={{ mb: 1.5 }} role="meter" aria-label="MEMORY" aria-valuenow={7} aria-valuemin={0} aria-valuemax={100} />
-            <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn role="meter" aria-label="VAULT LOAD" aria-valuenow={98} aria-valuemin={0} aria-valuemax={100} />
+            <MeterBar label="CPU" value="12.4%" pct={12} sx={{ mb: 1.5 }} />
+            <MeterBar label="MEMORY" value="2.1 / 32GB" pct={7} sx={{ mb: 1.5 }} />
+            <MeterBar label="VAULT LOAD" value="98.4%" pct={98} warn />
           </Box>
         </SpecCard>
       </SpecGrid>
 
       {/* ---------------- flow ---------------- */}
       <ZoneTitle>FLOW</ZoneTitle>
+      <SpecCard label="STEP FLOW" src="<StepFlow/>" column flush>
+        <Box sx={{ p: '20px 18px', width: '100%' }}>
+          <StepFlow active={1} steps={DELIVERY_STEPS} />
+        </Box>
+      </SpecCard>
       <SpecCard label="AGENTIC LOOP · SELF-CYCLING" src="<AgenticLoop/>" column flush>
         <Box sx={{ p: '20px 18px', width: '100%' }}>
           <AgenticLoop caption="ACTIVE_LOOP : AUTONOMOUS_LEARN" steps={OODA} />

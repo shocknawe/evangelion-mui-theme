@@ -60,7 +60,7 @@ export default [
   // The published barrel (`phosphor-console-theme/components`).
   entry('components', 'components/index.ts', '21500 B'),
 
-  // Per-component module files — the individually importable units behind the
+  // Per-component source modules measured individually behind the published
   // barrel, named `components/<file>`.
   entry('components/chips', 'components/chips.tsx', '1400 B'),
   entry('components/charts', 'components/charts.tsx', '2950 B'),

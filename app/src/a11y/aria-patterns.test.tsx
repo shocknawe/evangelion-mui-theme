@@ -123,36 +123,21 @@ const CHECKS: Record<PatternId, () => Check[]> = {
           label="HELD"
           size={120}
           animated={false}
-          role="meter"
-          aria-label="VAULT RETENTION"
-          aria-valuenow={98}
-          aria-valuemin={0}
-          aria-valuemax={100}
         />
         <Phosphor.LedColumn
           value={72}
-          role="meter"
-          aria-label="FUEL · VEGA·1"
-          aria-valuenow={72}
-          aria-valuemin={0}
-          aria-valuemax={100}
         />
         <Phosphor.MeterBar
           label="CPU"
           value="12.4%"
           pct={12}
-          role="meter"
-          aria-label="CPU"
-          aria-valuenow={12}
-          aria-valuemin={0}
-          aria-valuemax={100}
         />
       </>,
     );
     const checks: Check[] = [];
     const meters: [string, string, string][] = [
-      ['RadialGauge', 'VAULT RETENTION', '98'],
-      ['LedColumn', 'FUEL · VEGA·1', '72'],
+      ['RadialGauge', 'HELD', '98'],
+      ['LedColumn', 'Level', '72'],
       ['MeterBar', 'CPU', '12'],
     ];
     for (const [component, name, now] of meters) {
@@ -168,15 +153,15 @@ const CHECKS: Record<PatternId, () => Check[]> = {
       );
       checks.push(ok(component, 'not focusable (a meter is a readout)', el.getAttribute('tabindex') === null));
     }
-    // Declared gaps: the two self-driving multi-column meters expose no value at all.
+    // Multi-column meters ship their own value semantics too.
     const segContainer = mount(<Phosphor.SegmentedMeter values={[10, 13, 8, 15]} animated={false} />);
     const barContainer = mount(<Phosphor.BarColumnGauge columns={[5, 7, 4, 6, 8, 5]} bar={9} animated={false} />);
-    checks.push(
-      ok('SegmentedMeter', 'DECLARED GAP: exposes a role="meter" with a value (currently: bare columns)', within(segContainer).queryAllByRole('meter').length > 0),
-    );
-    checks.push(
-      ok('BarColumnGauge', 'DECLARED GAP: exposes a role="meter" with a value (currently: bare columns)', within(barContainer).queryAllByRole('meter').length > 0),
-    );
+    const columnMeters = within(segContainer).getAllByRole('meter');
+    checks.push(ok('SegmentedMeter', 'one named meter per LED column', columnMeters.length === 4 && columnMeters.every((meter) => !!meter.getAttribute('aria-label'))));
+    checks.push(ok('SegmentedMeter', 'column values use the configured segment range', columnMeters.every((meter, index) => meter.getAttribute('aria-valuenow') === String([10, 13, 8, 15][index]) && meter.getAttribute('aria-valuemin') === '0' && meter.getAttribute('aria-valuemax') === '20')));
+    const barMeter = within(barContainer).getByRole('meter', { name: 'Bar and column gauge' });
+    checks.push(ok('BarColumnGauge', 'root exposes the bar value and range', barMeter.getAttribute('aria-valuenow') === '9' && barMeter.getAttribute('aria-valuemin') === '0' && barMeter.getAttribute('aria-valuemax') === '18'));
+    checks.push(ok('BarColumnGauge', 'root summarizes the column values', barMeter.getAttribute('aria-valuetext') === 'Bar 9 of 18; columns 5, 7, 4, 6, 8, 5 of 10'));
     return checks;
   },
 
@@ -187,26 +172,16 @@ const CHECKS: Record<PatternId, () => Check[]> = {
         <Phosphor.ProgressMeter
           value={68}
           animated={false}
-          role="progressbar"
-          aria-label="BRIEF PIPELINE"
-          aria-valuenow={68}
-          aria-valuemin={0}
-          aria-valuemax={100}
         />
         <Phosphor.SegmentBar
           value={45}
           tone="blue"
-          role="progressbar"
-          aria-label="MEDIA BUFFER"
-          aria-valuenow={45}
-          aria-valuemin={0}
-          aria-valuemax={100}
         />
       </>,
     );
     const bars: [string, string, string][] = [
-      ['ProgressMeter', 'BRIEF PIPELINE', '68'],
-      ['SegmentBar', 'MEDIA BUFFER', '45'],
+      ['ProgressMeter', 'COMPLETE', '68'],
+      ['SegmentBar', 'Progress', '45'],
     ];
     const checks: Check[] = [];
     for (const [component, name, now] of bars) {
@@ -216,11 +191,10 @@ const CHECKS: Record<PatternId, () => Check[]> = {
       checks.push(ok(component, `aria-valuenow is ${now}`, el.getAttribute('aria-valuenow') === now, `got ${el.getAttribute('aria-valuenow')}`));
       checks.push(ok(component, 'aria-valuemin/aria-valuemax = 0/100', el.getAttribute('aria-valuemin') === '0' && el.getAttribute('aria-valuemax') === '100'));
     }
-    // Declared gap: TaskCard's embedded SegmentBar cannot be reached from outside.
+    // TaskCard's embedded SegmentBar carries its own progress semantics.
     const card = mount(<Phosphor.TaskCard id="TASK·882" title="OPTIMIZE LATENCY" active={2} pct={62} />);
-    checks.push(
-      ok('TaskCard', 'DECLARED GAP: the embedded progress bar carries role="progressbar" (currently silent)', card.querySelectorAll('[role="progressbar"]').length > 0),
-    );
+    const taskProgress = within(card).getByRole('progressbar', { name: 'Task progress' });
+    checks.push(ok('TaskCard', 'embedded progressbar exposes the task percentage', taskProgress.getAttribute('aria-valuenow') === '62'));
     return checks;
   },
 
@@ -523,12 +497,6 @@ function decorationGapChecks(): Check[] {
   const marquee = mount(<Phosphor.Marquee items={['V2.4.0-STABLE DEPLOYED']} />);
   const hiddenDupes = Array.from(marquee.querySelectorAll('[aria-hidden="true"]')).length;
   checks.push(ok('Marquee', 'DECLARED GAP: the duplicated loop track is aria-hidden (read once by AT)', hiddenDupes > 0 || marquee.textContent?.split('V2.4.0-STABLE DEPLOYED').length === 2));
-  // HealthColumns — role="img" stopgap without the lit/total value.
-  const health = mount(<Phosphor.HealthColumns animated={false} />);
-  const healthRoot = health.firstElementChild as HTMLElement;
-  checks.push(
-    ok('HealthColumns', 'DECLARED GAP: the role="img" root exposes the lit/total value via aria-valuetext', healthRoot.getAttribute('aria-valuetext') !== null),
-  );
   return checks;
 }
 

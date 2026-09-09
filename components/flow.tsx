@@ -74,8 +74,7 @@ export function StepFlow({ steps, active, classes, className, sx, ...rest }: Ste
                           background: t.nerv.hue.blue,
                           borderColor: t.nerv.hue.blue,
                           color: t.nerv.hue.void,
-                          // Longhands: `steps(1, jump-none)` (motion.snap) is rejected
-                          // inside the `animation` SHORTHAND — it would be dropped.
+                          // Longhands keep each motion token independently overridable.
                           animationName: 'nervBlink',
                           animationDuration: `${t.nerv.motion.durations.blink}ms`,
                           animationTimingFunction: animSnap(t),
@@ -221,7 +220,7 @@ export function TaskCard({ id, title, action, active, pct, steps = OODA, classes
       <StepFlow sx={{ mt: 1.5 }} active={active} steps={steps} />
       <Box className={resolveClasses('TaskCard', 'progress', classes)} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mt: 1.25, fontSize: 10, color: t.nerv.hue.greenMap, fontFamily: t.nerv.fonts.mono }}>
         <span>PROGRESS</span>
-        <SegmentBar value={pct} />
+        <SegmentBar value={pct} aria-label="Task progress" />
         <Box component="b" sx={{ color: t.nerv.hue.mint, fontWeight: 400 }}>{pct}%</Box>
       </Box>
     </Box>

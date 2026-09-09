@@ -50,7 +50,7 @@ export const COVERAGE: Record<string, string[]> = {
   GaugeCard: ['/', '/dashboard-03'],
   TelemetryCard: ['/', '/landing-01'],
   // — flow —
-  StepFlow: ['/dashboard-02'],
+  StepFlow: ['/'],
   AgenticLoop: ['/', '/landing-02'],
   TaskCard: ['/', '/dashboard-02'],
   // — status —

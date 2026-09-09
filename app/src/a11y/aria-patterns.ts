@@ -91,31 +91,9 @@ export const A11Y_PATTERNS: PatternSpec[] = [
     apg: 'Meter (`role="meter"` + `aria-valuenow`/`-min`/`-max` + accessible name)',
     requires: ['role="meter"', 'aria-valuenow', 'aria-valuemin', 'aria-valuemax', 'accessible name'],
     keyboard: ['not focusable — a meter is a readout, not a control'],
-    jsdomScope: 'role, accessible name and the three aria-value* attributes on the component root (passed through the root-attribute spread from the live example)',
+    jsdomScope: 'role, accessible name and value attributes supplied by each component; multi-column meters expose one named meter per column.',
     components: ['RadialGauge', 'LedColumn', 'MeterBar', 'SegmentedMeter', 'BarColumnGauge'],
-    gaps: [
-      {
-        component: 'SegmentedMeter',
-        severity: 'moderate',
-        finding: 'Multi-column LED meter exposes no value semantics: the columns are bare divs, so AT reads nothing for a gauge that carries the most important number on the screen. No single `aria-valuenow` can be attached from outside because the component renders N columns.',
-        remediation: 'Component change (6.4): render one `role="meter"` (or `role="img"` + sr-only summary) per column, or a `role="group"` with a `aria-valuetext` summary; sync from the internal level state.',
-        demotes: false,
-      },
-      {
-        component: 'BarColumnGauge',
-        severity: 'moderate',
-        finding: 'Self-driving bar + column histogram with no accessible value or name at all.',
-        remediation: 'Same as SegmentedMeter: per-column meter role or an `aria-label` + `aria-valuetext` summary driven from `bar`/`columns`.',
-        demotes: false,
-      },
-      {
-        component: 'HealthColumns',
-        severity: 'minor',
-        finding: 'Already carries `role="img" aria-label="System health"`, which is a valid stopgap, but the lit/total summary the `onSummary` callback computes is not exposed to AT.',
-        remediation: 'Accept an `aria-label`/summary prop and set `aria-valuetext` ("18/28 NOMINAL") on the existing `role="img"` root.',
-        demotes: false,
-      },
-    ],
+    gaps: [],
   },
   {
     id: 'progressbar',
@@ -124,15 +102,7 @@ export const A11Y_PATTERNS: PatternSpec[] = [
     keyboard: ['not focusable — a progressbar is a readout, not a control'],
     jsdomScope: 'role, name and the three aria-value* attributes on the component root; determinism (the animated fill is not asserted).',
     components: ['ProgressMeter', 'SegmentBar', 'TaskCard'],
-    gaps: [
-      {
-        component: 'TaskCard',
-        severity: 'minor',
-        finding: 'The embedded `SegmentBar` renders inside `TaskCard`, so a consumer cannot attach `role="progressbar"`/`aria-valuenow` to it — the card announces "PROGRESS 62%" as plain text and the bar itself is silent.',
-        remediation: 'Component change (6.4): pass the progress semantics onto the embedded SegmentBar (or render it with `role="progressbar" aria-valuenow={pct}`) inside TaskCard.',
-        demotes: false,
-      },
-    ],
+    gaps: [],
   },
   {
     id: 'radio-group',
@@ -367,7 +337,7 @@ export const COMPONENT_PATTERNS: Record<string, ComponentPattern> = {
   // — flow.tsx —
   StepFlow: decoration('static step sequence; done/current are color-only.', 'moderate', 'The current step is conveyed only by a blinking fill — no `aria-current="step"` and no text alternative for done/upcoming.', 'Component change (6.4): `aria-current="step"` on the active node (the root spreads attrs, so the example can carry it; the node itself is internal).'),
   AgenticLoop: decoration('self-cycling loop; the lit node is color-only.', 'moderate', 'Same as StepFlow — the active node has no `aria-current` and cycles without announcement.', 'Add `aria-current` + an opt-out of self-cycling for AT (static first node).'),
-  TaskCard: { pattern: 'progressbar', semantics: 'a card whose progress bar is an embedded, unreachable `SegmentBar`.', status: 'gap', severity: 'minor', gap: 'the embedded progress bar carries no `role="progressbar"`/`aria-valuenow` and cannot be reached from outside.', remediation: 'See the `progressbar` pattern gap.' },
+  TaskCard: { pattern: 'progressbar', semantics: 'the embedded `SegmentBar` ships a named progressbar with the task percentage.', status: 'pass' },
   // — status.tsx —
   StatusLegend: decoration('legend stamps are text + color; the legend is the key itself.'),
   Roster: { pattern: 'toggle-button', semantics: 'each unit is a `<button aria-pressed>` in a grid.', status: 'pass' },
@@ -400,14 +370,14 @@ export const COMPONENT_PATTERNS: Record<string, ComponentPattern> = {
   ApprovalBar: { pattern: 'button', semantics: 'two real `<button>`s (APPROVE/DENY) that disable once decided.', status: 'pass' },
   YesNoGate: { pattern: 'toggle-button', semantics: '`role="group" aria-label="decision"` + `aria-pressed` buttons over an `aria-live="polite"` response line (also covered by the `log` pattern’s live-region rule).', status: 'pass' },
   // — meters.tsx —
-  SegmentedMeter: { pattern: 'meter', semantics: 'multi-column LED meter; value semantics are not expressible from outside.', status: 'gap', severity: 'moderate', gap: 'no per-column `role="meter"`/`aria-valuenow`.', remediation: 'See the `meter` pattern gap.' },
-  RadialGauge: { pattern: 'meter', semantics: 'value semantics come from the consumer via the root spread (`role="meter" aria-valuenow…`), as the canonical example shows.', status: 'pass' },
-  BarColumnGauge: { pattern: 'meter', semantics: 'self-driving bar + histogram with no accessible value.', status: 'gap', severity: 'moderate', gap: 'no name, no value.', remediation: 'See the `meter` pattern gap.' },
-  ProgressMeter: { pattern: 'progressbar', semantics: 'value semantics from the consumer via the root spread.', status: 'pass' },
-  HealthColumns: decoration('`role="img" aria-label="System health"` — a stopgap that keeps it out of the way of AT but hides the lit/total value.', 'minor', 'the computed lit/total summary is not exposed.', 'Set `aria-valuetext` on the existing `role="img"` root.'),
-  SegmentBar: { pattern: 'progressbar', semantics: 'value semantics from the consumer via the root spread.', status: 'pass' },
-  LedColumn: { pattern: 'meter', semantics: 'value semantics from the consumer via the root spread (`hotBelow` flips the fill, which the value already conveys).', status: 'pass' },
-  MeterBar: { pattern: 'meter', semantics: 'value semantics from the consumer via the root spread.', status: 'pass' },
+  SegmentedMeter: { pattern: 'meter', semantics: 'one named `role="meter"` per LED column with its segment value and range.', status: 'pass' },
+  RadialGauge: { pattern: 'meter', semantics: 'the root ships `role="meter"`, the visible label as its name, and the rounded percentage.', status: 'pass' },
+  BarColumnGauge: { pattern: 'meter', semantics: 'the root ships a named meter for the bar plus an `aria-valuetext` column summary.', status: 'pass' },
+  ProgressMeter: { pattern: 'progressbar', semantics: 'the root ships a named progressbar synchronized with the animated fill.', status: 'pass' },
+  HealthColumns: decoration('`role="img"` with an accessible lit/total summary that updates with the display.'),
+  SegmentBar: { pattern: 'progressbar', semantics: 'the root ships a named progressbar with the clamped percentage.', status: 'pass' },
+  LedColumn: { pattern: 'meter', semantics: 'the root ships a named meter with the clamped percentage; `hotBelow` remains a visual warning.', status: 'pass' },
+  MeterBar: { pattern: 'meter', semantics: 'the root ships a meter named from its visible label with the clamped percentage.', status: 'pass' },
   // — terminal.tsx —
   Terminal: { pattern: 'log', semantics: 'typewriter transcript with no live-region semantics.', status: 'gap', severity: 'minor', gap: 'no `role="log"`/`aria-live`.', remediation: 'See the `log` pattern gap.' },
   LogConsole: { pattern: 'log', semantics: '`role="log" aria-live="polite"` on the scroll body.', status: 'pass' },

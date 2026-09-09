@@ -24,7 +24,7 @@
  * (FieldLabel, ConsoleFrame, GaugeCard, TelemetryCard, …).
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentType } from 'react';
+import { cloneElement, type ComponentType } from 'react';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
@@ -214,6 +214,51 @@ describe('API conventions (Task 3.6)', () => {
       expect(classList, `${name}: the stable Nerv<${name}>-root class is missing from the root element`).toContain(`Nerv${name}-root`);
       expect(root!.hasAttribute('classes'), `${name}: the classes prop leaked to the DOM as an attribute`).toBe(false);
       expect(root!.hasAttribute('classname'), `${name}: className was applied as a DOM attribute, not a class`).toBe(false);
+    });
+  });
+
+  describe('interactive root handlers', () => {
+    it('HazardPrompt preserves activation when consumers attach root handlers', () => {
+      const onDecide = vi.fn();
+      const onClick = vi.fn();
+      const onKeyDown = vi.fn();
+      const { getByRole } = render(
+        <ThemeProvider theme={theme} defaultMode="dark">
+          <Phosphor.HazardPrompt
+            jp="裁定"
+            en="DECIDE"
+            onDecide={onDecide}
+            onClick={onClick}
+            onKeyDown={onKeyDown}
+          />
+        </ThemeProvider>,
+      );
+      const prompt = getByRole('button', { name: 'decide' });
+
+      fireEvent.click(prompt);
+      expect(onDecide).toHaveBeenCalledOnce();
+      expect(onClick).toHaveBeenCalledOnce();
+
+      fireEvent.keyDown(prompt, { key: 'Enter' });
+      expect(onDecide).toHaveBeenCalledTimes(2);
+      expect(onKeyDown).toHaveBeenCalledOnce();
+    });
+
+    it.each([
+      ['AgentCard', <Phosphor.AgentCard name="AGENT·ORION" status="ACTIVE" task="REFACTOR POOL" />],
+      ['ModuleCard', <Phosphor.ModuleCard jp="工" code="SYS·01" title="ENGINEERING" stamp="NOMINAL">Pipelines and gates.</Phosphor.ModuleCard>],
+    ])('%s preserves selection when consumers attach onClick', (_name, component) => {
+      const onSelect = vi.fn();
+      const onClick = vi.fn();
+      const { getByRole } = render(
+        <ThemeProvider theme={theme} defaultMode="dark">
+          {cloneElement(component, { onSelect, onClick })}
+        </ThemeProvider>,
+      );
+
+      fireEvent.click(getByRole('button'));
+      expect(onSelect).toHaveBeenCalledOnce();
+      expect(onClick).toHaveBeenCalledOnce();
     });
   });
 });

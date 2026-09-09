@@ -178,8 +178,7 @@ export function LogConsole({ title = 'STDOUT', rows, connected = true, status, p
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [rows]);
 
-  // Longhands: `steps(1, jump-none)` (motion.snap) is rejected inside the
-  // `animation` SHORTHAND — the whole declaration would be dropped.
+  // Longhands keep each motion token independently overridable.
   const blink = reduced
     ? ({ animation: 'none' } as const)
     : ({

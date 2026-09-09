@@ -110,6 +110,11 @@ describe('reduced-motion inventory (Task 6.3)', () => {
       transitionDuration: '0.001ms !important',
     });
   });
+
+  it('publishes a valid hard-snap timing function for animations and MUI transitions', () => {
+    expect(theme.nerv.motion.snap).toBe('steps(1, end)');
+    expect(theme.transitions.easing.sharp).toBe(theme.nerv.motion.snap);
+  });
 });
 
 describe('reduced-motion final/static paths (Task 6.3)', () => {
