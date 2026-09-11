@@ -22,6 +22,12 @@ interface NervPaletteTokens {
   field: string;
   /** Focused field background. */
   fieldFocus: string;
+  /** Neutral overlay over black (meter / progress track). */
+  overlay: string;
+  /** Fainter neutral overlay (hazard hatch fill). */
+  overlayFaint: string;
+  /** Modal backdrop (dimmed to black). */
+  backdrop: string;
   /** Terminal text (bright) + dim (AA-safe secondary). */
   termText: string;
   termDim: string;
@@ -51,6 +57,12 @@ interface NervTokens {
     crimson: string;
     teal: string;
     blue: string;
+    /** Augment / hazard accents. */
+    orangeHi: string;
+    orangeDeep: string;
+    hazardBg: string;
+    black: string;
+    white: string;
   };
   radius: { none: number; chip: number; seg: number; chamfer: number };
   space: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number>;
@@ -59,7 +71,7 @@ interface NervTokens {
     linear: string;
     step: string;
     snap: string;
-    durations: { snap: number; fast: number; blink: number };
+    durations: { snap: number; fast: number; blink: number; complex: number; slide: number };
   };
   layers: Record<
     'base' | 'crt' | 'raised' | 'dropdown' | 'sticky' | 'drawer' | 'backdrop' | 'modal' | 'snackbar' | 'tooltip',

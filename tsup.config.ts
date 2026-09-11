@@ -1,13 +1,18 @@
 import { defineConfig } from 'tsup';
 
-// Builds the two published entry points (`phosphor-console-theme` /
-// `phosphor-console-theme/components`) from source, emitting ESM + `.d.ts`
-// only — this repo's `app/` keeps consuming the raw `theme/` and `components/`
-// sources directly (see app/vite.config.ts) for live HMR; this build is purely
-// for the published npm artifact.
+// Builds the published entry points (`phosphor-console-theme`,
+// `…/tokens`, `…/overrides`, `…/components`) from source, emitting ESM +
+// `.d.ts` only — this repo's `app/` keeps consuming the raw `theme/` and
+// `components/` sources directly (see app/vite.config.ts) for live HMR; this
+// build is purely for the published npm artifact.
+//
+// `tokens` and `overrides` are deliberately separate, side-effect-free entries:
+// importing one must never pull in the other (nor the full theme assembly).
 export default defineConfig({
   entry: {
     theme: 'theme/index.ts',
+    tokens: 'theme/tokens.ts',
+    overrides: 'theme/overrides.ts',
     components: 'components/index.ts',
   },
   format: ['esm'],

@@ -22,6 +22,10 @@ indistinguishable in grammar.
 A production Material UI **v9** theme, published as
 [`phosphor-console-theme`](https://www.npmjs.com/package/phosphor-console-theme).
 
+Version 0.2 requires React 19 and Material UI 9. When upgrading from 0.1,
+upgrade `react`, `react-dom`, and `@mui/material` together; the component
+library now uses React 19's ref-as-prop support for root element refs.
+
 ```bash
 npm i phosphor-console-theme @mui/material @emotion/react @emotion/styled
 # optional: @mui/icons-material @mui/x-data-grid

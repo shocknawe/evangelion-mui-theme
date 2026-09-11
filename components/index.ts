@@ -21,7 +21,7 @@
  */
 
 // Shared vocabulary
-export { type Tone, toneHue } from './util';
+export { type Tone, type SlotsOf, toneHue } from './util';
 export { useReducedMotion, pad2 } from './hooks';
 
 // Text — bimodal / bilingual pairings
@@ -44,20 +44,23 @@ export type { StepFlowProps, StepFlowStep, AgenticLoopProps, AgenticLoopStep, Ta
 export { StatusLegend, Roster, StatTile, RailItem, GateRow, AgentCard, RecallNote, SinkRow, RoutineRow, ModuleCard, MemoryRow, AgentDot } from './status';
 export type {
   StatusLegendProps, LegendItem, RosterProps, RosterUnit, RosterStatus, StatTileProps,
-  RailItemProps, GateRowProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
-  RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineStatus, ModuleCardProps,
-  MemoryRowProps, MemoryKind, AgentDotProps,
+  RailItemProps, GateRowProps, GateRowSlotProps, GatePriority, GateVerdict, AgentCardProps, AgentStatus,
+  RecallNoteProps, SinkRowProps, SinkStatus, RoutineRowProps, RoutineRowSlotProps, RowActionProps,
+  RoutineStatus, ModuleCardProps, MemoryRowProps, MemoryKind, AgentDotProps,
 } from './status';
 
 // Console form controls
 export { ChipRadioGroup, NumberStepper, HazardRating, TagInput, DateSegments } from './inputs';
 export type {
-  ChipRadioGroupProps, ChipRadioOption, NumberStepperProps, HazardRatingProps, TagInputProps, DateSegmentsProps,
+  ChipRadioGroupProps, ChipRadioOption, NumberStepperProps, HazardRatingProps, TagInputProps, TagInputSlotProps, TagInputTagProps, DateSegmentsProps,
 } from './inputs';
 
 // Navigation
 export { FilterChips, FilterRail, WikiLink, ConsoleNav, SiteHeader, Brand } from './navigation';
-export type { FilterChipsProps, FilterRailProps, FilterRow, WikiLinkProps, ConsoleNavProps, ConsoleNavItem, SiteHeaderProps, SiteHeaderLink, BrandProps } from './navigation';
+export type {
+  FilterChipsProps, FilterRailProps, FilterRailSlotProps, FilterRailRowProps, FilterRow, WikiLinkProps,
+  ConsoleNavProps, ConsoleNavItem, SiteHeaderProps, SiteHeaderSlotProps, SiteHeaderBrandProps, SiteHeaderLink, BrandProps,
+} from './navigation';
 
 // Feedback
 export { HazardPrompt, GateDecisionDialog, ApprovalBar, YesNoGate } from './feedback';
@@ -66,7 +69,8 @@ export type { HazardPromptProps, GateDecisionDialogProps, GateDecision, Approval
 // Data-viz — meters & gauges
 export { SegmentedMeter, RadialGauge, BarColumnGauge, ProgressMeter, HealthColumns, SegmentBar, LedColumn, MeterBar } from './meters';
 export type {
-  SegmentedMeterProps, RadialGaugeProps, BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps, LedColumnProps, MeterBarProps,
+  SegmentedMeterProps, RadialGaugeProps, RadialGaugeSlotProps, RadialGaugeTrackProps, RadialGaugeReadoutProps,
+  BarColumnGaugeProps, ProgressMeterProps, HealthColumnsProps, SegmentBarProps, LedColumnProps, MeterBarProps,
 } from './meters';
 
 // Data-viz — terminal, clock, marquee, charts

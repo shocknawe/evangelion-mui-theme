@@ -46,12 +46,17 @@ export const feedback: Pick<
         // Filled = the inverse (solid state hue, void content).
         '&.MuiAlert-filled': {
           backgroundColor: 'currentColor',
-          '& .MuiAlert-message, & .MuiAlert-icon, & .MuiAlert-action, & .MuiAlertTitle-root': {
-            color: theme.nerv.hue.void,
-          },
+          '& .MuiAlertTitle-root': { color: theme.nerv.hue.void },
         },
       }),
-      icon: { opacity: 1 },
+      message: ({ theme, ownerState }) =>
+        ownerState.variant === 'filled' ? { color: theme.nerv.hue.void } : {},
+      icon: ({ theme, ownerState }) => ({
+        opacity: 1,
+        ...(ownerState.variant === 'filled' ? { color: theme.nerv.hue.void } : null),
+      }),
+      action: ({ theme, ownerState }) =>
+        ownerState.variant === 'filled' ? { color: theme.nerv.hue.void } : {},
     },
   },
   MuiAlertTitle: {
@@ -120,7 +125,8 @@ export const feedback: Pick<
 
   MuiBackdrop: {
     styleOverrides: {
-      root: { backgroundColor: 'rgba(0,0,0,0.82)' }, // dim to black, no blur
+      // dim to black, no blur
+      root: ({ theme }) => ({ backgroundColor: v(theme).palette.nerv.backdrop }),
     },
   },
 

@@ -92,15 +92,25 @@ function resolveModule(modulePath) {
 
 const files = [...new Set(entries.map((e) => resolveModule(e.modulePath)))].filter(Boolean);
 
-const program = ts.createProgram(files, {
-  target: ts.ScriptTarget.ES2022,
-  module: ts.ModuleKind.ESNext,
-  moduleResolution: ts.ModuleResolutionKind.Bundler,
-  jsx: ts.JsxEmit.ReactJSX,
-  strict: true,
-  skipLibCheck: true,
-  noResolve: true, // we only read syntax + JSDoc; skip pulling in @mui/react types
-});
+// Parsed standalone (no Program) because `ts.getJSDocCommentsAndTags` requires
+// parent pointers, which a Program's source files only get after binding — and
+// with them the JSDoc came back empty for every export. We only read syntax
+// + JSDoc here, so a plain parse with `setParentNodes: true` is enough.
+const sourceFiles = new Map(); // path -> SourceFile
+function sourceFile(file) {
+  let sf = sourceFiles.get(file);
+  if (!sf) {
+    sf = ts.createSourceFile(
+      file,
+      readFileSync(file, 'utf8'),
+      ts.ScriptTarget.ES2022,
+      true, // setParentNodes — JSDoc lookup needs node.parent
+      path.extname(file) === '.tsx' ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    );
+    sourceFiles.set(file, sf);
+  }
+  return sf;
+}
 
 const commentText = (c) => (typeof c === 'string' ? c : (c?.map((p) => p.text).join('') ?? '')).trim();
 
@@ -120,7 +130,7 @@ const tagText = (node, tagName) => {
 
 /** Description + `@example` of the exported symbol, plus members of `<Name>Props`. */
 function analyze(file, name) {
-  const sf = program.getSourceFile(file);
+  const sf = sourceFile(file);
   if (!sf) return { description: '', example: '', props: [] };
   let description = '';
   let example = '';

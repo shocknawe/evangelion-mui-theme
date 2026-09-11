@@ -31,8 +31,8 @@ export function buildPalette(): PaletteOptions {
     // Secondary = Safety Orange. Chrome hue; also the "alt action" fill.
     secondary: {
       main: hue.orange,
-      light: '#FF8A3C',
-      dark: '#C25400',
+      light: hue.orangeHi,
+      dark: hue.orangeDeep,
       contrastText: inkOnFill,
     },
     error: {
@@ -82,6 +82,9 @@ export function buildPalette(): PaletteOptions {
       track: surfaces.track,
       field: surfaces.field,
       fieldFocus: surfaces.fieldFocus,
+      overlay: surfaces.overlay,
+      overlayFaint: surfaces.overlayFaint,
+      backdrop: surfaces.backdrop,
       termText: terminal.text,
       termDim: terminal.dim,
       glowPanel: glowFx.panel,

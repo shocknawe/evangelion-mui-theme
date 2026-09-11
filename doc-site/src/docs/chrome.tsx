@@ -59,13 +59,20 @@ export function DocsMasthead({ version, onSearchClick, onMenuClick }: DocsMasthe
             variant="ghost"
             size="small"
             onClick={onSearchClick}
-            sx={{ fontSize: 10, py: 0.5 }}
+            sx={{ fontSize: 10, py: 0.5, px: { xs: 1 }, minWidth: 0 }}
             aria-label="Search the documentation"
           >
             SEARCH
+            {/* The shortcut hint is noise on a touch device — and the width it
+                costs is what pushed the bar past a 375px viewport. */}
             <Box
               component="span"
-              sx={(t) => ({ ml: 1, color: t.nerv.hue.orange, letterSpacing: '0.1em' })}
+              sx={(t) => ({
+                display: { xs: 'none', sm: 'inline' },
+                ml: 1,
+                color: t.nerv.hue.orange,
+                letterSpacing: '0.1em',
+              })}
             >
               ⌘K
             </Box>
@@ -74,7 +81,7 @@ export function DocsMasthead({ version, onSearchClick, onMenuClick }: DocsMasthe
             variant="ghost"
             size="small"
             onClick={onMenuClick}
-            sx={{ display: { xs: 'inline-flex', md: 'none' }, fontSize: 10, py: 0.5, minWidth: 0 }}
+            sx={{ display: { xs: 'inline-flex', md: 'none' }, fontSize: 10, py: 0.5, px: { xs: 1 }, minWidth: 0 }}
             aria-label="Open the navigation"
           >
             ☰ NAV
@@ -277,11 +284,16 @@ export interface DocSectionProps {
 /**
  * A titled page section. Uses the house `ZoneTitle` (orange label over a
  * hairline) rather than a numbered head — these facets are not a sequence.
+ * The title renders as an `h2` so the page carries a real outline under the
+ * page `h1` (WCAG 1.3.1); `ZoneTitle` fixes the type ramp, so it looks the
+ * same as anywhere else in the system.
  */
 export function DocSection({ id, title, aside, children }: DocSectionProps) {
   return (
     <Box component="section" id={id} sx={{ scrollMarginTop: 76 }}>
-      <ZoneTitle aside={aside}>{title}</ZoneTitle>
+      <ZoneTitle component="h2" aside={aside}>
+        {title}
+      </ZoneTitle>
       {children}
     </Box>
   );

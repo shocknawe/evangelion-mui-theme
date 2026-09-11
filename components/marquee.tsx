@@ -5,18 +5,21 @@
 import Box from '@mui/material/Box';
 import { useTheme, type SxProps, type Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type ClassesOf, type RootHTMLAttributes, type WithRef, resolveClasses } from './util';
 
-export interface MarqueeProps {
+export interface MarqueeProps extends RootHTMLAttributes, WithRef {
   /** Ticker items. Defaults to a sample status feed. */
   items?: string[];
   /** Seconds for one full pass. @default 18 */
   speedSec?: number;
+  /** Class overrides by part: `root` (the ticker), `track` (the scrolling strip). */
+  classes?: ClassesOf<'root' | 'track'>;
   sx?: SxProps<Theme>;
 }
 
 const DEFAULT_ITEMS = ['V2.4.0-STABLE DEPLOYED', '38 LISTENERS UP', 'NO ANOMALIES'];
 
-export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueeProps) {
+export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, classes, className, sx, ...rest }: MarqueeProps) {
   const t = useTheme();
   const reduced = useReducedMotion();
   const track = (
@@ -31,11 +34,13 @@ export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueePro
 
   return (
     <Box
+      {...rest}
+      className={resolveClasses('Marquee', 'root', classes, className)}
       sx={[
         {
           borderTop: `2px solid ${t.nerv.hue.redHi}`,
           borderBottom: `2px solid ${t.nerv.hue.redHi}`,
-          background: '#170303',
+          background: t.nerv.hue.hazardBg,
           overflow: 'hidden',
           whiteSpace: 'nowrap',
           width: '100%',
@@ -49,7 +54,7 @@ export function Marquee({ items = DEFAULT_ITEMS, speedSec = 18, sx }: MarqueePro
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box sx={{ display: 'inline-block', whiteSpace: 'nowrap', animation: reduced ? 'none' : `nervMarquee ${speedSec}s linear infinite` }}>
+      <Box className={resolveClasses('Marquee', 'track', classes)} sx={{ display: 'inline-block', whiteSpace: 'nowrap', animation: reduced ? 'none' : `nervMarquee ${speedSec}s linear infinite` }}>
         {track}
         {!reduced && track}
       </Box>

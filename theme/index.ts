@@ -28,8 +28,18 @@ const chamfer = (cut: number = radii.chamfer) =>
   `polygon(0 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, ${cut}px 100%, 0 calc(100% - ${cut}px))`;
 
 /** 45° hazard-stripe background (crimson/black by default). */
-const hazard = (a: string = hue.crimson, b = '#000') =>
+const hazard = (a: string = hue.crimson, b: string = hue.black) =>
   `repeating-linear-gradient(-45deg, ${a} 0 12px, ${b} 12px 24px)`;
+
+/**
+ * Re-exports from the split modules so `import { … } from './theme'` keeps
+ * working without reaching for a second entry point. The raw tokens are also
+ * available standalone via `phosphor-console-theme/tokens` and the override map
+ * via `phosphor-console-theme/overrides` — those two entries are import-safe
+ * on their own and never pull each other in.
+ */
+export { components } from './components';
+export * from './tokens';
 
 export const theme = createTheme({
   cssVariables: { colorSchemeSelector: 'class', cssVarPrefix: 'mui' },
@@ -62,7 +72,7 @@ export const theme = createTheme({
       shorter: motion.durations.snap,
       short: motion.durations.fast,
       standard: motion.durations.fast,
-      complex: 160,
+      complex: motion.durations.complex,
       enteringScreen: motion.durations.fast,
       leavingScreen: motion.durations.snap,
     },

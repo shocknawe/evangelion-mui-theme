@@ -1,0 +1,62 @@
+name: Bundle budgets (size-limit)
+
+# Task 5.4 — CI fails on over-budget exports unless the same PR bumps the
+# budget entry (openspec/changes/upgrade-theme-quality-maturity,
+# specs/bundle-budgets/spec.md).
+#
+# Escape hatch — documented-conventional, no diff inspection required: the
+# size-check always runs against the budgets the PR itself carries, because
+# `size-limit` reads `.size-limit.js` from the checked-out PR head.
+#
+#   * Scenario "Over-budget PR without a budget bump fails": a PR grows an
+#     export past its budget without touching that entry's `limit` →
+#     measured > limit → `size-limit` exits non-zero → this job fails.
+#   * Scenario "Over-budget PR with a budget bump passes": a PR grows an
+#     export past its *old* budget and bumps that entry's `limit` past the new
+#     measured size → measured ≤ limit → exit 0 → this job passes. The budget
+#     entry lives in two places by contract (`.size-limit.js` header and
+#     `docs/bundle-budgets.md` — both state the bump rule); a PR updating the
+#     entry means bumping the `limit` there.
+#
+# A bump that is still too small for the new size still fails, which is the
+# intended reading of "unless the same pull request also updates the budget
+# entry": the updated entry must actually cover the growth.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: size-limit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  size:
+    name: Enforce gzip budgets
+    runs-on: ubuntu-latest
+    # Least privilege: the job only reads the repo. `npm ci` runs dependency
+    # lifecycle scripts, so it must not hold any write authority (matches the
+    # build job in deploy-doc-site.yml).
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `size-limit` exits non-zero when any entry exceeds its `limit`, and
+      # prints the per-entry gzip figures the budget table is seeded from.
+      - name: Enforce gzip budgets
+        run: npm run size

@@ -24,7 +24,17 @@ export function Atoms() {
         {/* stamps */}
         <SpecCard label="STAMP / CHIP" src="MuiChip">
           <Chip label="NOMINAL" color="success" />
-          <Chip label="審査中" color="info" sx={{ animation: `nervBlink ${t.nerv.motion.durations.blink}ms ${t.nerv.motion.snap} infinite` }} />
+          {/* Animation longhands keep each motion token independently overridable. */}
+          <Chip
+            label="審査中"
+            color="info"
+            sx={{
+              animationName: 'nervBlink',
+              animationDuration: `${t.nerv.motion.durations.blink}ms`,
+              animationTimingFunction: t.nerv.motion.snap,
+              animationIterationCount: 'infinite',
+            }}
+          />
           <Chip label="DOWN" variant="stamp" color="error" />
         </SpecCard>
 

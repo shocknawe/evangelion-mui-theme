@@ -200,8 +200,8 @@ export function Landing02Page() {
           <Box component="section" sx={{ py: 5 }}>
             <SectionHeading index="02" sx={{ mb: 2.75 }}>QUERY MEMORY STORAGE</SectionHeading>
             <FilterChips ariaLabel="Memory filters" filters={FILTERS} value={filter} onChange={setFilter} sx={{ mb: 2, flexWrap: 'wrap' }} />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {shown.map((m) => (<MemoryRow key={m.id} id={m.id} title={m.title} kind={m.kind} />))}
+            <Box role="list" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {shown.map((m) => (<MemoryRow key={m.id} id={m.id} title={m.title} kind={m.kind} role="listitem" />))}
             </Box>
             <Box sx={{ fontSize: 10, color: t.nerv.hue.orange, mt: 1.5, letterSpacing: '0.1em' }}>SHOWING {shown.length} / {MEMS.length} NODES</Box>
           </Box>
@@ -300,4 +300,3 @@ function RLabel({ children }: { children: ReactNode }) {
   const t = useTheme();
   return <Box sx={{ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', m: '6px 0 10px', borderBottom: `1px solid ${t.nerv.hue.greenDim}`, pb: 0.75 }}>{children}</Box>;
 }
-

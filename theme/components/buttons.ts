@@ -14,7 +14,7 @@
  * close over the slot's `theme`); this is the MUI-typed home for per-prop styles.
  */
 import type { Components, Theme } from '@mui/material/styles';
-import { KEYFRAMES, v } from './util';
+import { KEYFRAMES, snapForAnimation, v } from './util';
 
 const snap = (theme: Theme) =>
   `background-color ${theme.nerv.motion.durations.fast}ms ${theme.nerv.motion.linear}, ` +
@@ -43,9 +43,13 @@ export const buttons: Pick<
           outline: `2px solid ${theme.nerv.hue.paper}`,
           outlineOffset: 3,
         },
-        // The live-action blink: `<Button className="nerv-live">`.
+        // The live-action blink: `<Button className="nerv-live">`. Longhands
+        // keep each motion token explicit and independently overridable.
         '&.nerv-live': {
-          animation: `${KEYFRAMES.btnBlink} ${theme.nerv.motion.durations.blink}ms ${theme.nerv.motion.snap} infinite`,
+          animationName: KEYFRAMES.btnBlink,
+          animationDuration: `${theme.nerv.motion.durations.blink}ms`,
+          animationTimingFunction: snapForAnimation(theme),
+          animationIterationCount: 'infinite',
         },
         '&.Mui-disabled': {
           color: v(theme).palette.text.disabled,
@@ -85,7 +89,11 @@ export const buttons: Pick<
               '&.Mui-selected, &[aria-pressed="true"]': {
                 backgroundColor: theme.nerv.hue.mint,
                 color: theme.nerv.hue.void,
-                animation: `${KEYFRAMES.blink} ${theme.nerv.motion.durations.blink}ms ${theme.nerv.motion.snap} infinite`,
+                // Longhands — see the `.nerv-live` note above.
+                animationName: KEYFRAMES.blink,
+                animationDuration: `${theme.nerv.motion.durations.blink}ms`,
+                animationTimingFunction: snapForAnimation(theme),
+                animationIterationCount: 'infinite',
               },
             },
           },

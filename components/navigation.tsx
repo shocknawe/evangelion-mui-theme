@@ -7,11 +7,13 @@ import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useReducedMotion } from './hooks';
+import { type ClassesOf, type RootHTMLAttributes, type SlotsOf, type WithRef, resolveClasses, resolveSlot } from './util';
 
 /* ------------------------------------------------------------------ */
 /* FilterChips — a row of orange scope chips (active = solid inversion). */
 
-export interface FilterChipsProps {
+/** `value`/`onChange` are the controlled filter, not the DOM ones. */
+export interface FilterChipsProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   /** Chip values. */
   filters: string[];
   /** The active chip. */
@@ -19,6 +21,8 @@ export interface FilterChipsProps {
   onChange?: (value: string) => void;
   /** Accessible name for the group. */
   ariaLabel?: string;
+  /** Class overrides by part: `root` (the chip row). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -28,9 +32,9 @@ export interface FilterChipsProps {
  * with your own rows (dimming non-matches) or use {@link FilterRail} for the
  * bundled list.
  */
-export function FilterChips({ filters, value, onChange, ariaLabel, sx }: FilterChipsProps) {
+export function FilterChips({ filters, value, onChange, ariaLabel, classes, className, sx, ...rest }: FilterChipsProps) {
   return (
-    <Box role="group" aria-label={ariaLabel} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box role="group" aria-label={ariaLabel} {...rest} className={resolveClasses('FilterChips', 'root', classes, className)} sx={[{ display: 'flex', gap: '5px' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {filters.map((k) => {
         const on = value === k;
         return (
@@ -69,7 +73,26 @@ export interface FilterRow {
   kind: string;
 }
 
-export interface FilterRailProps {
+/** Props the `row` slot receives (notes/2.2 §3). */
+export interface FilterRailRowProps extends RootHTMLAttributes<'div'> {
+  /** The row this element renders. */
+  row?: FilterRow;
+  /** True when the row is filtered out — the rail dims instead of hiding. */
+  dim?: boolean;
+  /**
+   * State hook for a filtered-out row (`notes/2.3` §6: state is never a
+   * `classes` key) — target it as `[data-dim='true']`.
+   */
+  'data-dim'?: boolean | undefined;
+}
+
+export interface FilterRailSlotProps {
+  /** Props merged onto each list row. */
+  row?: FilterRailRowProps;
+}
+
+/** `value`/`onChange` are the controlled filter, not the DOM ones. */
+export interface FilterRailProps extends Omit<RootHTMLAttributes, 'value' | 'onChange'>, WithRef {
   /** Filter values. The `allValue` entry clears the filter (shows everything). */
   filters: string[];
   rows: FilterRow[];
@@ -80,6 +103,16 @@ export interface FilterRailProps {
   onChange?: (value: string) => void;
   /** The filter meaning "show all". @default filters[0] */
   allValue?: string;
+  /**
+   * Replace an internal part: `row` (a list row). The row slot is the one way
+   * past the fixed 3-column `id · name · kind` layout — the dim-not-hide
+   * behavior the rail exists for is welded to it (notes/2.2 §2.1).
+   */
+  slots?: SlotsOf<'row'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: FilterRailSlotProps;
+  /** Class overrides by part: `root`, `chips` (the embedded chip row), `row` (a list row). */
+  classes?: ClassesOf<'root' | 'chips' | 'row'>;
   sx?: SxProps<Theme>;
 }
 
@@ -87,7 +120,7 @@ export interface FilterRailProps {
  * A filter rail that *dims and desaturates* non-matching rows instead of hiding
  * them — the operator never loses their place. Uncontrolled by default.
  */
-export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], sx }: FilterRailProps) {
+export function FilterRail({ filters, rows, value, defaultValue, onChange, allValue = filters[0], slots, slotProps, classes, className, sx, ...rest }: FilterRailProps) {
   const [internal, setInternal] = useState(defaultValue ?? allValue);
   const active = value ?? internal;
   const setActive = (v: string) => {
@@ -96,14 +129,31 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
   };
 
   return (
-    <Box sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
-      <FilterChips filters={filters} value={active} onChange={setActive} sx={{ mb: 1.25 }} />
+    <Box {...rest} className={resolveClasses('FilterRail', 'root', classes, className)} sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <FilterChips filters={filters} value={active} onChange={setActive} className={resolveClasses('FilterRail', 'chips', classes)} sx={{ mb: 1.25 }} />
       {rows.map((r) => {
         const dim = active !== allValue && r.kind !== active;
-        return (
-          <Box
-            key={r.id}
-            sx={(t) => ({
+        // `row` slot (notes/2.2 §3): a consumer with richer rows swaps the
+        // whole row and reads `row`/`dim` from the contract; the dim state
+        // rides the `data-dim` attribute, never a `classes` key (notes/2.3 §6).
+        const [RowSlot, rowProps] = resolveSlot(slots?.row, Box, {
+          contract: { row: r, dim, 'data-dim': dim || undefined },
+          defaults: {
+            'data-dim': dim || undefined,
+            children: (
+              <>
+                <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>
+                  {r.id}
+                </Box>
+                <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, flex: 1 })}>
+                  {r.name}
+                </Box>
+                <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' })}>
+                  {r.kind}
+                </Box>
+              </>
+            ),
+            sx: (t: Theme) => ({
               display: 'flex',
               alignItems: 'center',
               gap: 1,
@@ -113,20 +163,13 @@ export function FilterRail({ filters, rows, value, defaultValue, onChange, allVa
               fontSize: 11,
               opacity: dim ? 0.25 : 1,
               filter: dim ? 'grayscale(.6)' : 'none',
-              transition: 'opacity 120ms linear',
-            })}
-          >
-            <Box component="span" sx={(t) => ({ color: t.nerv.hue.amber, whiteSpace: 'nowrap' })}>
-              {r.id}
-            </Box>
-            <Box component="span" sx={(t) => ({ color: t.nerv.hue.paper, flex: 1 })}>
-              {r.name}
-            </Box>
-            <Box component="span" sx={(t) => ({ fontSize: 8, color: t.nerv.hue.greenMap, letterSpacing: '0.1em' })}>
-              {r.kind}
-            </Box>
-          </Box>
-        );
+              transition: `opacity ${t.nerv.motion.durations.fast}ms linear`,
+            }),
+          },
+          slotProps: slotProps?.row,
+          className: resolveClasses('FilterRail', 'row', classes),
+        });
+        return <RowSlot key={r.id} {...rowProps} />;
       })}
     </Box>
   );
@@ -143,7 +186,8 @@ export interface ConsoleNavItem {
   en: string;
 }
 
-export interface ConsoleNavProps {
+/** `value`/`onChange` are the controlled nav selection, not the DOM ones. */
+export interface ConsoleNavProps extends Omit<RootHTMLAttributes<'nav'>, 'value' | 'onChange'>, WithRef<'nav'> {
   items: ConsoleNavItem[];
   value: string;
   onChange: (value: string) => void;
@@ -155,6 +199,8 @@ export interface ConsoleNavProps {
    * left-edge indicator on the current item.
    */
   variant?: 'boxed' | 'rail';
+  /** Class overrides by part: `root` (the nav). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -168,12 +214,14 @@ export interface ConsoleNavProps {
  * <ConsoleNav value={s} onChange={setS} items={[{ value: 'eng', jp: '工学', en: 'ENGINEERING' }]} />
  * <ConsoleNav variant="rail" value={s} onChange={setS} items={items} />
  */
-export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed', sx }: ConsoleNavProps) {
+export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed', classes, className, sx, ...rest }: ConsoleNavProps) {
   const rail = variant === 'rail';
   return (
     <Box
       component="nav"
       aria-label={ariaLabel}
+      {...rest}
+      className={resolveClasses('ConsoleNav', 'root', classes, className)}
       sx={[{ display: 'flex', flexDirection: 'column', gap: rail ? '3px' : '6px', minHeight: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {items.map((item) => {
@@ -247,7 +295,7 @@ export function ConsoleNav({ items, value, onChange, ariaLabel, variant = 'boxed
 /* ------------------------------------------------------------------ */
 /* Brand — the diamond mark + wordmark + version lockup. */
 
-export interface BrandProps {
+export interface BrandProps extends RootHTMLAttributes, WithRef {
   /** Wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Version / tag (orange chrome). */
@@ -256,6 +304,8 @@ export interface BrandProps {
   size?: 'sm' | 'md';
   /** Put the version on its own line under the wordmark. @default false (inline) */
   stackVersion?: boolean;
+  /** Class overrides by part: `root` (the lockup). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -264,15 +314,19 @@ export interface BrandProps {
  * condensed caps, and an optional orange version tag (inline or stacked). The
  * shared masthead mark for the site header and the app-shell rails.
  */
-export function Brand({ name, version, size = 'md', stackVersion = false, sx }: BrandProps) {
+export function Brand({ name, version, size = 'md', stackVersion = false, classes, className, sx, ...rest }: BrandProps) {
   const mk = size === 'sm' ? 15 : 16;
   const word = size === 'sm' ? 18 : 20;
   return (
-    <Box sx={[{ display: 'flex', flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
+    <Box {...rest} className={resolveClasses('Brand', 'root', classes, className)} sx={[{ display: 'flex', minWidth: 0, flexDirection: stackVersion ? 'column' : 'row', alignItems: stackVersion ? 'flex-start' : 'baseline' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, fontFamily: (t) => t.nerv.fonts.display, fontWeight: 700 }}>
         <Box sx={(t) => ({ width: mk, height: mk, flex: 'none', background: t.nerv.hue.mint, boxShadow: `0 0 8px ${t.nerv.hue.mint}`, transform: 'rotate(45deg)' })} />
-        <Box component="b" sx={(t) => ({ fontSize: word, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
-        {version && !stackVersion && <Box component="span" sx={(t) => ({ ml: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
+        {/* The wordmark is the only elastic part of the lockup: it truncates
+            rather than forcing the bar wider than its container. `py`/`my`
+            cancel out — they only widen the clip box so the phosphor glow
+            isn't shaved off the top and bottom of the caps. */}
+        <Box component="b" sx={(t) => ({ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', py: '5px', my: '-5px', fontSize: word, color: t.nerv.hue.mintHi, textShadow: '0 0 6px rgba(82,242,154,.6)', letterSpacing: '0.04em' })}>{name}</Box>
+        {version && !stackVersion && <Box component="span" sx={(t) => ({ flex: 'none', ml: 1, fontSize: 10, color: t.nerv.hue.orange, letterSpacing: '0.14em' })}>{version}</Box>}
       </Box>
       {version && stackVersion && <Box component="span" sx={(t) => ({ fontSize: 9, color: t.nerv.hue.orange, letterSpacing: '0.14em', pl: '22px', mt: '2px' })}>{version}</Box>}
     </Box>
@@ -288,7 +342,20 @@ export interface SiteHeaderLink {
   href: string;
 }
 
-export interface SiteHeaderProps {
+/** Props the `brand` slot receives (notes/2.2 §3). */
+export interface SiteHeaderBrandProps extends RootHTMLAttributes<'div'> {
+  /** Brand wordmark (e.g. `JAIRUS_OS`). */
+  name?: ReactNode;
+  /** Small version/tag after the wordmark. */
+  version?: ReactNode;
+}
+
+export interface SiteHeaderSlotProps {
+  /** Props merged onto the brand lockup (default: {@link Brand}). */
+  brand?: SiteHeaderBrandProps;
+}
+
+export interface SiteHeaderProps extends RootHTMLAttributes<'header'>, WithRef<'header'> {
   /** Brand wordmark (e.g. `JAIRUS_OS`). */
   name: ReactNode;
   /** Small version/tag after the wordmark (orange chrome). */
@@ -299,6 +366,12 @@ export interface SiteHeaderProps {
   actions?: ReactNode;
   /** Max content width (px). @default 1180 */
   maxWidth?: number;
+  /** Replace an internal part: `brand` (the lockup — default {@link Brand}). */
+  slots?: SlotsOf<'brand'>;
+  /** Props merged onto each part, consumer props winning. */
+  slotProps?: SiteHeaderSlotProps;
+  /** Class overrides by part: `root`, `container` (the max-width bar), `brand`, `nav`, `link`, `actions`. */
+  classes?: ClassesOf<'root' | 'container' | 'brand' | 'nav' | 'link' | 'actions'>;
   sx?: SxProps<Theme>;
 }
 
@@ -308,7 +381,7 @@ export interface SiteHeaderProps {
  * links smooth-scroll to their target (instant under reduced motion); other hrefs
  * behave normally.
  */
-export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, sx }: SiteHeaderProps) {
+export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180, slots, slotProps, classes, className, sx, ...rest }: SiteHeaderProps) {
   const reduced = useReducedMotion();
   const onLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (!href.startsWith('#')) return;
@@ -317,10 +390,21 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
     e.preventDefault();
     target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
   };
+  // `brand` slot (notes/2.2 §3): every landing-page adopter stamps their own
+  // lockup — `name`/`version` only re-skin the built-in `Brand`. The
+  // shrink-against-the-bar styling belongs to the header, not the brand.
+  const [BrandSlot, brandProps] = resolveSlot(slots?.brand, Brand, {
+    contract: { name, version },
+    defaults: { name, version, sx: { flexShrink: 1 } },
+    slotProps: slotProps?.brand,
+    className: resolveClasses('SiteHeader', 'brand', classes),
+  });
 
   return (
     <Box
       component="header"
+      {...rest}
+      className={resolveClasses('SiteHeader', 'root', classes, className)}
       sx={[
         (t) => ({
           position: 'sticky',
@@ -333,14 +417,32 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box sx={{ maxWidth, mx: 'auto', px: 3, height: 60, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Brand name={name} version={version} />
+      {/* The bar is a hard container: the brand shrinks, the rest holds its
+          size, and `overflow: hidden` guarantees no consumer can push the
+          page wider than the viewport. (A header's own box-shadow paints
+          outside its box, so the orange glow below is untouched.) */}
+      <Box
+        className={resolveClasses('SiteHeader', 'container', classes)}
+        sx={{
+          maxWidth,
+          mx: 'auto',
+          px: { xs: 1.5, sm: 3 },
+          height: 60,
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 1.5, sm: 3 },
+          minWidth: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <BrandSlot {...brandProps} />
         {links.length > 0 && (
-          <Box component="nav" sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', fontSize: 11, letterSpacing: '0.12em' }}>
+          <Box component="nav" className={resolveClasses('SiteHeader', 'nav', classes)} sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5, ml: 'auto', minWidth: 0, fontSize: 11, letterSpacing: '0.12em' }}>
             {links.map((l) => (
               <Box
                 key={l.href}
                 component="a"
+                className={resolveClasses('SiteHeader', 'link', classes)}
                 href={l.href}
                 onClick={(e) => onLink(e, l.href)}
                 sx={(t) => ({
@@ -359,7 +461,22 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
             ))}
           </Box>
         )}
-        {actions && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: links.length ? 0 : 'auto' }}>{actions}</Box>}
+        {actions && (
+          <Box
+            className={resolveClasses('SiteHeader', 'actions', classes)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: { xs: 1, sm: 1.5 },
+              flexShrink: 0,
+              // Below `md` the nav is hidden, so its `ml: 'auto'` is gone —
+              // the actions take over pushing themselves to the right edge.
+              ml: { xs: 'auto', md: links.length ? 0 : 'auto' },
+            }}
+          >
+            {actions}
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -368,10 +485,15 @@ export function SiteHeader({ name, version, links = [], actions, maxWidth = 1180
 /* ------------------------------------------------------------------ */
 /* WikiLink — a [[cross-reference]] that inverts on hover. */
 
-export interface WikiLinkProps {
+/** `href`/`onClick` are the link target/handler the component itself renders;
+ *  `children` is the link text. Root is an `<a>` when `href` is given, else a
+ *  `<button>`. */
+export interface WikiLinkProps extends Omit<RootHTMLAttributes<'a'>, 'href' | 'onClick'>, WithRef<'a'> {
   children: ReactNode;
   href?: string;
   onClick?: () => void;
+  /** Class overrides by part: `root` (the anchor or button). */
+  classes?: ClassesOf<'root'>;
   sx?: SxProps<Theme>;
 }
 
@@ -380,12 +502,14 @@ export interface WikiLinkProps {
  * solid mint fill with black text on hover. Renders as an anchor when `href` is
  * given, otherwise a button.
  */
-export function WikiLink({ children, href, onClick, sx }: WikiLinkProps) {
+export function WikiLink({ children, href, onClick, classes, className, sx, ...rest }: WikiLinkProps) {
   return (
     <Box
       component={href ? 'a' : 'button'}
       href={href}
       onClick={onClick}
+      {...rest}
+      className={resolveClasses('WikiLink', 'root', classes, className)}
       sx={[
         (t) => ({
           color: t.nerv.hue.mintHi,

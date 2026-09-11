@@ -29,3 +29,6 @@ export const stampBox = (theme: Theme, opts?: { fill?: boolean }) => ({
     ? { backgroundColor: 'currentColor', '& > *': { color: v(theme).palette.background.default } }
     : null),
 });
+
+/** Return the theme override hard-snap token. Mirrors `components/util.ts::animSnap`. */
+export const snapForAnimation = (theme: Theme): string => theme.nerv.motion.snap;

@@ -18,6 +18,7 @@ import {
   SegmentBar,
   LedColumn,
   MeterBar,
+  StepFlow,
   AgenticLoop,
   TaskCard,
   AgentDot,
@@ -37,6 +38,12 @@ const OODA = [
   { jp: '決定', en: 'DECIDE' },
   { jp: '実行', en: 'EXECUTE' },
   { jp: '学習', en: 'LEARN' },
+];
+
+const DELIVERY_STEPS = [
+  { short: 'OBS', label: 'OBSERVE' },
+  { short: 'DEC', label: 'DECIDE' },
+  { short: 'EXE', label: 'EXECUTE' },
 ];
 
 export function Additions() {
@@ -91,19 +98,21 @@ export function Additions() {
       <SpecGrid cols={3}>
         <SpecCard label="GAUGE CARD" src="<GaugeCard/>" column>
           <GaugeCard tone="blue" kind="WATCHER · 監視" name="MEDIA WATCHER" readout={<><b>45</b>% BUFFER</>} sub="POLLING: 10S">
-            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} />
+            {/* The component owns its progress semantics; this example supplies a
+                product-specific accessible name. */}
+            <SegmentBar value={45} tone="blue" segments={18} height={30} sx={{ width: '100%', mt: 1 }} aria-label="MEDIA BUFFER" />
           </GaugeCard>
         </SpecCard>
         <SpecCard label="TELEMETRY CARD" src="<TelemetryCard/>" column>
           <TelemetryCard title="◐ VAULT RETENTION" type="ARC" foot={['THRESHOLD 90%', 'STABLE']}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <RadialGauge value={98} label="HELD" size={120} animated={false} />
+              <RadialGauge value={98} label="HELD" size={120} animated={false} aria-label="VAULT RETENTION" />
             </Box>
           </TelemetryCard>
         </SpecCard>
         <SpecCard label="LED COLUMN · HOT UNDER 35" src="<LedColumn/>">
-          <LedColumn value={72} tone="mint" />
-          <LedColumn value={26} tone="amber" hotBelow={35} />
+          <LedColumn value={72} tone="mint" aria-label="FUEL · VEGA·1" />
+          <LedColumn value={26} tone="amber" hotBelow={35} aria-label="COOLANT · PUMP·B" />
         </SpecCard>
         <SpecCard label="METER BAR" src="<MeterBar/>" column>
           <Box sx={{ width: '100%' }}>
@@ -116,6 +125,11 @@ export function Additions() {
 
       {/* ---------------- flow ---------------- */}
       <ZoneTitle>FLOW</ZoneTitle>
+      <SpecCard label="STEP FLOW" src="<StepFlow/>" column flush>
+        <Box sx={{ p: '20px 18px', width: '100%' }}>
+          <StepFlow active={1} steps={DELIVERY_STEPS} />
+        </Box>
+      </SpecCard>
       <SpecCard label="AGENTIC LOOP · SELF-CYCLING" src="<AgenticLoop/>" column flush>
         <Box sx={{ p: '20px 18px', width: '100%' }}>
           <AgenticLoop caption="ACTIVE_LOOP : AUTONOMOUS_LEARN" steps={OODA} />
@@ -143,25 +157,26 @@ export function Additions() {
           </Box>
         </SpecCard>
         <SpecCard label="MEMORY ROW" src="<MemoryRow/>" column>
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <MemoryRow id="MEM-2024-0512" title="Recursive feedback loop optimization" kind="pattern" />
-            <MemoryRow id="MEM-2024-0495" title="Inefficient vector search in ENG-392" kind="mistake" />
+          {/* rows carry `role="listitem"` from the consumer's `role="list"` wrapper */}
+          <Box role="list" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <MemoryRow id="MEM-2024-0512" title="Recursive feedback loop optimization" kind="pattern" role="listitem" />
+            <MemoryRow id="MEM-2024-0495" title="Inefficient vector search in ENG-392" kind="mistake" role="listitem" />
           </Box>
         </SpecCard>
       </SpecGrid>
       <SpecGrid cols={2}>
         <SpecCard label="SINK ROW · OFFLINE INVERTS" src="<SinkRow/>" column>
-          <Box sx={{ width: '100%' }}>
-            <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: 14MS</>} />
-            <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: 82MS</>} />
-            <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" />
+          <Box role="list" sx={{ width: '100%' }}>
+            <SinkRow name="NTFY GATEWAY" status="ACTIVE" ping={<>PING: 14MS</>} role="listitem" />
+            <SinkRow name="SLACK INTERNAL" status="CONNECTED" ping={<>PING: 82MS</>} role="listitem" />
+            <SinkRow name="SMTP RELAY" status="OFFLINE" detail="OFFLINE · IDLE" role="listitem" />
           </Box>
         </SpecCard>
         <SpecCard label="ROUTINE ROW · FILTER-DIMMED" src="<RoutineRow/>" column>
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <RoutineRow id="RT·02" name="JOURNAL SYNC" kind="CRON" status="SUCCESS" onRun={() => {}} />
-            <RoutineRow id="RT·03" name="SYSTEM BACKUP" kind="CRON" status="RETRIED" onRun={() => {}} />
-            <RoutineRow id="RT·04" name="MEDIA PIPELINE" kind="WATCHER" status="PENDING" dim onRun={() => {}} />
+          <Box role="list" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <RoutineRow id="RT·02" name="JOURNAL SYNC" kind="CRON" status="SUCCESS" onRun={() => {}} role="listitem" />
+            <RoutineRow id="RT·03" name="SYSTEM BACKUP" kind="CRON" status="RETRIED" onRun={() => {}} role="listitem" />
+            <RoutineRow id="RT·04" name="MEDIA PIPELINE" kind="WATCHER" status="PENDING" dim onRun={() => {}} role="listitem" />
           </Box>
         </SpecCard>
       </SpecGrid>
@@ -188,7 +203,7 @@ export function Additions() {
 /* ---- stateful demos ---- */
 function FilterChipsDemo() {
   const [v, setV] = useState('ALL');
-  return <FilterChips filters={['ALL', 'CRON', 'WATCHER', 'EVENT']} value={v} onChange={setV} sx={{ flexWrap: 'wrap' }} />;
+  return <FilterChips filters={['ALL', 'CRON', 'WATCHER', 'EVENT']} value={v} onChange={setV} ariaLabel="scope filter" sx={{ flexWrap: 'wrap' }} />;
 }
 function RailNavDemo() {
   const [v, setV] = useState('eng');

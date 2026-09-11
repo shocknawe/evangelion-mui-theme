@@ -9,8 +9,7 @@ import { DocSection, Guidance, PageHeader, Prose } from '../docs/chrome';
 import { CodeBlock } from '../docs/CodeBlock';
 import { pkgName, version } from '../siteData';
 
-const INSTALL = `npm install ${pkgName}
-npm install @mui/material @emotion/react @emotion/styled`;
+const INSTALL = `npm install ${pkgName} @mui/material @emotion/react @emotion/styled`;
 
 const MOUNT = `import { ThemeProvider, CssBaseline } from '@mui/material';
 import { theme } from '${pkgName}';
